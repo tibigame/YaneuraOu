@@ -29,24 +29,23 @@ IntBoard bitboard_to_intboard(const Bitboard bit_board) {
 	u64 p0 = bit_board.p[0];
 	u64 p1 = bit_board.p[1];
 	IntBoard result = IntBoard_ZERO; // 0初期化
-	int shifted = 0;
+	// result[index_table[shifted - 1]]と参照したいがここで減算したくないので
+	int shifted = -1; // shifted = 0でなく -1で初期化
 	int ntz_i;
 	while (true) {
 		ntz_i = ntz(p0); // 右端に立っているビットの位置を取得
-		if (ntz_i == 64) { break; }// ビットがすべて0になるまでループ
-		++ntz_i;
-		shifted += ntz_i;
-		result[index_table[shifted - 1]] = 0xffffffff;
+		if (ntz_i++ == 64) { break; }// ビットがすべて0になるまでループ
 		p0 >>= ntz_i; // 右端のビット1を落とすまで右シフト
+		shifted += ntz_i;
+		result[index_table[shifted]] = 0xffffffff;
 	}
-	shifted = 63;
+	shifted = 62; // 上記と同じ理由で shifted = 63 でなく 62で初期化
 	while (true) {
 		ntz_i = ntz(p1); // 右端に立っているビットの位置を取得
-		if (ntz_i == 64) { break; }// ビットがすべて0になるまでループ
-		++ntz_i;
-		shifted += ntz_i;
-		result[index_table[shifted - 1]] = 0xffffffff;
+		if (ntz_i++ == 64) { break; }// ビットがすべて0になるまでループ
 		p1 >>= ntz_i; // 右端のビット1を落とすまで右シフト
+		shifted += ntz_i;
+		result[index_table[shifted]] = 0xffffffff;
 	}
 	return result;
 #else
