@@ -10,14 +10,26 @@ std::ostream& operator<<(std::ostream& os, const PBoard& pb) {
 	return os;
 };
 
+#ifdef AVX512
+// IntBoardが立っていない部分を0にしてaccumを計算し直す
+void PBoard::and(IntBoard2& int_board) {
+	__and(this->board, int_board);
+};
+// IntBoardが立っている部分を0にしてaccumを計算し直す
+void PBoard::ninp(IntBoard2& int_board) {
+	__ninp(this->board, int_board);
+};
+#else
 // IntBoardが立っていない部分を0にしてaccumを計算し直す
 void PBoard::and(IntBoard& int_board) {
 	__and(this->board, int_board);
 };
+
 // IntBoardが立っている部分を0にしてaccumを計算し直す
 void PBoard::ninp(IntBoard& int_board) {
 	__ninp(this->board, int_board);
 };
+#endif
 
 // Arrayは+1でFILEが増える方、+9でRANKが増える方
 PBoard::PBoard(const IntBoard init_board) {

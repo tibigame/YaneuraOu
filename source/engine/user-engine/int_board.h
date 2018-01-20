@@ -5,6 +5,12 @@
 #include "../../position.h"
 #include "../../bitboard.h"
 
+// AVX512コードは現状遅い
+// #define AVX512
+#ifdef AVX512
+#include <immintrin.h>
+#endif
+
 constexpr int SQUARES_NUMBER = 81; // 将棋盤のマス目の数
 
 typedef std::array<int, SQUARES_NUMBER> IntBoard;
@@ -59,6 +65,46 @@ IntBoard reverse(const IntBoard prev);
 std::ostream& operator<<(std::ostream& os, const IntBoard& board);
 
 int accum_sum4_and_select_index(std::array<int, 4> &in_array, std::array<int, 4> &accum_array);
-int accum_sum81_and_select_index(IntBoard &board, IntBoard &accum);
+
+
+#ifdef AVX512
+
+struct alignas(64) IntBoard2 {
+	union {
+		u32 p[81];
+		__m512i m[5];
+	};
+	IntBoard2() {}
+	IntBoard2& operator = (IntBoard2& rhs) {
+		_mm512_store_si512(&this->m[0], rhs.m[0]);
+		_mm512_store_si512(&this->m[1], rhs.m[1]);
+		_mm512_store_si512(&this->m[2], rhs.m[2]);
+		_mm512_store_si512(&this->m[3], rhs.m[3]);
+		_mm512_store_si512(&this->m[4], rhs.m[4]);
+		p[80] = rhs.p[80];
+		return *this;
+	}
+	IntBoard2& operator = (IntBoard& i) {
+		for (auto j = 0; j < 81; ++j) {
+			p[j] = i[j];
+		}
+		return *this;
+	}
+	IntBoard2(IntBoard i) {
+		for (auto j = 0; j < 81; ++j) {
+			p[j] = i[j];
+		}
+	};
+};
+
+IntBoard2 bitboard_to_intboard2(const Bitboard bit_board); // BitboardからIntBoardを返す
+IntBoard reverse(const IntBoard2 prev);
+std::ostream& operator<<(std::ostream& os, const IntBoard2& board);
+void __and(IntBoard2& base_board, IntBoard2& and_board);
+void __ninp(IntBoard2& base_board, IntBoard2& ninp_board);
+int __accumu(IntBoard2& base_board, IntBoard2& accumu);
+int __accumu_rand(IntBoard2& base_board, IntBoard2& accumu);
+int __rand(IntBoard2& base_board, IntBoard2& accumu);
+#endif
 
 #endif _INTBOARD_H_

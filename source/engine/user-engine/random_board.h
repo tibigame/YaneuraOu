@@ -9,16 +9,25 @@
 class PBoard
 {
 private:
+#ifdef AVX512
+	IntBoard2 board;
+	IntBoard2 accum;
+#else
 	IntBoard board;
 	IntBoard accum;
+#endif
 	int p_sum;
 public:
 	PBoard(const IntBoard init_board);
-
-	// IntBoardとのビット演算を行う。累計和の更新は行われないので、accumulate()を呼ぶこと。
+#ifdef AVX512
+	// IntBoard2とのビット演算を行う。累計和の更新は行われないので、accumu()を呼ぶこと。
+	void and(IntBoard2& int_board); // IntBoardが立っていない部分を0にする。
+	void ninp(IntBoard2& int_board); // IntBoardが立っている部分を0にする。
+#else
+	// IntBoardとのビット演算を行う。累計和の更新は行われないので、accumu()を呼ぶこと。
 	void and(IntBoard& int_board); // IntBoardが立っていない部分を0にする。
 	void ninp(IntBoard& int_board); // IntBoardが立っている部分を0にする。
-
+#endif
 	// 累積和の計算と確率的選択
 	void accumu(); // 累積加算のBoardを計算する
 	int rand(); // 2分探索で累積加算のBoardから選択する
