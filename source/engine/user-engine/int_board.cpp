@@ -1,9 +1,11 @@
 ﻿#include <iomanip>
-#include "ntz.hpp"
 #include "int_board.h"
 #include "my_rand.h"
 
 #define NTZ
+#ifdef NTZ
+#include "ntz.hpp"
+#endif
 // AVX512コードは現状遅い
 // #define AVX512
 #ifdef AVX512

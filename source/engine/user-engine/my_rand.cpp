@@ -25,7 +25,8 @@ MyRand::~MyRand() {
 // 乱数を生成する
 void MyRand::gen() {
 #ifdef CUDA
-	curandGenerate(g, gpu_ptr, CACHE_RAND_NUMBER); // 乱数生成	cudaMemcpy(&ptr[0], gpu_ptr, CACHE_RAND_NUMBER * sizeof(uint32_t), cudaMemcpyDeviceToHost); // CPUにメモリコピー
+	curandGenerate(g, gpu_ptr, CACHE_RAND_NUMBER); // 乱数生成
+	cudaMemcpy(&ptr[0], gpu_ptr, CACHE_RAND_NUMBER * sizeof(uint32_t), cudaMemcpyDeviceToHost); // CPUにメモリコピー
 #else
 	sfmt_fill_array64(&sfmt, sfmt_ptr, CACHE_RAND_NUMBER_SFMT);
 #endif

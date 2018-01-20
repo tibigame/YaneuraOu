@@ -24,7 +24,7 @@ private:
 	sfmt_t sfmt; // 乱数生成器
 	uint32_t *ptr; // 乱数を格納する配列を指し示すポインタ(参照用に32bit)
 	uint64_t *sfmt_ptr; // 乱数を格納する配列を指し示すポインタ(乱数生成器用に64bit)
-#ifdef CUDA
+#ifdef CUDA
 	curandGenerator_t g;
 	uint32_t* gpu_ptr;
 #endif
