@@ -68,6 +68,9 @@
     <Filter Include="リソース ファイル\engine\2018-otafuku-engine">
       <UniqueIdentifier>{1822c23d-4270-4155-8c9b-ed15821d29ba}</UniqueIdentifier>
     </Filter>
+    <Filter Include="リソース ファイル\engine\user-engine\SFMT">
+      <UniqueIdentifier>{962e482d-31d4-43e9-874c-54245aa02636}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="evaluate.h">
@@ -189,6 +192,69 @@
     </ClInclude>
     <ClInclude Include="engine\2018-otafuku-engine\2018-otafuku-param.h">
       <Filter>リソース ファイル\engine\2018-otafuku-engine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\int_board.h">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\my_rand.h">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\ntz.hpp">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\random_board.h">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-alti.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-common.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-neon.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-params.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-params607.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-params1279.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-params2281.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-params4253.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-params11213.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-params19937.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-params44497.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-params86243.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-params132049.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-params216091.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-sse2.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\SFMT\SFMT-sse2-msc.h">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -338,6 +404,18 @@
     </ClCompile>
     <ClCompile Include="engine\2018-otafuku-engine\2018-otafuku-search.cpp">
       <Filter>リソース ファイル\engine\2018-otafuku-engine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\int_board.cpp">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\my_rand.cpp">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\random_board.cpp">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\SFMT\SFMT.c">
+      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -414,6 +414,20 @@ void Position::set_state(StateInfo* si) const {
 
 }
 
+void Position::set_blank(){
+	// --- 盤面
+	for (auto i = 0; i < SQ_NB; ++i) {
+		board[i] = NO_PIECE;
+	}
+	kingSquare[BLACK] = kingSquare[WHITE] = SQ_NB;
+	// --- 手駒
+	hand[BLACK] = hand[WHITE] = (Hand)0;
+	// --- 手番
+	sideToMove = BLACK;
+	// --- 初期局面からの手数
+	gamePly = 1;
+}
+
 // put_piece(),remove_piece(),xor_piece()を用いたあとに呼び出す必要がある。
 void Position::update_bitboards()
 {

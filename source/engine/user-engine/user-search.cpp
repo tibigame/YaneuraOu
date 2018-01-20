@@ -1,8 +1,25 @@
 ﻿#include "../../extra/all.h"
+#include "random_board.h"
+#include "my_rand.h"
+
+#include <atltime.h>
 
 // USI拡張コマンド"user"が送られてくるとこの関数が呼び出される。実験に使ってください。
 void user_test(Position& pos_, istringstream& is)
 {
+	CFileTime cTimeStart, cTimeEnd;
+	CFileTimeSpan cTimeSpan;
+	cTimeStart = CFileTime::GetCurrentTime();           // 現在時刻
+	const int loop_num = 100000000;
+	for (auto i = 0; i < loop_num; ++i) {
+		end_game_mate(pos_);
+	}
+	cTimeEnd = CFileTime::GetCurrentTime();           // 現在時刻
+	cTimeSpan = cTimeEnd - cTimeStart;
+	std::cout << "処理時間:" << cTimeSpan.GetTimeSpan() / 10000 << "[ms]" << std::endl;
+	if (cTimeSpan.GetTimeSpan() * 0.0001 > 0.000000001) {
+		std::cout << "処理速度:" << loop_num / (cTimeSpan.GetTimeSpan() * 0.0001) << "[sfen/ms]" << std::endl;
+	}
 }
 
 #ifdef USER_ENGINE

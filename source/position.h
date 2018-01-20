@@ -181,6 +181,9 @@ struct Position
 	// siについては、上記のset()にある説明を読むこと。
 	void set_hirate(StateInfo*si,Thread* th) { set(SFEN_HIRATE,si,th); }
 
+	// 空の盤面、駒台、先手手番で初期化する。
+	void set_blank();
+
 	// --- properties
 
 	// 現局面の手番を返す。
@@ -643,6 +646,7 @@ private:
 	// if (type_of(pc) == KING)
 	//		kingSquare[color_of(pc)] = sq;
 	// もしくはupdate_kingSquare()を呼び出すこと。
+public:
 	void put_piece(Square sq, Piece pc);
 
 	// 駒を盤面から取り除き、内部的に保持しているBitboardも更新する。
@@ -659,7 +663,7 @@ private:
 	// put_piece(),remove_piece(),xor_piece()では玉の位置(kingSquare[])を
 	// 更新してくれないので、自前で更新するか、一連の処理のあとにこの関数を呼び出す必要がある。
 	void update_kingSquare();
-
+private:
 #if defined(USE_FV38)
 	// --- 盤面を更新するときにEvalListの更新のために必要なヘルパー関数
 
@@ -691,7 +695,7 @@ private:
 	PieceNumber piece_no_of(Square sq) const { return PIECE_NUMBER_ZERO; }
 #endif
 	// ---
-
+public:
 	// 盤面、81升分の駒 + 1
 	Piece board[SQ_NB_PLUS1];
 
@@ -706,7 +710,7 @@ private:
 
 	// 初期局面からの手数(初期局面 == 1)
 	int gamePly;
-
+private:
 	// この局面クラスを用いて探索しているスレッド
 	Thread* thisThread;
 
