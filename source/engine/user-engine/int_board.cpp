@@ -194,8 +194,30 @@ int accum_sum4_and_select_index(std::array<int, 4> &in_array, std::array<int, 4>
 };
 
 #ifdef AVX512
+// Bitが立っている升が1でそれ以外は0
 IntBoard2 bitboard_to_intboard2(const Bitboard bit_board) {
-	return IntBoard2(bitboard_to_intboard(bit_board));
+	u64 p0 = bit_board.p[0];
+	u64 p1 = bit_board.p[1];
+	IntBoard2 result = IntBoard2_ZERO; // 0初期化
+	// result[index_table[shifted - 1]]と参照したいがここで減算したくないので
+	int shifted = -1; // shifted = 0でなく -1で初期化
+	int ntz_i;
+	while (true) {
+		ntz_i = ntz(p0); // 右端に立っているビットの位置を取得
+		if (ntz_i++ == 64) { break; }// ビットがすべて0になるまでループ
+		p0 >>= ntz_i; // 右端のビット1を落とすまで右シフト
+		shifted += ntz_i;
+		result.p[index_table[shifted]] = 0xffffffff;
+	}
+	shifted = 62; // 上記と同じ理由で shifted = 63 でなく 62で初期化
+	while (true) {
+		ntz_i = ntz(p1); // 右端に立っているビットの位置を取得
+		if (ntz_i++ == 64) { break; }// ビットがすべて0になるまでループ
+		p1 >>= ntz_i; // 右端のビット1を落とすまで右シフト
+		shifted += ntz_i;
+		result.p[index_table[shifted]] = 0xffffffff;
+	}
+	return result;
 }
 
 IntBoard reverse(const IntBoard2 prev) {
@@ -234,11 +256,11 @@ void __and(IntBoard2& base_board, IntBoard2& and_board) {
 
 // IntBoardが立っている部分を0にします。
 void __ninp(IntBoard2& base_board, IntBoard2& ninp_board) {
-	base_board.m[0] = _mm512_andnot_epi32(base_board.m[0], ninp_board.m[0]);
-	base_board.m[1] = _mm512_andnot_epi32(base_board.m[1], ninp_board.m[1]);
-	base_board.m[2] = _mm512_andnot_epi32(base_board.m[2], ninp_board.m[2]);
-	base_board.m[3] = _mm512_andnot_epi32(base_board.m[3], ninp_board.m[3]);
-	base_board.m[4] = _mm512_andnot_epi32(base_board.m[4], ninp_board.m[4]);
+	base_board.m[0] = _mm512_andnot_epi32(ninp_board.m[0], base_board.m[0]);
+	base_board.m[1] = _mm512_andnot_epi32(ninp_board.m[1], base_board.m[1]);
+	base_board.m[2] = _mm512_andnot_epi32(ninp_board.m[2], base_board.m[2]);
+	base_board.m[3] = _mm512_andnot_epi32(ninp_board.m[3], base_board.m[3]);
+	base_board.m[4] = _mm512_andnot_epi32(ninp_board.m[4], base_board.m[4]);
 	base_board.p[80] &= ~(ninp_board.p[80]);
 };
 
@@ -256,40 +278,35 @@ int __accumu(IntBoard2& base_board, IntBoard2& accumu) {
 int __accumu_rand(IntBoard2& base_board, IntBoard2& accumu) {
 	// 累積和の計算
 	__m512i iz;
-	iz =_mm512_xor_epi32(iz, iz); // 0にする
-	__m512i in0 = base_board.m[0];
-	in0 = _mm512_add_epi32(in0, _mm512_alignr_epi32(in0, iz, 16 - 1));
+	iz = _mm512_xor_epi32(iz, iz); // 0にする
+	__m512i in0 = _mm512_add_epi32(base_board.m[0], _mm512_alignr_epi32(base_board.m[0], iz, 16 - 1));
 	in0 = _mm512_add_epi32(in0, _mm512_alignr_epi32(in0, iz, 16 - 2));
 	in0 = _mm512_add_epi32(in0, _mm512_alignr_epi32(in0, iz, 16 - 4));
 	in0 = _mm512_add_epi32(in0, _mm512_alignr_epi32(in0, iz, 16 - 8));
 	accumu.m[0] = in0;
 	__m512i sum0 = _mm512_set1_epi32(accumu.p[15]);
-	__m512i in1 = base_board.m[1];
-	in1 = _mm512_add_epi32(in1, _mm512_alignr_epi32(in1, iz, 16 - 1));
+	__m512i in1 = _mm512_add_epi32(base_board.m[1], _mm512_alignr_epi32(base_board.m[1], iz, 16 - 1));
 	in1 = _mm512_add_epi32(in1, _mm512_alignr_epi32(in1, iz, 16 - 2));
 	in1 = _mm512_add_epi32(in1, _mm512_alignr_epi32(in1, iz, 16 - 4));
 	in1 = _mm512_add_epi32(in1, _mm512_alignr_epi32(in1, iz, 16 - 8));
 	in1 = _mm512_add_epi32(in1, sum0);
 	accumu.m[1] = in1;
 	__m512i sum1 = _mm512_set1_epi32(accumu.p[31]);
-	__m512i in2 = base_board.m[2];
-	in2 = _mm512_add_epi32(in2, _mm512_alignr_epi32(in2, iz, 16 - 1));
+	__m512i in2 = _mm512_add_epi32(base_board.m[2], _mm512_alignr_epi32(base_board.m[2], iz, 16 - 1));
 	in2 = _mm512_add_epi32(in2, _mm512_alignr_epi32(in2, iz, 16 - 2));
 	in2 = _mm512_add_epi32(in2, _mm512_alignr_epi32(in2, iz, 16 - 4));
 	in2 = _mm512_add_epi32(in2, _mm512_alignr_epi32(in2, iz, 16 - 8));
 	in2 = _mm512_add_epi32(in2, sum1);
 	accumu.m[2] = in2;
 	__m512i sum2 = _mm512_set1_epi32(accumu.p[47]);
-	__m512i in3 = base_board.m[3];
-	in3 = _mm512_add_epi32(in3, _mm512_alignr_epi32(in3, iz, 16 - 1));
+	__m512i in3 = _mm512_add_epi32(base_board.m[3], _mm512_alignr_epi32(base_board.m[3], iz, 16 - 1));
 	in3 = _mm512_add_epi32(in3, _mm512_alignr_epi32(in3, iz, 16 - 2));
 	in3 = _mm512_add_epi32(in3, _mm512_alignr_epi32(in3, iz, 16 - 4));
 	in3 = _mm512_add_epi32(in3, _mm512_alignr_epi32(in3, iz, 16 - 8));
 	in3 = _mm512_add_epi32(in3, sum2);
 	accumu.m[3] = in3;
 	__m512i sum3 = _mm512_set1_epi32(accumu.p[63]);
-	__m512i in4 = base_board.m[4];
-	in4 = _mm512_add_epi32(in4, _mm512_alignr_epi32(in4, iz, 16 - 1));
+	__m512i in4 = _mm512_add_epi32(base_board.m[4], _mm512_alignr_epi32(base_board.m[4], iz, 16 - 1));
 	in4 = _mm512_add_epi32(in4, _mm512_alignr_epi32(in4, iz, 16 - 2));
 	in4 = _mm512_add_epi32(in4, _mm512_alignr_epi32(in4, iz, 16 - 4));
 	in4 = _mm512_add_epi32(in4, _mm512_alignr_epi32(in4, iz, 16 - 8));
@@ -297,12 +314,8 @@ int __accumu_rand(IntBoard2& base_board, IntBoard2& accumu) {
 	accumu.m[4] = in4;
 	accumu.p[80] = accumu.p[79] + base_board.p[80];
 	// sumが求まるので乱数の剰余を求める
-	int r = my_rand(accumu.p[80]);
-	if (r > accumu.p[79]) { // 81マス目
-		return 80;
-	}
 	// SIMDで比較を行い、累積和を超えるインデックスを導出
-	__m512i r0 = _mm512_set1_epi32(r);
+	__m512i r0 = _mm512_set1_epi32(my_rand(accumu.p[80]));
 	__mmask16 cmp0, cmp1, cmp2, cmp3, cmp4;
 	u16 cmp0u, cmp1u, cmp2u, cmp3u, cmp4u;
 	cmp0 = _mm512_cmpgt_epi32_mask(in0, r0);
@@ -320,24 +333,15 @@ int __accumu_rand(IntBoard2& base_board, IntBoard2& accumu) {
 
 // 累計和のIntBoardを利用してbase_boardの確率分布に従ったインデックスを返す
 int __rand(IntBoard2& base_board, IntBoard2& accumu) {
-	int r = my_rand(accumu.p[80]);
-	if (r > accumu.p[79]) { // 81マス目
-		return 80;
-	}
 	// SIMDで比較を行い、累積和を超えるインデックスを導出
-	__m512i in0 = accumu.m[0];
-	__m512i in1 = accumu.m[1];
-	__m512i in2 = accumu.m[2];
-	__m512i in3 = accumu.m[3];
-	__m512i in4 = accumu.m[4];
-	__m512i r0 = _mm512_set1_epi32(r);
+	__m512i r0 = _mm512_set1_epi32(my_rand(accumu.p[80]));
 	__mmask16 cmp0, cmp1, cmp2, cmp3, cmp4;
 	u16 cmp0u, cmp1u, cmp2u, cmp3u, cmp4u;
-	cmp0 = _mm512_cmpgt_epi32_mask(in0, r0);
-	cmp1 = _mm512_cmpgt_epi32_mask(in1, r0);
-	cmp2 = _mm512_cmpgt_epi32_mask(in2, r0);
-	cmp3 = _mm512_cmpgt_epi32_mask(in3, r0);
-	cmp4 = _mm512_cmpgt_epi32_mask(in4, r0);
+	cmp0 = _mm512_cmpgt_epi32_mask(accumu.m[0], r0);
+	cmp1 = _mm512_cmpgt_epi32_mask(accumu.m[1], r0);
+	cmp2 = _mm512_cmpgt_epi32_mask(accumu.m[2], r0);
+	cmp3 = _mm512_cmpgt_epi32_mask(accumu.m[3], r0);
+	cmp4 = _mm512_cmpgt_epi32_mask(accumu.m[4], r0);
 	cmp0u = __popcnt16(~_mm512_mask2int(cmp0));
 	cmp1u = __popcnt16(~_mm512_mask2int(cmp1));
 	cmp2u = __popcnt16(~_mm512_mask2int(cmp2));

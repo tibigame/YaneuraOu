@@ -5,7 +5,7 @@
 #include "../../position.h"
 #include "../../bitboard.h"
 
-// AVX512コードは現状遅い
+// AVX512コードは現状遅い(-4%ほど)
 // #define AVX512
 #ifdef AVX512
 #include <immintrin.h>
@@ -74,7 +74,11 @@ struct alignas(64) IntBoard2 {
 		u32 p[81];
 		__m512i m[5];
 	};
-	IntBoard2() {}
+	IntBoard2() {
+		for (auto j = 0; j < 81; ++j) {
+			p[j] = 0;
+		}
+	}
 	IntBoard2& operator = (IntBoard2& rhs) {
 		_mm512_store_si512(&this->m[0], rhs.m[0]);
 		_mm512_store_si512(&this->m[1], rhs.m[1]);
@@ -96,6 +100,8 @@ struct alignas(64) IntBoard2 {
 		}
 	};
 };
+
+const IntBoard2 IntBoard2_ZERO;
 
 IntBoard2 bitboard_to_intboard2(const Bitboard bit_board); // BitboardからIntBoardを返す
 IntBoard reverse(const IntBoard2 prev);
