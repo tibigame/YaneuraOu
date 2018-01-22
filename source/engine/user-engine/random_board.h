@@ -30,9 +30,9 @@ public:
 	void and(IntBoard& int_board); // IntBoardが立っていない部分を0にする。
 	void ninp(IntBoard& int_board); // IntBoardが立っている部分を0にする。
 #endif
-	// 累積和の計算と確率的選択
-	void accumu(); // 累積加算のBoardを計算する
-	int rand(); // 2分探索で累積加算のBoardから選択する
+	// 累計和の計算と確率的選択
+	void accumu(); // 累計加算のBoardを計算する
+	int rand(); // 2分探索で累計加算のBoardから選択する
 	int accumu_rand(); // accumulateとrandを同時に実行する
 
 	// 盤面を出力する。デバッグ用。

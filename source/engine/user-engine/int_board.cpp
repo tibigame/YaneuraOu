@@ -157,8 +157,8 @@ int __rand(IntBoard& base_board, IntBoard& accumu) {
 	return max;
 };
 
-// 累積和を計算します
-// 累積和を計算して乱数に従って駒の配置を選択
+// 累計和を計算します
+// 累計和を計算して乱数に従って駒の配置を選択
 PieceExistence piece_existence_rand(const int &b_board_p, const int &w_board_p, const int &b_hand_p, const int &w_hand_p) {
 	int accum_array[5]; // temp領域を確保
 	accum_array[0] = b_board_p;
@@ -187,18 +187,16 @@ IntBoard2 bitboard_to_intboard2(const Bitboard bit_board) {
 	// result[index_table[shifted - 1]]と参照したいがここで減算したくないので
 	int shifted = -1; // shifted = 0でなく -1で初期化
 	int ntz_i;
-	while (true) {
-		ntz_i = ntz(p0); // 右端に立っているビットの位置を取得
-		if (ntz_i++ == 64) { break; }// ビットがすべて0になるまでループ
-		p0 >>= ntz_i; // 右端のビット1を落とすまで右シフト
+	while (p0) { // ビットがすべて0になるまでループ
+		ntz_i = static_cast<int>(_tzcnt_u64(p0)); // 右端に立っているビットの位置を取得
+		p0 >>= (++ntz_i); // 右端のビット1を落とすまで右シフト
 		shifted += ntz_i;
 		result.p[index_table[shifted]] = 0xffffffff;
 	}
 	shifted = 62; // 上記と同じ理由で shifted = 63 でなく 62で初期化
-	while (true) {
-		ntz_i = ntz(p1); // 右端に立っているビットの位置を取得
-		if (ntz_i++ == 64) { break; }// ビットがすべて0になるまでループ
-		p1 >>= ntz_i; // 右端のビット1を落とすまで右シフト
+	while (p1) { // ビットがすべて0になるまでループ
+		ntz_i = static_cast<int>(_tzcnt_u64(p1)); // 右端に立っているビットの位置を取得
+		p1 >>= (++ntz_i); // 右端のビット1を落とすまで右シフト
 		shifted += ntz_i;
 		result.p[index_table[shifted]] = 0xffffffff;
 	}

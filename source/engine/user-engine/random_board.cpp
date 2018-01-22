@@ -15,7 +15,7 @@ std::ostream& operator<<(std::ostream& os, const PBoard& pb) {
 // Arrayは+1でFILEが増える方、+9でRANKが増える方
 PBoard::PBoard(const IntBoard2 init_board) {
 	board = reverse(init_board); // 入力が逆転列なので元に戻す
-	p_sum = __accumu(this->board, this->accum); // 累積加算を計算する
+	p_sum = __accumu(this->board, this->accum); // 累計加算を計算する
 }
 // IntBoardが立っていない部分を0にしてaccumを計算し直す
 void PBoard::and(IntBoard2& int_board) {
