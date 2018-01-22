@@ -493,7 +493,12 @@
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-2018-OtafukuLearn|x64'">
     <ClCompile>
@@ -578,9 +583,9 @@
     <ClInclude Include="engine\2018-otafuku-engine\2018-otafuku-param.h" />
     <ClInclude Include="engine\help-mate-engine\help-mate-search.h" />
     <ClInclude Include="engine\mate-engine\mate-search.h" />
+    <ClInclude Include="engine\user-engine\ex_board.h" />
     <ClInclude Include="engine\user-engine\int_board.h" />
     <ClInclude Include="engine\user-engine\my_rand.h" />
-    <ClInclude Include="engine\user-engine\ntz.hpp" />
     <ClInclude Include="engine\user-engine\random_board.h" />
     <ClInclude Include="engine\user-engine\SFMT\SFMT-alti.h" />
     <ClInclude Include="engine\user-engine\SFMT\SFMT-common.h" />
@@ -642,6 +647,7 @@
     <ClCompile Include="engine\help-mate-engine\help-mate-search.cpp" />
     <ClCompile Include="engine\local-game-server\local-game-server.cpp" />
     <ClCompile Include="engine\mate-engine\mate-search.cpp" />
+    <ClCompile Include="engine\user-engine\ex_board.cpp" />
     <ClCompile Include="engine\user-engine\int_board.cpp" />
     <ClCompile Include="engine\user-engine\my_rand.cpp" />
     <ClCompile Include="engine\user-engine\random_board.cpp" />

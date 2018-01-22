@@ -69,7 +69,7 @@
       <UniqueIdentifier>{1822c23d-4270-4155-8c9b-ed15821d29ba}</UniqueIdentifier>
     </Filter>
     <Filter Include="リソース ファイル\engine\user-engine\SFMT">
-      <UniqueIdentifier>{962e482d-31d4-43e9-874c-54245aa02636}</UniqueIdentifier>
+      <UniqueIdentifier>{1311a934-e5bf-4bb2-a13a-72f78db3ab5b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -193,16 +193,13 @@
     <ClInclude Include="engine\2018-otafuku-engine\2018-otafuku-param.h">
       <Filter>リソース ファイル\engine\2018-otafuku-engine</Filter>
     </ClInclude>
+    <ClInclude Include="engine\user-engine\random_board.h">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClInclude>
     <ClInclude Include="engine\user-engine\int_board.h">
       <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClInclude>
     <ClInclude Include="engine\user-engine\my_rand.h">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\ntz.hpp">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\random_board.h">
       <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClInclude>
     <ClInclude Include="engine\user-engine\SFMT\SFMT.h">
@@ -255,6 +252,9 @@
     </ClInclude>
     <ClInclude Include="engine\user-engine\SFMT\SFMT-sse2-msc.h">
       <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\ex_board.h">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -405,17 +405,20 @@
     <ClCompile Include="engine\2018-otafuku-engine\2018-otafuku-search.cpp">
       <Filter>リソース ファイル\engine\2018-otafuku-engine</Filter>
     </ClCompile>
+    <ClCompile Include="engine\user-engine\random_board.cpp">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClCompile>
     <ClCompile Include="engine\user-engine\int_board.cpp">
       <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClCompile>
     <ClCompile Include="engine\user-engine\my_rand.cpp">
       <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClCompile>
-    <ClCompile Include="engine\user-engine\random_board.cpp">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClCompile>
     <ClCompile Include="engine\user-engine\SFMT\SFMT.c">
       <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\ex_board.cpp">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

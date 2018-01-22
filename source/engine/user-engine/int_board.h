@@ -4,6 +4,7 @@
 #include <array>
 #include "../../position.h"
 #include "../../bitboard.h"
+#include "ex_board.h"
 
 // AVX512コードは現状遅い(-4%ほど)
 // #define AVX512
@@ -60,12 +61,13 @@ int __accumu(IntBoard& base_board, IntBoard& accumu);
 int __accumu_rand(IntBoard& base_board, IntBoard& accumu);
 int __rand(IntBoard& base_board, IntBoard& accumu);
 
-IntBoard bitboard_to_intboard(const Bitboard bit_board); // BitboardからIntBoardを返す
+IntBoard bitboard_to_intboard(const Bitboard &bit_board); // BitboardからIntBoardを返す
 IntBoard reverse(const IntBoard prev);
+IntBoard reverse_vertical(const IntBoard prev);
+IntBoard reverse_123(const IntBoard prev);
 std::ostream& operator<<(std::ostream& os, const IntBoard& board);
 
-int accum_sum4_and_select_index(std::array<int, 4> &in_array, std::array<int, 4> &accum_array);
-
+PieceExistence piece_existence_rand(const int &b_board_p, const int &w_board_p, const int &b_hand_p, const int &w_hand_p);
 
 #ifdef AVX512
 

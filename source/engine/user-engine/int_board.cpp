@@ -2,77 +2,39 @@
 #include "int_board.h"
 #include "my_rand.h"
 
-#define NTZ
-#ifdef NTZ
-#include "ntz.hpp"
-#endif
-
 // 0～mod-1までの乱数を生成する
 MyRand myrand;;
 inline u32 my_rand() {
 	return myrand.rand();
 };
 // 剰余は遅いので、rand() % modの代替として乗算 + シフトを使う
-inline u32 my_rand(const u32 mod) {
+inline u32 my_rand(const u32 &mod) {
 	return (uint64_t)myrand.rand() * (uint64_t)mod >> 32;
 };
 
 // BitBoardに対応したIntBoardを返す
 // Bitが立っている升が1でそれ以外は0
-IntBoard bitboard_to_intboard(const Bitboard bit_board) {
-#ifdef NTZ
+IntBoard bitboard_to_intboard(const Bitboard &bit_board) {
 	u64 p0 = bit_board.p[0];
 	u64 p1 = bit_board.p[1];
 	IntBoard result = IntBoard_ZERO; // 0初期化
 	// result[index_table[shifted - 1]]と参照したいがここで減算したくないので
 	int shifted = -1; // shifted = 0でなく -1で初期化
 	int ntz_i;
-	while (true) {
-		ntz_i = ntz(p0); // 右端に立っているビットの位置を取得
-		if (ntz_i++ == 64) { break; }// ビットがすべて0になるまでループ
-		p0 >>= ntz_i; // 右端のビット1を落とすまで右シフト
+	while (p0) { // ビットがすべて0になるまでループ
+		ntz_i = static_cast<int>(_tzcnt_u64(p0)); // 右端に立っているビットの位置を取得
+		p0 >>= (++ntz_i); // 右端のビット1を落とすまで右シフト
 		shifted += ntz_i;
 		result[index_table[shifted]] = 0xffffffff;
 	}
 	shifted = 62; // 上記と同じ理由で shifted = 63 でなく 62で初期化
-	while (true) {
-		ntz_i = ntz(p1); // 右端に立っているビットの位置を取得
-		if (ntz_i++ == 64) { break; }// ビットがすべて0になるまでループ
-		p1 >>= ntz_i; // 右端のビット1を落とすまで右シフト
+	while (p1) { // ビットがすべて0になるまでループ
+		ntz_i = static_cast<int>(_tzcnt_u64(p1)); // 右端に立っているビットの位置を取得
+		p1 >>= (++ntz_i); // 右端のビット1を落とすまで右シフト
 		shifted += ntz_i;
 		result[index_table[shifted]] = 0xffffffff;
 	}
 	return result;
-#else
-	u64 p0 = bit_board.p[0];
-	u64 p1 = bit_board.p[1];
-	IntBoard result = IntBoard_ZERO; // 0初期化
-	int rank = 0;
-	int file = 0;
-	for (auto i = 0; i < 63; ++i) {
-		if (p0 & 1) {
-			result[rank * 9 + file] = 0xffffffff;
-		}
-		p0 >>= 1;
-		++rank;
-		if (rank == 9) {
-			rank = 0;
-			++file;
-		}
-	}
-	for (auto i = 0; i < 18; ++i) {
-		if (p1 & 1) {
-			result[rank * 9 + file] = 0xffffffff;
-		}
-		p1 >>= 1;
-		++rank;
-		if (rank == 9) {
-			rank = 0;
-			++file;
-		}
-	}
-	return result;
-#endif
 }
 
 // IntBoardが立っていない部分を0にします。
@@ -97,6 +59,28 @@ IntBoard reverse(const IntBoard prev) {
 	for (auto rank = 0; rank < 9; ++rank) { // 9段分を処理する
 		for (auto file = 0; file < 9; ++file) {
 			result[rank * 9 + file] = prev[rank * 9 + 8 - file];
+		}
+	}
+	return result;
+};
+
+// IntBoardの上下を反転する
+IntBoard reverse_vertical(const IntBoard prev) {
+	IntBoard result;
+	for (auto rank = 0; rank < 9; ++rank) { // 9段分を処理する
+		for (auto file = 0; file < 9; ++file) {
+			result[rank * 9 + file] = prev[(8 - rank) * 9 + file];
+		}
+	}
+	return result;
+};
+
+// IntBoardを180°回転する
+IntBoard reverse_123(const IntBoard prev) {
+	IntBoard result;
+	for (auto rank = 0; rank < 9; ++rank) { // 9段分を処理する
+		for (auto file = 0; file < 9; ++file) {
+			result[file * 9 + rank] = prev[(8 - file) * 9 + 8 - rank];
 		}
 	}
 	return result;
@@ -174,23 +158,24 @@ int __rand(IntBoard& base_board, IntBoard& accumu) {
 };
 
 // 累積和を計算します
-// 累積和を計算して乱数に従ってインデックスを選択
-int accum_sum4_and_select_index(std::array<int, 4> &in_array, std::array<int, 4> &accum_array) {
-	accum_array[0] = in_array[0];
-	accum_array[1] = accum_array[0] + in_array[1];
-	accum_array[2] = accum_array[1] + in_array[2];
-	accum_array[3] = accum_array[2] + in_array[3];
-	int r = my_rand(accum_array[3]);
-	if (accum_array[1] >= r) {
-		if (accum_array[0] >= r) {
-			return 0;
+// 累積和を計算して乱数に従って駒の配置を選択
+PieceExistence piece_existence_rand(const int &b_board_p, const int &w_board_p, const int &b_hand_p, const int &w_hand_p) {
+	int accum_array[5]; // temp領域を確保
+	accum_array[0] = b_board_p;
+	accum_array[1] = accum_array[0] + w_board_p;
+	accum_array[2] = accum_array[1] + b_hand_p;
+	accum_array[3] = accum_array[2] + w_hand_p;
+	accum_array[4] = my_rand(accum_array[3]);
+	if (accum_array[1] >= accum_array[4]) {
+		if (accum_array[0] >= accum_array[4]) {
+			return PieceExistence::B_Board;
 		}
-		return 1;
+		return PieceExistence::W_Board;
 	}
-	if (accum_array[2] >= r) {
-		return 2;
+	if (accum_array[2] >= accum_array[4]) {
+		return PieceExistence::B_Hand;
 	}
-	return 3;
+	return PieceExistence::W_Hand;
 };
 
 #ifdef AVX512

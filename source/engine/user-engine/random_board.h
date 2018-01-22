@@ -18,8 +18,10 @@ private:
 #endif
 	int p_sum;
 public:
+	PBoard();
 	PBoard(const IntBoard init_board);
 #ifdef AVX512
+	PBoard(const IntBoard2 init_board);
 	// IntBoard2とのビット演算を行う。累計和の更新は行われないので、accumu()を呼ぶこと。
 	void and(IntBoard2& int_board); // IntBoardが立っていない部分を0にする。
 	void ninp(IntBoard2& int_board); // IntBoardが立っている部分を0にする。
@@ -35,12 +37,6 @@ public:
 
 	// 盤面を出力する。デバッグ用。
 	friend std::ostream& operator<<(std::ostream& os, const PBoard& pos);
-};
-
-class PieceExistenceP {
-private:
-public:
-	PieceExistenceP();
 };
 
 // 終盤のランダム局面を生成する
