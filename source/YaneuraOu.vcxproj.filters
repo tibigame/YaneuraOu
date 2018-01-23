@@ -256,6 +256,9 @@
     <ClInclude Include="engine\user-engine\ex_board.h">
       <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClInclude>
+    <ClInclude Include="engine\user-engine\test.h">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="movegen.cpp">
@@ -418,6 +421,9 @@
       <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
     </ClCompile>
     <ClCompile Include="engine\user-engine\ex_board.cpp">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\test.cpp">
       <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClCompile>
   </ItemGroup>
