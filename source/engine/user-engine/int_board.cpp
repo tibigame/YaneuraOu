@@ -178,6 +178,13 @@ PieceExistence piece_existence_rand(const int &b_board_p, const int &w_board_p, 
 	return PieceExistence::W_Hand;
 };
 
+// 成りかどうかを確率的に判定します
+// sq: 対象となる駒の位置、p: 1段目から9段目の成り確率。0(不成)～1(確定成)までの値を手番を考慮して入れること)
+// 返り値は成り判定ならtrue、不成り判定ならfalse。
+bool is_promoted_rand(const Square &sq, const PromoteP &p) {
+	return support_is_promoted_rand(sq, p) >= my_rand(); // 乱数をそのまま使える形式にするためにu32の最大値で正規化する
+};
+
 #ifdef AVX512
 // Bitが立っている升が1でそれ以外は0
 IntBoard2 bitboard_to_intboard2(const Bitboard bit_board) {

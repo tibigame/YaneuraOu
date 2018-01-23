@@ -62,12 +62,24 @@ int __accumu_rand(IntBoard& base_board, IntBoard& accumu);
 int __rand(IntBoard& base_board, IntBoard& accumu);
 
 IntBoard bitboard_to_intboard(const Bitboard &bit_board); // BitboardからIntBoardを返す
-IntBoard reverse(const IntBoard prev);
-IntBoard reverse_vertical(const IntBoard prev);
-IntBoard reverse_123(const IntBoard prev);
+IntBoard reverse(const IntBoard prev);// IntBoardの左右を反転する
+IntBoard reverse_vertical(const IntBoard prev); // IntBoardの上下を反転する
+IntBoard reverse_123(const IntBoard prev); // IntBoardを180°回転する
 std::ostream& operator<<(std::ostream& os, const IntBoard& board);
-
+// 累計和を計算して乱数に従って駒の配置を選択
 PieceExistence piece_existence_rand(const int &b_board_p, const int &w_board_p, const int &b_hand_p, const int &w_hand_p);
+
+// 成りの確率
+typedef std::array<double, 9> PromoteP;
+// PromotePを反転する
+constexpr PromoteP reverse(const PromoteP p) {
+	return { p[8], p[7], p[6], p[5], p[4], p[3], p[2], p[1], p[0] };
+};
+// is_promoted_randの補助関数
+constexpr u32 support_is_promoted_rand(const Square &sq, const PromoteP &p) {
+	return static_cast<u32>(UINT_MAX * p[rank_index_table[sq]]);
+};
+bool is_promoted_rand(const Square &sq, const PromoteP &p); // 成りかどうかを確率的に
 
 #ifdef AVX512
 

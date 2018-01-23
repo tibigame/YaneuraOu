@@ -24,3 +24,28 @@ std::ostream& operator<<(std::ostream& os, const PieceExistence& pe) {
 	}
 	return os;
 };
+
+std::ostream& operator<<(std::ostream& os, const RecheckReason& pe) {
+	switch (pe) {
+	case RecheckReason::None: os << "確認不要"; break;
+	case RecheckReason::B_Rook: os << "先手の飛車"; break;
+	case RecheckReason::W_Rook: os << "後手の飛車"; break;
+	case RecheckReason::B_BISHOP: os << "先手の角"; break;
+	case RecheckReason::W_BISHOP: os << "後手の角"; break;
+	case RecheckReason::B_LANCE: os << "先手の香"; break;
+	case RecheckReason::W_LANCE: os << "後手の香"; break;
+	}
+	return os;
+};
+
+CheckList::CheckList() {
+}
+
+CheckList::~CheckList() {
+}
+
+void CheckList::add(const Square &sq, const RecheckReason &reason) {
+	check_item[index].sq = sq;
+	check_item[index].reason = reason;
+	++index;
+}
