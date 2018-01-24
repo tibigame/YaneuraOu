@@ -64,6 +64,8 @@ enum class RecheckReason
 	B_LANCE, // 先手の香
 	W_LANCE // 後手の香
 };
+std::ostream& operator<<(std::ostream& os, const RecheckReason& rr);
+
 // 盤面再チェック用の項目を表す構造体
 struct CheckItem {
 	Square sq = SQ_NB;
@@ -79,17 +81,7 @@ public:
 	CheckList();
 	~CheckList();
 	void add(const Square &sq, const RecheckReason &reason);
+	friend std::ostream& operator<<(std::ostream& os, const CheckList& cl);
 };
-
-// 後手の玉が先手の飛車の利きにいる
-inline bool is_effect_b_rook(const Square &w_king, const Square &b_rook) {
-	return (file_index_table[b_rook] == file_index_table[w_king]) || (rank_index_table[b_rook] == rank_index_table[w_king]);
-};
-// 先手の玉が後手の飛車の利きにいる (実質同じ関数)
-inline bool is_effect_w_rook(const Square &b_king, const Square &w_rook) {
-	return (file_index_table[w_rook] == file_index_table[b_king]) || (rank_index_table[w_rook] == rank_index_table[b_king]);
-};
-
-std::ostream& operator<<(std::ostream& os, const RecheckReason& pe);
 
 #endif _EXBOARD_H_

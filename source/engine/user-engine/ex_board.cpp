@@ -25,8 +25,8 @@ std::ostream& operator<<(std::ostream& os, const PieceExistence& pe) {
 	return os;
 };
 
-std::ostream& operator<<(std::ostream& os, const RecheckReason& pe) {
-	switch (pe) {
+std::ostream& operator<<(std::ostream& os, const RecheckReason& rr) {
+	switch (rr) {
 	case RecheckReason::None: os << "確認不要"; break;
 	case RecheckReason::B_Rook: os << "先手の飛車"; break;
 	case RecheckReason::W_Rook: os << "後手の飛車"; break;
@@ -34,6 +34,15 @@ std::ostream& operator<<(std::ostream& os, const RecheckReason& pe) {
 	case RecheckReason::W_BISHOP: os << "後手の角"; break;
 	case RecheckReason::B_LANCE: os << "先手の香"; break;
 	case RecheckReason::W_LANCE: os << "後手の香"; break;
+	}
+	return os;
+};
+
+std::ostream& operator<<(std::ostream& os, const CheckList& cl) {
+	for (auto i= 0;i<9;++i){
+		if (cl.check_item[i].reason != RecheckReason::None) {
+			std::cout << cl.check_item[0].sq << ": " << cl.check_item[0].reason;
+		}
 	}
 	return os;
 };

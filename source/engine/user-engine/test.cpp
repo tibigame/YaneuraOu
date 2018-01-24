@@ -330,31 +330,6 @@ void assert_bitboard_to_intboard(const Bitboard &bit_board, const IntBoard &expe
 
 
 void test_effect() {
-	std::cout << "test: effect" << std::endl;
-	assert_is_effect_b_rook(SQ_11, SQ_18, true);
-	assert_is_effect_b_rook(SQ_22, SQ_82, true);
-	assert_is_effect_b_rook(SQ_33, SQ_44, false);
-	assert_is_effect_b_rook(SQ_49, SQ_94, false);
-	assert_is_effect_b_rook(SQ_57, SQ_12, false);
-	assert_is_effect_b_rook(SQ_87, SQ_81, true);
-	assert_is_effect_b_rook(SQ_92, SQ_32, true);
-	assert_is_effect_w_rook(SQ_55, SQ_56, true);
-	assert_is_effect_w_rook(SQ_58, SQ_42, false);
-	assert_is_effect_w_rook(SQ_76, SQ_71, true);
-	assert_is_effect_w_rook(SQ_91, SQ_82, false);
-};
-void assert_is_effect_b_rook(const Square &w_king, const Square &b_rook, const bool &expect) {
-	bool result = is_effect_b_rook(w_king, b_rook);
-	if (result != expect) {
-		std::cout << "Assert[is_effect_b_rook] -> result: " << std::endl << result << "expect: " << expect << std::endl;
-		++error_count;
-	}
-};
-void assert_is_effect_w_rook(const Square &b_king, const Square &w_rook, const bool &expect) {
-	bool result = is_effect_w_rook(b_king, w_rook);
-	if (result != expect) {
-		std::cout << "Assert[is_effect_w_rook] -> result: " << std::endl << result << "expect: " << expect << std::endl;
-		++error_count;
-	}
+	// std::cout << "test: effect" << std::endl;
 };
 
