@@ -6,13 +6,18 @@ constexpr bool debug_info_uniform = false;
 constexpr bool debug_info_piece_existence_rand = false;
 constexpr bool debug_info_accumu_rand = false;
 constexpr bool debug_info_accumu_rand_avx512 = false;
+constexpr bool debug_info_is_promoted_rand = false;
 constexpr double permit_randomness = 0.05;
+constexpr u32 random_number_per_test = 160000000;
 
 void stat_main() {
+	std::cout << "乱数のテストを行います" << std::endl;
+	std::cout << "テスト当たりの乱数の個数： " << random_number_per_test << std::endl;
 	test_uniform();
 	test_piece_existence_rand();
 	test_accumu_rand();
 	test_accumu_rand_avx512();
+	test_is_promoted_rand();
 };
 
 // 一様乱数のテスト
@@ -22,7 +27,7 @@ void test_uniform() {
 	for (auto i = 0; i < 16; ++i) {
 		count[i] = 0;
 	}
-	u64 loopnum = 16000000;
+	u64 loopnum = random_number_per_test;
 	for (auto i = 0; i < loopnum; ++i) {
 		++count[my_rand() % 16];
 	}
@@ -50,7 +55,7 @@ void test_piece_existence_rand() {
 		count[i] = 0;
 	}
 	PieceExistence t;
-	u64 loopnum = 16000000;
+	u64 loopnum = random_number_per_test;
 	int a = 70, b = 80, c = 49, d = 1;
 	double sum = a + b + c + d;
 	for (auto i = 0; i < loopnum; ++i) {
@@ -102,7 +107,7 @@ void test_accumu_rand() {
 	IntBoard accumu;
 	IntBoard count = IntBoard_ZERO;
 	int t;
-	u64 loopnum = 16000000;
+	u64 loopnum = random_number_per_test;
 	double sum = 0.0;
 	for (auto i = 0; i < SQUARES_NUMBER; ++i) {
 		sum += p_intboard[i];
@@ -154,7 +159,7 @@ void test_accumu_rand_avx512() {
 	IntBoard2 accumu;
 	IntBoard count = IntBoard_ZERO;
 	int t;
-	u64 loopnum = 16000000;
+	u64 loopnum = random_number_per_test;
 	double sum = 0.0;
 	for (auto i = 0; i < SQUARES_NUMBER; ++i) {
 		sum += p_intboard.p[i];
@@ -188,5 +193,42 @@ void test_accumu_rand_avx512() {
 	}
 #endif
 }
-// int __accumu_rand(IntBoard2& base_board, IntBoard2& accumu)
 
+// is_promoted_randのテスト
+void test_is_promoted_rand() {
+	std::cout << "test_is_promoted_rand" << std::endl;
+	PromoteP p = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.0, 1.0 };
+	Square sq[9] = { SQ_11, SQ_22, SQ_33, SQ_44, SQ_55, SQ_66, SQ_77, SQ_88, SQ_99 };
+	u64 loopnum = random_number_per_test;
+	bool t;
+	u64 count_true, count_false;
+	double expect, result;
+	double randomness;
+	for (auto j = 0; j < 9; ++j) {
+		count_true = 0, count_false = 0;
+		for (auto i = 0; i < loopnum; ++i) {
+			t = is_promoted_rand(sq[j], p);
+			if (t) { ++count_true; }
+			else { ++count_false; }
+		}
+		expect = p[j];
+		result = (double)count_true / (count_true + count_false);
+		randomness = (expect - result) / expect;
+		if (randomness > permit_randomness) {
+			std::cout << "randomness: " << randomness << std::endl;
+			++error_count;
+		}
+		if (debug_info_is_promoted_rand || randomness > permit_randomness) {
+			std::cout << "p[" << j << "] 期待値: " << expect << ", 結果: " << result << std::endl;
+		}
+		if (j == 7 && count_true != 0) {
+			std::cout << "成りカウントが0で成りが発生しました: " << count_true << std::endl;
+			++error_count;
+		}
+		if (j == 8 && count_false != 0) {
+			std::cout << "成りカウントが1で不成が発生しました: " << count_false << std::endl;
+			++error_count;
+		}
+	}
+	
+}
