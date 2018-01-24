@@ -1,16 +1,7 @@
 ﻿#include <iomanip>
 #include "int_board.h"
-#include "my_rand.h"
 
-// 0～mod-1までの乱数を生成する
-MyRand myrand;;
-inline u32 my_rand() {
-	return myrand.rand();
-};
-// 剰余は遅いので、rand() % modの代替として乗算 + シフトを使う
-inline u32 my_rand(const u32 &mod) {
-	return (uint64_t)myrand.rand() * (uint64_t)mod >> 32;
-};
+MyRand myrand;
 
 // BitBoardに対応したIntBoardを返す
 // Bitが立っている升が1でそれ以外は0
@@ -117,6 +108,7 @@ int __accumu_rand(IntBoard& base_board, IntBoard& accumu) {
 	}
 	int r = my_rand(p_sum);
 	// 累計加算の値が初めてr以上となるようなインデックスを求める
+	if (r < accumu[0]) { return 0; }
 	int min = 0;
 	int middle = SQUARES_NUMBER >> 1;
 	int max = SQUARES_NUMBER;
@@ -166,13 +158,13 @@ PieceExistence piece_existence_rand(const int &b_board_p, const int &w_board_p, 
 	accum_array[2] = accum_array[1] + b_hand_p;
 	accum_array[3] = accum_array[2] + w_hand_p;
 	accum_array[4] = my_rand(accum_array[3]);
-	if (accum_array[1] >= accum_array[4]) {
-		if (accum_array[0] >= accum_array[4]) {
+	if (accum_array[1] > accum_array[4]) {
+		if (accum_array[0] > accum_array[4]) {
 			return PieceExistence::B_Board;
 		}
 		return PieceExistence::W_Board;
 	}
-	if (accum_array[2] >= accum_array[4]) {
+	if (accum_array[2] > accum_array[4]) {
 		return PieceExistence::B_Hand;
 	}
 	return PieceExistence::W_Hand;

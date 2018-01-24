@@ -71,6 +71,9 @@
     <Filter Include="リソース ファイル\engine\user-engine\SFMT">
       <UniqueIdentifier>{1311a934-e5bf-4bb2-a13a-72f78db3ab5b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="リソース ファイル\engine\user-engine\test">
+      <UniqueIdentifier>{1bade7f7-4944-4f50-9f84-55f10429fdcc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="evaluate.h">
@@ -256,8 +259,11 @@
     <ClInclude Include="engine\user-engine\ex_board.h">
       <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClInclude>
-    <ClInclude Include="engine\user-engine\test.h">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
+    <ClInclude Include="engine\user-engine\test\stat.h">
+      <Filter>リソース ファイル\engine\user-engine\test</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\test\test.h">
+      <Filter>リソース ファイル\engine\user-engine\test</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -423,8 +429,11 @@
     <ClCompile Include="engine\user-engine\ex_board.cpp">
       <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClCompile>
-    <ClCompile Include="engine\user-engine\test.cpp">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
+    <ClCompile Include="engine\user-engine\test\stat.cpp">
+      <Filter>リソース ファイル\engine\user-engine\test</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\test\test.cpp">
+      <Filter>リソース ファイル\engine\user-engine\test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

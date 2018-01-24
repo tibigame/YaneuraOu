@@ -4,6 +4,8 @@
 // この関数を他のファイルから呼んでください
 void test_main();
 
+extern u64 error_count;
+
 // ここから先は便宜上のエントリーポイント
 void assert_file_index_table(const Square &sq, const int &result);
 void test_file_index_table();

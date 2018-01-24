@@ -604,7 +604,8 @@
     <ClInclude Include="engine\user-engine\SFMT\SFMT-sse2-msc.h" />
     <ClInclude Include="engine\user-engine\SFMT\SFMT-sse2.h" />
     <ClInclude Include="engine\user-engine\SFMT\SFMT.h" />
-    <ClInclude Include="engine\user-engine\test.h" />
+    <ClInclude Include="engine\user-engine\test\stat.h" />
+    <ClInclude Include="engine\user-engine\test\test.h" />
     <ClInclude Include="evaluate.h" />
     <ClInclude Include="eval\evaluate_io.h" />
     <ClInclude Include="eval\evaluate_common.h" />
@@ -653,7 +654,8 @@
     <ClCompile Include="engine\user-engine\my_rand.cpp" />
     <ClCompile Include="engine\user-engine\random_board.cpp" />
     <ClCompile Include="engine\user-engine\SFMT\SFMT.c" />
-    <ClCompile Include="engine\user-engine\test.cpp" />
+    <ClCompile Include="engine\user-engine\test\stat.cpp" />
+    <ClCompile Include="engine\user-engine\test\test.cpp" />
     <ClCompile Include="engine\user-engine\user-search.cpp" />
     <ClCompile Include="eval\evaluate_bona_piece.cpp" />
     <ClCompile Include="eval\evaluate_io.cpp" />

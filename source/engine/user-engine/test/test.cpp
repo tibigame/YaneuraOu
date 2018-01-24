@@ -1,22 +1,20 @@
 ﻿#include <iomanip>
 #include "../../shogi.h"
-#include "random_board.h"
-#include "int_board.h"
-#include "ex_board.h"
+#include "../random_board.h"
+#include "../int_board.h"
+#include "../ex_board.h"
+#include "stat.h"
 #include "test.h"
 
-// 詳細なデバッグ情報を出力するか
-//#define DEBUG_INFO
+// 詳細なデバッグ情報を出力するかのフラグ
+constexpr bool debug_info_file_index_table = false;
+constexpr bool debug_info_rank_index_table = false;
+
 
 u64 error_count = 0;
 
 // テストのmain関数
 void test_main() {
-#ifdef DEBUG_INFO
-	std::cout << "DEBUG INFOを出力します。" << std::endl;
-#else
-	std::cout << "DEBUG INFOは出力しません。" << std::endl;
-#endif
 	test_file_index_table();
 	test_rank_index_table();
 	test_promotep();
@@ -31,6 +29,7 @@ void test_main() {
 	test__accumu2();
 	test_bitboard_to_intboard2();
 #endif
+	stat_main();
 	std::cout << "エラーカウントは「" << error_count << "」です。" << std::endl;
 };
 
@@ -41,11 +40,9 @@ void assert_file_index_table(const Square &sq, const int &expect) {
 		std::cout << Bitboard(sq) << std::endl;
 		++error_count;
 	}
-#ifdef DEBUG_INFO
-	else {
+	else if (debug_info_file_index_table) {
 		std::cout << "Square: " << sq << " == " << file_index_table[sq] << std::endl;
 	}
-#endif
 };
 
 void test_file_index_table() {
@@ -86,11 +83,9 @@ void assert_rank_index_table(const Square &sq, const int &expect) {
 		std::cout << Bitboard(sq) << std::endl;
 		++error_count;
 	}
-#ifdef DEBUG_INFO
-	else {
+	else if (debug_info_rank_index_table) {
 		std::cout << "Square: " << sq << " == " << rank_index_table[sq] << std::endl;
 	}
-#endif
 };
 
 void test_rank_index_table() {
