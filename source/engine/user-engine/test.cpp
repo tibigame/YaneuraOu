@@ -25,6 +25,12 @@ void test_main() {
 	test__accumu();
 	test_bitboard_to_intboard();
 	test_effect();
+#ifdef AVX512
+	test__and2();
+	test__ninp2();
+	test__accumu2();
+	test_bitboard_to_intboard2();
+#endif
 	std::cout << "エラーカウントは「" << error_count << "」です。" << std::endl;
 };
 
@@ -323,7 +329,7 @@ void test_bitboard_to_intboard() {
 void assert_bitboard_to_intboard(const Bitboard &bit_board, const IntBoard &expect) {
 	IntBoard result = bitboard_to_intboard(bit_board);
 	if (result != expect) {
-		std::cout << "Assert[bitboard_to_intboard] -> result: " << std::endl << result << "expect: " << expect << std::endl;
+		std::cout << "Assert[bitboard_to_intboard] -> result: " << std::endl << result << "expect: " << std::endl << expect << std::endl;
 		++error_count;
 	}
 };
@@ -333,3 +339,175 @@ void test_effect() {
 	// std::cout << "test: effect" << std::endl;
 };
 
+#ifdef AVX512
+
+void test__and2() {
+	std::cout << "test: __and (AVX512)" << std::endl;
+	IntBoard2 base_board({
+		40, 20, 10, 20, 80, 150, 100, 420, 380,
+		10, 10, 10, 20, 50, 150, 100, 350, 250,
+		10, 10, 10, 10, 40, 60, 70, 180, 80,
+		5, 32, 28, 10, 10, 10, 28, 100, 5,
+		5, 32, 28, 10, 10, 10, 28, 100, 5,
+		10, 80, 120, 80, 160, 80, 160, 240, 10,
+		1, 1, 120, 40, 50, 40, 100, 50, 2,
+		2, 10, 50, 80, 110, 150, 100, 820, 250,
+		5, 10, 10, 20, 20, 20, 30, 250, 100
+	});
+	IntBoard2 and_board({
+		0, 0, 0, -1, -1, -1, 0, 0, 0,
+		0, 0, 0, -1, -1, -1, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, -1, -1, -1,
+		0, 0, 0, 0, 0, 0, -1, -1, -1,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		-1, -1, -1, -1, -1, -1, -1, -1, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, -1,
+		-1, -1, -1, -1, -1, -1, -1, -1, -1
+	});
+	IntBoard2 expect({
+		0, 0, 0, 20, 80, 150, 0, 0, 0,
+		0, 0, 0, 20, 50, 150, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 70, 180, 80,
+		0, 0, 0, 0, 0, 0, 28, 100, 5,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		10, 80, 120, 80, 160, 80, 160, 240, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 250,
+		5, 10, 10, 20, 20, 20, 30, 250, 100
+	});
+	assert__and2(base_board, and_board, expect);
+};
+
+void assert__and2(const IntBoard2 &base_board, const IntBoard2 &and_board, const IntBoard2 &expect) {
+	IntBoard2 result1 = base_board;
+	IntBoard2 result2 = and_board;
+	__and(result1, result2);
+	if (result1 != expect) {
+		std::cout << "Assert[__and (AVX512)] -> result: " << std::endl << result1 << std::endl << "expect: " << std::endl << expect << std::endl;
+		++error_count;
+	}
+};
+
+void test__ninp2() {
+	std::cout << "test: __ninp (AVX512)" << std::endl;
+	IntBoard2 base_board({
+		40, 20, 10, 20, 80, 150, 100, 420, 380,
+		10, 10, 10, 20, 50, 150, 100, 350, 250,
+		10, 10, 10, 10, 40, 60, 70, 180, 80,
+		5, 32, 28, 10, 10, 10, 28, 100, 5,
+		5, 32, 28, 10, 10, 10, 28, 100, 5,
+		10, 80, 120, 80, 160, 80, 160, 240, 10,
+		1, 1, 120, 40, 50, 40, 100, 50, 2,
+		2, 10, 50, 80, 110, 150, 100, 820, 250,
+		5, 10, 10, 20, 20, 20, 30, 250, 100
+	});
+	IntBoard2 and_board({
+		0, 0, 0, -1, -1, -1, 0, 0, 0,
+		0, 0, 0, -1, -1, -1, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, -1, -1, -1,
+		0, 0, 0, 0, 0, 0, -1, -1, -1,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		-1, -1, -1, -1, -1, -1, -1, -1, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, -1,
+		-1, -1, -1, -1, -1, -1, -1, -1, -1
+	});
+	IntBoard2 expect({
+		40, 20, 10, 0, 0, 0, 100, 420, 380,
+		10, 10, 10, 0, 0, 0, 100, 350, 250,
+		10, 10, 10, 10, 40, 60, 0, 0, 0,
+		5, 32, 28, 10, 10, 10, 0, 0, 0,
+		5, 32, 28, 10, 10, 10, 28, 100, 5,
+		0, 0, 0, 0, 0, 0, 0, 0, 10,
+		1, 1, 120, 40, 50, 40, 100, 50, 2,
+		2, 10, 50, 80, 110, 150, 100, 820, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0
+	});
+	assert__ninp2(base_board, and_board, expect);
+};
+
+void assert__ninp2(const IntBoard2 &base_board, const IntBoard2 &and_board, const IntBoard2 &expect) {
+	IntBoard2 result1 = base_board;
+	IntBoard2 result2 = and_board;
+	__ninp(result1, result2);
+	if (result1 != expect) {
+		std::cout << "Assert[__ninp (AVX512)] -> result: " << std::endl << result1 << std::endl << "expect: " << std::endl << expect << std::endl;
+		++error_count;
+	}
+};
+
+void test__accumu2() {
+	std::cout << "test: __accumu (AVX512)" << std::endl;
+	IntBoard2 base_board({
+		40, 20, 10, 20, 80, 150, 100, 420, 380,
+		10, 10, 10, 20, 50, 150, 100, 350, 250,
+		10, 10, 10, 10, 40, 60, 70, 180, 80,
+		5, 32, 28, 10, 10, 10, 28, 100, 5,
+		5, 32, 28, 10, 10, 10, 28, 100, 5,
+		10, 80, 120, 80, 160, 80, 160, 240, 10,
+		1, 1, 120, 40, 50, 40, 100, 50, 2,
+		2, 10, 50, 80, 110, 150, 100, 820, 250,
+		5, 10, 10, 20, 20, 20, 30, 250, 100
+	});
+	IntBoard2 accumu_board;
+	IntBoard2 expect({
+		40, 60, 70, 90, 170, 320, 420, 840, 1220,
+		1230, 1240, 1250, 1270, 1320, 1470, 1570, 1920, 2170,
+		2180, 2190, 2200, 2210, 2250, 2310, 2380, 2560, 2640,
+		2645, 2677, 2705, 2715, 2725, 2735, 2763, 2863, 2868,
+		2873, 2905, 2933, 2943, 2953, 2963, 2991, 3091, 3096,
+		3106, 3186, 3306, 3386, 3546, 3626, 3786, 4026, 4036,
+		4037, 4038, 4158, 4198, 4248, 4288, 4388, 4438, 4440,
+		4442, 4452, 4502, 4582, 4692, 4842, 4942, 5762, 6012,
+		6017, 6027, 6037, 6057, 6077, 6097, 6127, 6377, 6477
+	});
+	assert__accumu2(base_board, accumu_board, expect);
+};
+
+void assert__accumu2(const IntBoard2 &base_board, const IntBoard2 &accumu_board, const IntBoard2 &expect) {
+	IntBoard2 result1 = base_board;
+	IntBoard2 result2 = accumu_board;
+	__accumu(result1, result2);
+	if (result2 != expect) {
+		std::cout << "Assert[__accumu (AVX512)] -> result: " << std::endl << result2 << std::endl << "expect: " << std::endl << expect << std::endl;
+		++error_count;
+	}
+};
+
+void test_bitboard_to_intboard2() {
+	std::cout << "test: bitboard_to_intboard2 (AVX512)" << std::endl;
+	IntBoard2 intboard_bitright({
+		-1, -1, -1, 0, 0, 0, 0, 0, 0,
+		-1, -1, -1, 0, 0, 0, 0, 0, 0,
+		-1, -1, -1, 0, 0, 0, 0, 0, 0,
+		-1, -1, -1, 0, 0, 0, 0, 0, 0,
+		-1, -1, -1, 0, 0, 0, 0, 0, 0,
+		-1, -1, -1, 0, 0, 0, 0, 0, 0,
+		-1, -1, -1, 0, 0, 0, 0, 0, 0,
+		-1, -1, -1, 0, 0, 0, 0, 0, 0,
+		-1, -1, -1, 0, 0, 0, 0, 0, 0
+	});
+	IntBoard2 intboard_bitmiddle({
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		-1, -1, -1, -1, -1, -1, -1, -1, -1,
+		-1, -1, -1, -1, -1, -1, -1, -1, -1,
+		-1, -1, -1, -1, -1, -1, -1, -1, -1,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0
+	});
+	assert_bitboard_to_intboard2(BitRight, intboard_bitright);
+	assert_bitboard_to_intboard2(BitMiddle, intboard_bitmiddle);
+};
+void assert_bitboard_to_intboard2(const Bitboard &bit_board, const IntBoard2 &expect) {
+	IntBoard2 result = bitboard_to_intboard2(bit_board);
+	if (result != expect) {
+		std::cout << "Assert[bitboard_to_intboard (AVX512)] -> result: " << std::endl << result << "expect: " << std::endl << expect << std::endl;
+		++error_count;
+	}
+};
+
+#endif

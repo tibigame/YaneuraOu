@@ -39,7 +39,7 @@ std::ostream& operator<<(std::ostream& os, const RecheckReason& rr) {
 };
 
 std::ostream& operator<<(std::ostream& os, const CheckList& cl) {
-	for (auto i= 0;i<9;++i){
+	for (auto i = 0; i<9; ++i) {
 		if (cl.check_item[i].reason != RecheckReason::None) {
 			std::cout << cl.check_item[0].sq << ": " << cl.check_item[0].reason;
 		}

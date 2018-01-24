@@ -39,6 +39,11 @@ void PBoard::ninp(IntBoard& int_board) {
 
 PBoard::PBoard() {
 }
+PBoard::PBoard(const PBoard &p_board) {
+	board = p_board.board;
+	accum = p_board.accum;
+}
+
 // Arrayは+1でFILEが増える方、+9でRANKが増える方
 PBoard::PBoard(const IntBoard init_board) {
 	board = reverse(init_board); // 入力が逆転列なので元に戻す
@@ -93,7 +98,11 @@ const PBoard w_king_p(w_king_p_intboard);
 // 後手玉をpdで指定された確率で配置します(返り値は配置された場所のSquare)
 Square set_w_king(Position& pos_, const Square& b_king) {
 	PBoard pb2 = w_king_p;
+#ifdef AVX512
+	pb2.ninp(bitboard_to_intboard2(KingEffectBB[b_king] | b_king)); // 先手玉の9近傍を除く
+#else
 	pb2.ninp(bitboard_to_intboard(KingEffectBB[b_king] | b_king)); // 先手玉の9近傍を除く
+#endif
 	Square sq = sq_table[pb2.accumu_rand()];
 	pos_.put_piece(sq, W_KING);
 	pos_.update_kingSquare();
@@ -152,13 +161,38 @@ const IntBoard w_rook_captured_p_intboard = reverse_123(b_rook_captured_p_intboa
 const PBoard w_rook_p(w_rook_p_intboard);
 const PBoard w_rook_right_king_p(w_rook_right_king_p_intboard);
 const PBoard w_rook_captured_p(w_rook_captured_p_intboard);
+// 飛車を配置するコア関数
+// pb: 確率テーブル, e_king: 相手玉のSquare, e_king_bit: 相手玉のBitboard, occupied: 配置済みのBitboard
+// set_piece: 配置する駒, set_piece_promote: 配置する成駒, promoto_p: 成り確率,
+// checklist: 再チェックリスト, reason: 再チェックの理由
+void set_rook_core(
+	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Bitboard &occupied,
+	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p,
+	CheckList &checklist, const RecheckReason &reason) {
+	Square sq; // 駒が配置される位置を格納する
+#ifdef AVX512
+	pb.ninp(bitboard_to_intboard2(cross00StepEffectBB[e_king] | occupied)); // 相手玉十字隣接と配置済みの位置を除く
+#else
+	pb.ninp(bitboard_to_intboard(cross00StepEffectBB[e_king] | occupied)); // 相手玉十字隣接と配置済みの位置を除く
+#endif
+	sq = sq_table[pb.accumu_rand()]; // 飛車の位置を確定させる
+	occupied |= sq; // occupiedにorしていく
+	pos_.put_piece(sq,
+		is_promoted_rand(sq, promoto_p) // 成り判定
+		&& !(cross45StepEffectBB[e_king] & sq) // 斜め隣接なら王手になるので除く
+		? set_piece_promote : set_piece // 龍か飛車を配置する
+	);
+	if (RookStepEffectBB[sq] & e_king_bit) { // 相手玉が飛車の利きにあるか
+		checklist.add(sq, reason); // 再チェックリストに入れる
+	}
+}
+
 // 飛車を配置します
 void set_rook(Position& pos_, const Square &b_king, const Square &w_king,
 	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied, CheckList &checklist) {
 	PieceExistence b_rook_pos = piece_existence_rand(100, 60, 160, 110); // 先手の飛車だった駒を収束
 	PieceExistence w_rook_pos = piece_existence_rand(60, 100, 110, 160); // 後手の飛車だった駒を収束
-	PBoard pb;
-	Square sq;
+	PBoard pb; // set_rook_coreに渡すのはconstではないので作業用の変数
 	// 先手の飛車だった駒を配置する
 	switch (b_rook_pos) {
 		// 手駒に配置する
@@ -167,45 +201,13 @@ void set_rook(Position& pos_, const Square &b_king, const Square &w_king,
 		// 盤上の自分の駒として配置する
 		case PieceExistence::B_Board: {
 			pb = BitRight & b_king_bit ? b_rook_right_king_p : b_rook_p; // 先手玉が右かどうかで確率分岐
-			pb.ninp(bitboard_to_intboard(cross00StepEffect(w_king) | occupied)); // 後手玉十字隣接と配置済みの位置を除く
-			sq = sq_table[pb.accumu_rand()]; // 飛車の位置を確定させる
-			occupied |= sq; // occupiedにorしていく
-			if (RookStepEffectBB[sq] & w_king_bit) { // 玉が飛車の利きにあるか
-				checklist.add(sq, RecheckReason::B_Rook); // 再チェックリストに入れる
-			}
-			if (is_promoted_rand(sq, b_rook_promote_p)) { // 成り判定
-				if (cross45StepEffect(w_king) & sq){ // 斜め隣接の位置か
-					pos_.put_piece(sq, B_ROOK); // 龍だと非合法なので飛車にする
-				}
-				else {
-					pos_.put_piece(sq, B_DRAGON);
-				}
-			}
-			else {
-				pos_.put_piece(sq, B_ROOK);
-			}
+			set_rook_core(pos_, pb, w_king, w_king_bit, occupied, B_ROOK, B_DRAGON, b_rook_promote_p, checklist, RecheckReason::B_Rook);
 			break;
 		}
 		// 盤上の相手の駒として配置する
 		case PieceExistence::W_Board: {
 			pb = w_rook_captured_p;
-			pb.ninp(bitboard_to_intboard(cross00StepEffect(b_king) | occupied)); // 先手玉十字隣接と配置済みの位置を除く
-			sq = sq_table[pb.accumu_rand()]; // 飛車の位置を確定させる
-			occupied |= sq; // occupiedにorしていく
-			if (RookStepEffectBB[sq] & b_king_bit) { // 玉が飛車の利きにあるか
-				checklist.add(sq, RecheckReason::W_Rook); // 再チェックリストに入れる
-			}
-			if (is_promoted_rand(sq, w_rook_promote_p)) { // 成り判定
-				if (cross45StepEffect(b_king) & sq) { // 斜め隣接の位置か
-					pos_.put_piece(sq, W_ROOK); // 龍だと非合法なので飛車にする
-				}
-				else {
-					pos_.put_piece(sq, W_DRAGON);
-				}
-			}
-			else {
-				pos_.put_piece(sq, W_ROOK);
-			}
+			set_rook_core(pos_, pb, b_king, b_king_bit, occupied, W_ROOK, W_DRAGON, w_rook_promote_p, checklist, RecheckReason::W_Rook);
 			break;
 		}
 	}
@@ -217,48 +219,25 @@ void set_rook(Position& pos_, const Square &b_king, const Square &w_king,
 		// 盤上の自分の駒として配置する
 		case PieceExistence::W_Board: {
 			pb = BitLeft & w_king_bit ? w_rook_right_king_p : w_rook_p; // 後手玉が(後手から見て)右かどうかで確率分岐
-			pb.ninp(bitboard_to_intboard(cross00StepEffect(b_king) | occupied)); // 先手玉十字隣接と配置済みの位置を除く
-			sq = sq_table[pb.accumu_rand()]; // 飛車の位置を確定させる
-			occupied |= sq; // occupiedにorしていく
-			if (RookStepEffectBB[sq] & b_king_bit) { // 玉が飛車の利きにあるか
-				checklist.add(sq, RecheckReason::W_Rook); // 再チェックリストに入れる
-			}
-			if (is_promoted_rand(sq, w_rook_promote_p)) { // 成り判定
-				if (cross45StepEffect(b_king) & sq) { // 斜め隣接の位置か
-					pos_.put_piece(sq, W_ROOK); // 龍だと非合法なので飛車にする
-				}
-				else {
-					pos_.put_piece(sq, W_DRAGON);
-				}
-			}
-			else {
-				pos_.put_piece(sq, W_ROOK);
-			}
+			set_rook_core(pos_, pb, b_king, b_king_bit, occupied, W_ROOK, W_DRAGON, w_rook_promote_p, checklist, RecheckReason::W_Rook);
 			break;
 		}
 		// 盤上の相手の駒として配置する
 		case PieceExistence::B_Board: {
 			pb = b_rook_captured_p;
-			pb.ninp(bitboard_to_intboard(cross00StepEffect(w_king) | occupied)); // 後手玉十字隣接と配置済みの位置を除く
-			sq = sq_table[pb.accumu_rand()]; // 飛車の位置を確定させる
-			occupied |= sq; // occupiedにorしていく
-			if (RookStepEffectBB[sq] & w_king_bit) { // 玉が飛車の利きにあるか
-				checklist.add(sq, RecheckReason::B_Rook); // 再チェックリストに入れる
-			}
-			if (is_promoted_rand(sq, b_rook_promote_p)) { // 成り判定
-				if (cross45StepEffect(w_king) & sq) { // 斜め隣接の位置か
-					pos_.put_piece(sq, B_ROOK); // 龍だと非合法なので飛車にする
-				}
-				else {
-					pos_.put_piece(sq, B_DRAGON);
-				}
-			}
-			else {
-				pos_.put_piece(sq, B_ROOK);
-			}
+			set_rook_core(pos_, pb, w_king, w_king_bit, occupied, B_ROOK, B_DRAGON, b_rook_promote_p, checklist, RecheckReason::B_Rook);
 			break;
 		}
 	}
+};
+
+// -----------------------------------
+//     角の配置確率を定義する
+// -----------------------------------
+
+// 角を配置します
+void set_bishop(Position& pos_, const Square &b_king, const Square &w_king,
+	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied, CheckList &checklist) {
 };
 
 void end_game_mate(Position& pos_) {
@@ -270,6 +249,7 @@ void end_game_mate(Position& pos_) {
 	Bitboard bit_w_king(sq_w_king); // 玉のBitboardはよく使うのでここで変換したものを以降使う
 	Bitboard occupied = bit_b_king | bit_w_king; // 駒を配置するたびに記録するBitboard
 	set_rook(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 飛車の配置
+	set_bishop(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 角の配置
 	pos_.update_bitboards();
 };
 

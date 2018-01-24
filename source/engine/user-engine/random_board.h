@@ -19,6 +19,8 @@ private:
 	int p_sum;
 public:
 	PBoard();
+	PBoard(const PBoard &p_board);
+
 	PBoard(const IntBoard init_board);
 #ifdef AVX512
 	PBoard(const IntBoard2 init_board);

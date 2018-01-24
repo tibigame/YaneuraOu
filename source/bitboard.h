@@ -396,6 +396,9 @@ extern Bitboard SilverEffectBB[SQ_NB_PLUS1][COLOR_NB];
 extern Bitboard KnightEffectBB[SQ_NB_PLUS1][COLOR_NB];
 extern Bitboard PawnEffectBB[SQ_NB_PLUS1][COLOR_NB];
 
+extern Bitboard cross00StepEffectBB[SQ_NB_PLUS1];
+extern Bitboard cross45StepEffectBB[SQ_NB_PLUS1];
+
 // 盤上の駒をないものとして扱う、遠方駒の利き。香、角、飛
 extern Bitboard LanceStepEffectBB[SQ_NB_PLUS1][COLOR_NB];
 extern Bitboard BishopStepEffectBB[SQ_NB_PLUS1];

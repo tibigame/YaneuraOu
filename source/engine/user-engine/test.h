@@ -20,9 +20,18 @@ void assert__ninp(const IntBoard &base_board, const IntBoard &and_board, const I
 void test__accumu();
 void assert__accumu(const IntBoard &base_board, const IntBoard &accumu_board, const IntBoard &expect);
 void test_effect();
-void assert_is_effect_b_rook(const Square &w_king, const Square &b_rook, const bool &expect);
-void assert_is_effect_w_rook(const Square &b_king, const Square &w_rook, const bool &expect);
 void test_bitboard_to_intboard();
 void assert_bitboard_to_intboard(const Bitboard &bit_board, const IntBoard &expect);
+
+#ifdef AVX512
+void test__and2();
+void assert__and2(const IntBoard2 &base_board, const IntBoard2 &and_board, const IntBoard2 &expect);
+void test__ninp2();
+void assert__ninp2(const IntBoard2 &base_board, const IntBoard2 &and_board, const IntBoard2 &expect);
+void test__accumu2();
+void assert__accumu2(const IntBoard2 &base_board, const IntBoard2 &accumu_board, const IntBoard2 &expect);
+void test_bitboard_to_intboard2();
+void assert_bitboard_to_intboard2(const Bitboard &bit_board, const IntBoard2 &expect);
+#endif
 
 #endif _USERENGINE_TEST_H_

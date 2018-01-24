@@ -53,6 +53,10 @@ Bitboard EnemyField[COLOR_NB] = { RANK1_BB | RANK2_BB | RANK3_BB , RANK7_BB | RA
 // sqの升が1であるbitboard
 Bitboard SquareBB[SQ_NB_PLUS1];
 
+// 十字と斜め十字1マスの利き
+Bitboard cross00StepEffectBB[SQ_NB_PLUS1];
+Bitboard cross45StepEffectBB[SQ_NB_PLUS1];
+
 // 玉、金、銀、桂、歩の利き
 Bitboard KingEffectBB[SQ_NB_PLUS1];
 Bitboard GoldEffectBB[SQ_NB_PLUS1][COLOR_NB];
@@ -355,6 +359,13 @@ void Bitboards::init()
 
 	// 6. 近接駒(+盤上の利きを考慮しない駒)のテーブルの初期化。
 	// 上で初期化した、香・馬・飛の利きを用いる。
+
+	for (auto sq : SQ)
+	{
+		// 十字1マスの利きは長さ1の角と飛車の利きを使う
+		cross00StepEffectBB[sq] = rookEffect(sq, ALL_BB);
+		cross45StepEffectBB[sq] = bishopEffect(sq, ALL_BB);
+	}
 
 	for (auto sq : SQ)
 	{
