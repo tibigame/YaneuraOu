@@ -132,6 +132,7 @@ int __accumu_rand(IntBoard& base_board, IntBoard& accumu) {
 int __rand(IntBoard& base_board, IntBoard& accumu) {
 	int r = my_rand(accumu[SQUARES_NUMBER - 1]);
 	// 累計加算の値が初めてr以上となるようなインデックスを求める
+	if (r < accumu[0]) { return 0; }
 	int min = 0;
 	int middle = SQUARES_NUMBER >> 1;
 	int max = SQUARES_NUMBER;
