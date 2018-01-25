@@ -1,4 +1,5 @@
 ﻿#include <cmath>
+#include <vector>
 #include <iostream>
 #include <iomanip>
 #include "../my_rand.h"
