@@ -1,7 +1,13 @@
 ﻿#include <iomanip>
 #include "int_board.h"
 
-MyRand myrand;
+inline u32 my_rand() {
+	return myrand.rand();
+};
+// 剰余は遅いので、rand() % modの代替として乗算 + シフトを使う
+inline u32 my_rand(const u32 &mod) {
+	return (uint64_t)myrand.rand() * (uint64_t)mod >> 32;
+};
 
 // BitBoardに対応したIntBoardを返す
 // Bitが立っている升が1でそれ以外は0

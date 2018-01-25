@@ -1,5 +1,7 @@
 ﻿#include "my_rand.h"
 
+MyRand myrand;
+
 MyRand::MyRand() {
 	std::random_device rd; // ハードウェア乱数で初期化
 	std::mt19937_64 mt(rd()); // 最初の種としてシステムのメルセンヌ・ツイスタで生成する

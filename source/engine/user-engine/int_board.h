@@ -13,17 +13,6 @@
 #include <immintrin.h>
 #endif
 
-// 0～mod-1までの乱数を生成する
-extern MyRand myrand;
-inline u32 my_rand() {
-	return myrand.rand();
-};
-// 剰余は遅いので、rand() % modの代替として乗算 + シフトを使う
-inline u32 my_rand(const u32 &mod) {
-	return (uint64_t)myrand.rand() * (uint64_t)mod >> 32;
-};
-
-
 constexpr int SQUARES_NUMBER = 81; // 将棋盤のマス目の数
 
 typedef std::array<int, SQUARES_NUMBER> IntBoard;

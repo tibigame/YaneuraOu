@@ -3,7 +3,7 @@
 #include "../random_board.h"
 #include "../int_board.h"
 #include "../ex_board.h"
-#include "stat.h"
+#include "test_rand.h"
 #include "test.h"
 
 // 詳細なデバッグ情報を出力するかのフラグ
@@ -29,7 +29,7 @@ void test_main() {
 	test__accumu2();
 	test_bitboard_to_intboard2();
 #endif
-	stat_main();
+	test_rand_main();
 	std::cout << "エラーカウントは「" << error_count << "」です。" << std::endl;
 };
 

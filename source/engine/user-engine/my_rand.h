@@ -13,7 +13,7 @@
 
 // CACHE_RAND_NUMBERの数だけu32乱数を生成しておく
 // 100万個程度ならリリース環境で10ミリ秒とかからない
-constexpr uint32_t CACHE_RAND_NUMBER = 16384000; // 何でもいいが、キリの良い数(1024の倍数など)にしておく
+constexpr uint32_t CACHE_RAND_NUMBER = 1638400; // 何でもいいが、キリの良い数(1024の倍数など)にしておく
 constexpr uint32_t CACHE_RAND_NUMBER_SFMT = CACHE_RAND_NUMBER / 2; // 内部的にu64乱数を発生させるので数は半分になる
 
 class MyRand
@@ -33,5 +33,8 @@ public:
 	~MyRand();
 	uint32_t rand(); // キャッシュした乱数を1つ取り出す
 };
+
+// 0～mod-1までの乱数を生成する
+extern MyRand myrand;
 
 #endif _MYRAND_H_

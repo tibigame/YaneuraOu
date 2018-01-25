@@ -1,5 +1,9 @@
-﻿#include "stat.h"
+﻿#include "test_rand.h"
 #include "test.h"
+
+inline u32 my_rand() {
+	return myrand.rand();
+};
 
 // 詳細なデバッグ情報を出力するかのフラグ
 constexpr bool debug_info_uniform = false;
@@ -7,10 +11,10 @@ constexpr bool debug_info_piece_existence_rand = false;
 constexpr bool debug_info_accumu_rand = false;
 constexpr bool debug_info_accumu_rand_avx512 = false;
 constexpr bool debug_info_is_promoted_rand = false;
-constexpr double permit_randomness = 0.05;
-constexpr u32 random_number_per_test = 160000000;
+constexpr double permit_randomness = 0.5;
+constexpr u32 random_number_per_test = 160000;
 
-void stat_main() {
+void test_rand_main() {
 	std::cout << "乱数のテストを行います" << std::endl;
 	std::cout << "テスト当たりの乱数の個数： " << random_number_per_test << std::endl;
 	test_uniform();
@@ -230,5 +234,4 @@ void test_is_promoted_rand() {
 			++error_count;
 		}
 	}
-	
 }

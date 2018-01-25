@@ -74,6 +74,9 @@
     <Filter Include="リソース ファイル\engine\user-engine\test">
       <UniqueIdentifier>{1bade7f7-4944-4f50-9f84-55f10429fdcc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="リソース ファイル\engine\user-engine\util">
+      <UniqueIdentifier>{da18a0e0-9ba2-4c63-87b2-5d4723bcd0bd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="evaluate.h">
@@ -259,10 +262,13 @@
     <ClInclude Include="engine\user-engine\ex_board.h">
       <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClInclude>
-    <ClInclude Include="engine\user-engine\test\stat.h">
+    <ClInclude Include="engine\user-engine\test\test.h">
       <Filter>リソース ファイル\engine\user-engine\test</Filter>
     </ClInclude>
-    <ClInclude Include="engine\user-engine\test\test.h">
+    <ClInclude Include="engine\user-engine\util\stat.h">
+      <Filter>リソース ファイル\engine\user-engine\util</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\test\test_rand.h">
       <Filter>リソース ファイル\engine\user-engine\test</Filter>
     </ClInclude>
   </ItemGroup>
@@ -429,10 +435,13 @@
     <ClCompile Include="engine\user-engine\ex_board.cpp">
       <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClCompile>
-    <ClCompile Include="engine\user-engine\test\stat.cpp">
+    <ClCompile Include="engine\user-engine\test\test.cpp">
       <Filter>リソース ファイル\engine\user-engine\test</Filter>
     </ClCompile>
-    <ClCompile Include="engine\user-engine\test\test.cpp">
+    <ClCompile Include="engine\user-engine\util\stat.cpp">
+      <Filter>リソース ファイル\engine\user-engine\util</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\test\test_rand.cpp">
       <Filter>リソース ファイル\engine\user-engine\test</Filter>
     </ClCompile>
   </ItemGroup>
