@@ -1,7 +1,8 @@
 ﻿#ifndef _STAT_UTIL_H_
 #define _STAT_UTIL_H_
 
-#include "../int_board.h"
+using u64 = unsigned __int64;
+using u32 = unsigned __int32;
 
 // 統計関連のユーティリティ
 

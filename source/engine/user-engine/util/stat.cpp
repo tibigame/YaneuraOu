@@ -1,6 +1,7 @@
 ﻿#include <cmath>
 #include <iostream>
 #include <iomanip>
+#include "../my_rand.h"
 #include "stat.h"
 
 // 統計関連のユーティリティ
