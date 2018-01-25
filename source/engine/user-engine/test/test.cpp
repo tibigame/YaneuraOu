@@ -221,7 +221,7 @@ void test__ninp() {
 		2, 10, 50, 80, 110, 150, 100, 820, 250,
 		5, 10, 10, 20, 20, 20, 30, 250, 100
 	};
-	IntBoard and_board = {
+	IntBoard ninp_board = {
 		0, 0, 0, -1, -1, -1, 0, 0, 0,
 		0, 0, 0, -1, -1, -1, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, -1, -1, -1,
@@ -243,12 +243,12 @@ void test__ninp() {
 		2, 10, 50, 80, 110, 150, 100, 820, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0
 	};
-	assert__ninp(base_board, and_board, expect);
+	assert__ninp(base_board, ninp_board, expect);
 };
 
-void assert__ninp(const IntBoard &base_board, const IntBoard &and_board, const IntBoard &expect) {
+void assert__ninp(const IntBoard &base_board, const IntBoard &ninp_board, const IntBoard &expect) {
 	IntBoard result1 = base_board;
-	IntBoard result2 = and_board;
+	IntBoard result2 = ninp_board;
 	__ninp(result1, result2);
 	if (result1 != expect) {
 		std::cout << "Assert[__ninp] -> result: " << std::endl << result1 << std::endl << "expect: " << std::endl << expect << std::endl;
@@ -397,7 +397,7 @@ void test__ninp2() {
 		2, 10, 50, 80, 110, 150, 100, 820, 250,
 		5, 10, 10, 20, 20, 20, 30, 250, 100
 	});
-	IntBoard2 and_board({
+	IntBoard2 ninp_board({
 		0, 0, 0, -1, -1, -1, 0, 0, 0,
 		0, 0, 0, -1, -1, -1, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, -1, -1, -1,
@@ -419,12 +419,12 @@ void test__ninp2() {
 		2, 10, 50, 80, 110, 150, 100, 820, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0
 	});
-	assert__ninp2(base_board, and_board, expect);
+	assert__ninp2(base_board, ninp_board, expect);
 };
 
-void assert__ninp2(const IntBoard2 &base_board, const IntBoard2 &and_board, const IntBoard2 &expect) {
+void assert__ninp2(const IntBoard2 &base_board, const IntBoard2 &ninp_board, const IntBoard2 &expect) {
 	IntBoard2 result1 = base_board;
-	IntBoard2 result2 = and_board;
+	IntBoard2 result2 = ninp_board;
 	__ninp(result1, result2);
 	if (result1 != expect) {
 		std::cout << "Assert[__ninp (AVX512)] -> result: " << std::endl << result1 << std::endl << "expect: " << std::endl << expect << std::endl;

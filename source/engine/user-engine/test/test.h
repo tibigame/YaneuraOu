@@ -18,7 +18,7 @@ void assert_support_is_promoted_rand(const Square &sq, const PromoteP &p, const 
 void test__and();
 void assert__and(const IntBoard &base_board, const IntBoard &and_board, const IntBoard &expect);
 void test__ninp();
-void assert__ninp(const IntBoard &base_board, const IntBoard &and_board, const IntBoard &expect);
+void assert__ninp(const IntBoard &base_board, const IntBoard &ninp_board, const IntBoard &expect);
 void test__accumu();
 void assert__accumu(const IntBoard &base_board, const IntBoard &accumu_board, const IntBoard &expect);
 void test_effect();
@@ -29,7 +29,7 @@ void assert_bitboard_to_intboard(const Bitboard &bit_board, const IntBoard &expe
 void test__and2();
 void assert__and2(const IntBoard2 &base_board, const IntBoard2 &and_board, const IntBoard2 &expect);
 void test__ninp2();
-void assert__ninp2(const IntBoard2 &base_board, const IntBoard2 &and_board, const IntBoard2 &expect);
+void assert__ninp2(const IntBoard2 &base_board, const IntBoard2 &ninp_board, const IntBoard2 &expect);
 void test__accumu2();
 void assert__accumu2(const IntBoard2 &base_board, const IntBoard2 &accumu_board, const IntBoard2 &expect);
 void test_bitboard_to_intboard2();

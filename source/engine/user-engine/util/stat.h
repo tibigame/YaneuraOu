@@ -16,12 +16,12 @@ void clopper_pearson(const double k, const double n, const double alpha, double 
 
 // レーティングの区間推定を行う
 // win: 勝数, lose: 敗数, draw: 引分数,
+// lower, upper: レーティング推定の下限値、上限値の結果を格納する場所
 // draw_half: 引き分けを1/2勝とするか (レーティング検証の結果からはTrueを推奨する)
 // p: 有意水準 (0.95などを指定する)
-// lower, upper: レーティング推定の下限値、上限値の結果を格納する場所
 // print_flag: 結果を標準出力にprintするかのフラグ
 void infar_rating(const u64 win, const u64 lose, const u64 draw,
-	double &lower, double &upperconst, bool draw_half=true, const double p=0.95, bool print_flag=false);
+	double &lower, double &upper, const bool draw_half=true, const double p=0.95, bool print_flag=false);
 
 // 対局シミュレーションを行います
 // battle_num: 対局数

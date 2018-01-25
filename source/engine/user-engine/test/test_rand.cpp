@@ -11,8 +11,8 @@ constexpr bool debug_info_piece_existence_rand = false;
 constexpr bool debug_info_accumu_rand = false;
 constexpr bool debug_info_accumu_rand_avx512 = false;
 constexpr bool debug_info_is_promoted_rand = false;
-constexpr double permit_randomness = 0.5;
-constexpr u32 random_number_per_test = 160000;
+constexpr double permit_randomness = 0.05;
+constexpr u64 random_number_per_test = 160000000;
 
 void test_rand_main() {
 	std::cout << "乱数のテストを行います" << std::endl;
