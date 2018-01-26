@@ -1,14 +1,6 @@
 ﻿#include <iomanip>
 #include "int_board.h"
 
-inline u32 my_rand() {
-	return myrand.rand();
-};
-// 剰余は遅いので、rand() % modの代替として乗算 + シフトを使う
-inline u32 my_rand(const u32 &mod) {
-	return (uint64_t)myrand.rand() * (uint64_t)mod >> 32;
-};
-
 // BitBoardに対応したIntBoardを返す
 // Bitが立っている升が1でそれ以外は0
 IntBoard bitboard_to_intboard(const Bitboard &bit_board) {
@@ -111,7 +103,7 @@ int __accumu_rand(IntBoard& base_board, IntBoard& accumu) {
 		p_sum += base_board[i];
 		accumu[i] = p_sum;
 	}
-	int r = my_rand(p_sum);
+	int r = myrand.rand_m(p_sum);
 	// 累計加算の値が初めてr以上となるようなインデックスを求める
 	if (r < accumu[0]) { return 0; }
 	int min = 0;
@@ -135,7 +127,7 @@ int __accumu_rand(IntBoard& base_board, IntBoard& accumu) {
 
 // 累計和のIntBoardを利用してbase_boardの確率分布に従ったインデックスを返す
 int __rand(IntBoard& base_board, IntBoard& accumu) {
-	int r = my_rand(accumu[SQUARES_NUMBER - 1]);
+	int r = myrand.rand_m(accumu[SQUARES_NUMBER - 1]);
 	// 累計加算の値が初めてr以上となるようなインデックスを求める
 	if (r < accumu[0]) { return 0; }
 	int min = 0;
@@ -157,13 +149,13 @@ int __rand(IntBoard& base_board, IntBoard& accumu) {
 
 // 累計和を計算します
 // 累計和を計算して乱数に従って駒の配置を選択
-PieceExistence piece_existence_rand(const int &b_board_p, const int &w_board_p, const int &b_hand_p, const int &w_hand_p) {
+PieceExistence piece_existence_rand(const int b_board_p, const int w_board_p, const int b_hand_p, const int w_hand_p) {
 	int accum_array[5]; // temp領域を確保
 	accum_array[0] = b_board_p;
 	accum_array[1] = accum_array[0] + w_board_p;
 	accum_array[2] = accum_array[1] + b_hand_p;
 	accum_array[3] = accum_array[2] + w_hand_p;
-	accum_array[4] = my_rand(accum_array[3]);
+	accum_array[4] = myrand.rand_m(accum_array[3]);
 	if (accum_array[1] > accum_array[4]) {
 		if (accum_array[0] > accum_array[4]) {
 			return PieceExistence::B_Board;
@@ -176,37 +168,10 @@ PieceExistence piece_existence_rand(const int &b_board_p, const int &w_board_p, 
 	return PieceExistence::W_Hand;
 };
 
-// 成りかどうかを確率的に判定します
-// sq: 対象となる駒の位置、p: 1段目から9段目の成り確率。0(不成)～1(確定成)までの値を手番を考慮して入れること)
-// 返り値は成り判定ならtrue、不成り判定ならfalse。
-bool is_promoted_rand(const Square &sq, const PromoteP &p) {
-	return support_is_promoted_rand(sq, p) > my_rand(); // 乱数をそのまま使える形式にするためにu32の最大値で正規化する
-};
+is_promoted_rand_func is_promoted_rand;
 
 #ifdef AVX512
-// Bitが立っている升が1でそれ以外は0
-IntBoard2 bitboard_to_intboard2(const Bitboard bit_board) {
-	u64 p0 = bit_board.p[0];
-	u64 p1 = bit_board.p[1];
-	IntBoard2 result = IntBoard2_ZERO; // 0初期化
-	// result[index_table[shifted - 1]]と参照したいがここで減算したくないので
-	int shifted = -1; // shifted = 0でなく -1で初期化
-	int ntz_i;
-	while (p0) { // ビットがすべて0になるまでループ
-		ntz_i = static_cast<int>(_tzcnt_u64(p0)); // 右端に立っているビットの位置を取得
-		p0 >>= (++ntz_i); // 右端のビット1を落とすまで右シフト
-		shifted += ntz_i;
-		result.p[index_table[shifted]] = 0xffffffff;
-	}
-	shifted = 62; // 上記と同じ理由で shifted = 63 でなく 62で初期化
-	while (p1) { // ビットがすべて0になるまでループ
-		ntz_i = static_cast<int>(_tzcnt_u64(p1)); // 右端に立っているビットの位置を取得
-		p1 >>= (++ntz_i); // 右端のビット1を落とすまで右シフト
-		shifted += ntz_i;
-		result.p[index_table[shifted]] = 0xffffffff;
-	}
-	return result;
-}
+bitboard_to_intboard2_func bitboard_to_intboard2;
 
 IntBoard reverse(const IntBoard2 prev) {
 	IntBoard result;
@@ -230,7 +195,6 @@ std::ostream& operator<<(std::ostream& os, const IntBoard2& board) {
 	}
 	return os;
 };
-
 
 // IntBoardが立っていない部分を0にします。
 void __and(IntBoard2& base_board, IntBoard2& and_board) {
@@ -298,7 +262,7 @@ int __accumu_rand(IntBoard2& base_board, IntBoard2& accumu) {
 	accumu.p[80] = accumu.p[79] + base_board.p[80];
 	// sumが求まるので乱数の剰余を求める
 	// SIMDで比較を行い、累積和を超えるインデックスを導出
-	__m512i r0 = _mm512_set1_epi32(my_rand(accumu.p[80]));
+	__m512i r0 = _mm512_set1_epi32(myrand.rand_m(accumu.p[80]));
 	__mmask16 cmp0 = _mm512_cmplt_epi32_mask(in0, r0);
 	__mmask16 cmp1 = _mm512_cmplt_epi32_mask(in1, r0);
 	__mmask16 cmp2 = _mm512_cmplt_epi32_mask(in2, r0);
@@ -311,7 +275,7 @@ int __accumu_rand(IntBoard2& base_board, IntBoard2& accumu) {
 // 累計和のIntBoardを利用してbase_boardの確率分布に従ったインデックスを返す
 int __rand(IntBoard2& base_board, IntBoard2& accumu) {
 	// SIMDで比較を行い、累積和を超えるインデックスを導出
-	__m512i r0 = _mm512_set1_epi32(my_rand(accumu.p[80]));
+	__m512i r0 = _mm512_set1_epi32(myrand.rand_m(accumu.p[80]));
 	__mmask16 cmp0 = _mm512_cmplt_epi32_mask(accumu.m[0], r0);
 	__mmask16 cmp1 = _mm512_cmplt_epi32_mask(accumu.m[1], r0);
 	__mmask16 cmp2 = _mm512_cmplt_epi32_mask(accumu.m[2], r0);

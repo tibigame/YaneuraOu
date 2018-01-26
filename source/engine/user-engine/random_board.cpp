@@ -169,13 +169,12 @@ void set_rook_core(
 	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Bitboard &occupied,
 	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p,
 	CheckList &checklist, const RecheckReason &reason) {
-	Square sq; // 駒が配置される位置を格納する
 #ifdef AVX512
 	pb.ninp(bitboard_to_intboard2(cross00StepEffectBB[e_king] | occupied)); // 相手玉十字隣接と配置済みの位置を除く
 #else
 	pb.ninp(bitboard_to_intboard(cross00StepEffectBB[e_king] | occupied)); // 相手玉十字隣接と配置済みの位置を除く
 #endif
-	sq = sq_table[pb.accumu_rand()]; // 飛車の位置を確定させる
+	Square sq = sq_table[pb.accumu_rand()]; // 飛車の位置を確定させる
 	occupied |= sq; // occupiedにorしていく
 	pos_.put_piece(sq,
 		is_promoted_rand(sq, promoto_p) // 成り判定
@@ -241,13 +240,13 @@ void set_bishop(Position& pos_, const Square &b_king, const Square &w_king,
 };
 
 void end_game_mate(Position& pos_) {
-	CheckList checklist; // 盤面再チェック用のリスト
-	set_blank(pos_); // 空の盤面で初期化する
+	pos_.set_blank(); // 空の盤面で初期化する
 	Square sq_b_king = set_b_king(pos_); // 先手玉の配置
 	Square sq_w_king = set_w_king(pos_, sq_b_king); // 後手玉の配置
 	Bitboard bit_b_king(sq_b_king); // 玉のBitboardはよく使うのでここで変換したものを以降使う
 	Bitboard bit_w_king(sq_w_king); // 玉のBitboardはよく使うのでここで変換したものを以降使う
 	Bitboard occupied = bit_b_king | bit_w_king; // 駒を配置するたびに記録するBitboard
+	CheckList checklist; // 盤面再チェック用のリスト
 	set_rook(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 飛車の配置
 	set_bishop(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 角の配置
 	pos_.update_bitboards();

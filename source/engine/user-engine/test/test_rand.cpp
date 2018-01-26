@@ -1,10 +1,6 @@
 ﻿#include "test_rand.h"
 #include "test.h"
 
-inline u32 my_rand() {
-	return myrand.rand();
-};
-
 // 詳細なデバッグ情報を出力するかのフラグ
 constexpr bool debug_info_uniform = false;
 constexpr bool debug_info_piece_existence_rand = false;
@@ -33,7 +29,7 @@ void test_uniform() {
 	}
 	u64 loopnum = random_number_per_test;
 	for (auto i = 0; i < loopnum; ++i) {
-		++count[my_rand() % 16];
+		++count[myrand.rand() % 16];
 	}
 	u64 max = count[0], min = count[0];
 	for (auto i = 1; i < 16; ++i) {

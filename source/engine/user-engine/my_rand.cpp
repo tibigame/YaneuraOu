@@ -1,4 +1,5 @@
 ﻿#include "my_rand.h"
+#include <iostream>
 
 MyRand myrand;
 
@@ -32,6 +33,7 @@ void MyRand::gen() {
 #else
 	sfmt_fill_array64(&sfmt, sfmt_ptr, CACHE_RAND_NUMBER_SFMT);
 #endif
+	++gen_count;
 };
 
 // u32乱数を返します (キャッシュされている場合はテーブルから返すだけなので高速です)
@@ -41,4 +43,41 @@ uint32_t MyRand::rand() {
 		counter = CACHE_RAND_NUMBER; // カウンターを元に戻す
 	}
 	return ptr[--counter]; // カウンターを減らしつつインデックスを参照する
+};
+
+// キャッシュした乱数を1つ取り出し、0～m-1までにして返す
+uint32_t MyRand::rand_m(const uint32_t mod) {
+	// 剰余は遅いので、rand() % modの代替として乗算 + シフトを使う
+	return (uint64_t)rand() * (uint64_t)mod >> 32;
+};
+
+// 使用した乱数の数を返します
+uint64_t MyRand::get_rand_count() {
+	return gen_count * CACHE_RAND_NUMBER - counter;
+};
+
+// 使用した乱数の個数の情報を出力します
+void MyRand::cout() {
+	uint64_t n = get_rand_count();
+	if (n < 10000) {
+		std::cout << "乱数を" << n << "個使用しました" << std::endl;
+		return;
+	}
+	double d = n / 10000.0;
+	if (d < 10000) {
+		std::cout << "乱数を" << d << "万個使用しました" << std::endl;
+		return;
+	}
+	d /= 10000.0;
+	if (d < 10000) {
+		std::cout << "乱数を" << d << "億個使用しました" << std::endl;
+		return;
+	}
+	d /= 10000.0;
+	if (d < 10000) {
+		std::cout << "乱数を" << d << "兆個使用しました" << std::endl;
+		return;
+	}
+	d /= 10000.0;
+	std::cout << "乱数を" << d << "京個使用しました" << std::endl;
 };

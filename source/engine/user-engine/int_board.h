@@ -68,7 +68,7 @@ IntBoard reverse_vertical(const IntBoard prev); // IntBoardの上下を反転す
 IntBoard reverse_123(const IntBoard prev); // IntBoardを180°回転する
 std::ostream& operator<<(std::ostream& os, const IntBoard& board);
 // 累計和を計算して乱数に従って駒の配置を選択
-PieceExistence piece_existence_rand(const int &b_board_p, const int &w_board_p, const int &b_hand_p, const int &w_hand_p);
+PieceExistence piece_existence_rand(const int b_board_p, const int w_board_p, const int b_hand_p, const int w_hand_p);
 
 // 成りの確率
 typedef std::array<double, 9> PromoteP;
@@ -76,11 +76,22 @@ typedef std::array<double, 9> PromoteP;
 constexpr PromoteP reverse(const PromoteP p) {
 	return { p[8], p[7], p[6], p[5], p[4], p[3], p[2], p[1], p[0] };
 };
+
 // is_promoted_randの補助関数
-constexpr u32 support_is_promoted_rand(const Square &sq, const PromoteP &p) {
+constexpr u32 support_is_promoted_rand(const Square sq, const PromoteP &p) {
 	return static_cast<u32>(UINT_MAX * p[rank_index_table[sq]]);
 };
-bool is_promoted_rand(const Square &sq, const PromoteP &p); // 成りかどうかを確率的に
+// 成りかどうかを確率的に判定します
+// sq: 対象となる駒の位置、p: 1段目から9段目の成り確率。0(不成)～1(確定成)までの値を手番を考慮して入れること)
+// 返り値は成り判定ならtrue、不成り判定ならfalse。
+struct is_promoted_rand_func {
+	is_promoted_rand_func() {
+	}
+	bool operator()(const Square sq, const PromoteP &p) {
+		return support_is_promoted_rand(sq, p) > myrand.rand(); // 乱数をそのまま使える形式にするためにu32の最大値で正規化する
+	};
+};
+extern is_promoted_rand_func is_promoted_rand;
 
 #ifdef AVX512
 
@@ -114,7 +125,7 @@ struct alignas(64) IntBoard2 {
 		}
 		return false;
 	}
-	IntBoard2(IntBoard i) {
+	IntBoard2(const IntBoard &i) {
 		for (auto j = 0; j < 81; ++j) {
 			p[j] = i[j];
 		}
@@ -123,7 +134,34 @@ struct alignas(64) IntBoard2 {
 
 const IntBoard2 IntBoard2_ZERO(IntBoard_ZERO);
 
-IntBoard2 bitboard_to_intboard2(const Bitboard bit_board); // BitboardからIntBoardを返す
+// Bitが立っている升が1でそれ以外は0
+struct bitboard_to_intboard2_func {
+	bitboard_to_intboard2_func() {}
+	IntBoard2 operator()(const Bitboard &bit_board) {
+		u64 p0 = bit_board.p[0];
+		u64 p1 = bit_board.p[1];
+		IntBoard2 result = IntBoard2_ZERO; // 0初期化
+										   // result[index_table[shifted - 1]]と参照したいがここで減算したくないので
+		int shifted = -1; // shifted = 0でなく -1で初期化
+		int ntz_i;
+		while (p0) { // ビットがすべて0になるまでループ
+			ntz_i = static_cast<int>(_tzcnt_u64(p0)); // 右端に立っているビットの位置を取得
+			p0 >>= (++ntz_i); // 右端のビット1を落とすまで右シフト
+			shifted += ntz_i;
+			result.p[index_table[shifted]] = 0xffffffff;
+		}
+		shifted = 62; // 上記と同じ理由で shifted = 63 でなく 62で初期化
+		while (p1) { // ビットがすべて0になるまでループ
+			ntz_i = static_cast<int>(_tzcnt_u64(p1)); // 右端に立っているビットの位置を取得
+			p1 >>= (++ntz_i); // 右端のビット1を落とすまで右シフト
+			shifted += ntz_i;
+			result.p[index_table[shifted]] = 0xffffffff;
+		}
+		return result;
+	}
+};
+extern bitboard_to_intboard2_func bitboard_to_intboard2;
+
 IntBoard reverse(const IntBoard2 prev);
 std::ostream& operator<<(std::ostream& os, const IntBoard2& board);
 void __and(IntBoard2& base_board, IntBoard2& and_board);
