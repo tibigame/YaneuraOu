@@ -8,8 +8,9 @@ using u32 = unsigned __int32;
 
 double elorating(double winrate); // 勝率からレーティング差を計算する
 double inv_elorating(double diff_rating); // レーティング差から勝率を求める
+double eval_winrate(int16_t eval); // 評価値から勝率を求める
+double inv_eval_winrate(double winrate); // 勝率から評価値を求める
 double integral_dnorm(double qn); // 正規分布の確率密度関数の累積がp以上となる値を計算する
-
 
 // clopper_pearson法による二項分布近似
 void clopper_pearson(const double k, const double n, const double alpha, double &lower, double &upper);

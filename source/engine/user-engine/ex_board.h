@@ -28,6 +28,11 @@ extern const Bitboard& BitUpper; // 盤面上段
 extern const Bitboard& BitMiddle; // 盤面中段
 extern const Bitboard& BitLower; // 盤面下段
 
+extern const Bitboard& BitLancePromoteBlack; // 先手の香が強制成りになる領域
+extern const Bitboard& BitLancePromoteWhite; // 後手の香が強制成りになる領域
+extern const Bitboard BitKnightPromoteBlack; // 先手の桂が強制成りになる領域
+extern const Bitboard BitKnightPromoteWhite; // 後手の桂が強制成りになる領域
+
 // Squareを直接fileにするテーブル。配列インデックス用に0開始
 constexpr int file_index_table[82] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -57,8 +62,8 @@ constexpr int rank_index_table[82] = {
 enum class RecheckReason
 {
 	None = 0, // 確認不要
-	B_Rook, // 先手の飛車
-	W_Rook, // 後手の飛車
+	B_ROOK, // 先手の飛車
+	W_ROOK, // 後手の飛車
 	B_BISHOP, // 先手の角
 	W_BISHOP, // 後手の角
 	B_LANCE, // 先手の香

@@ -30,5 +30,5 @@
 - 新規実装コードはほぼ「user-engine」ディレクトリ内に閉じています。
 - position.h: 一部privateの項目をpublicに変更。
 - position.cpp: 盤面を空で初期化する関数set_blank()の実装。
-- Bitboard.h: ross00StepEffectBB, cross45StepEffectBBテーブルの作成。
-- Bitboard.cpp: ross00StepEffectBB, cross45StepEffectBBテーブルの初期化。
+- Bitboard.h: cross00StepEffectBB, cross45StepEffectBBテーブルの作成。
+- Bitboard.cpp: cross00StepEffectBB, cross45StepEffectBBテーブルの初期化。

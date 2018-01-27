@@ -218,18 +218,45 @@ void __ninp(IntBoard2& base_board, IntBoard2& ninp_board) {
 
 // 累計和を求める
 int __accumu(IntBoard2& base_board, IntBoard2& accumu) {
-	accumu.p[0] = base_board.p[0];
-	for (auto i = 1; i < SQUARES_NUMBER; ++i) {
-		accumu.p[i] = accumu.p[i - 1] + base_board.p[i];
-	}
-	return accumu.p[SQUARES_NUMBER - 1];
+	// 累積和の計算
+	__m512i iz = _mm512_set1_epi32(0); // 0にする
+	__m512i in0 = _mm512_add_epi32(base_board.m[0], _mm512_alignr_epi32(base_board.m[0], iz, 16 - 1));
+	in0 = _mm512_add_epi32(in0, _mm512_alignr_epi32(in0, iz, 16 - 2));
+	in0 = _mm512_add_epi32(in0, _mm512_alignr_epi32(in0, iz, 16 - 4));
+	in0 = _mm512_add_epi32(in0, _mm512_alignr_epi32(in0, iz, 16 - 8));
+	accumu.m[0] = in0;
+	__m512i in1 = _mm512_add_epi32(base_board.m[1], _mm512_alignr_epi32(base_board.m[1], iz, 16 - 1));
+	in1 = _mm512_add_epi32(in1, _mm512_alignr_epi32(in1, iz, 16 - 2));
+	in1 = _mm512_add_epi32(in1, _mm512_alignr_epi32(in1, iz, 16 - 4));
+	in1 = _mm512_add_epi32(in1, _mm512_alignr_epi32(in1, iz, 16 - 8));
+	in1 = _mm512_add_epi32(in1, _mm512_set1_epi32(accumu.p[15]));
+	accumu.m[1] = in1;
+	__m512i in2 = _mm512_add_epi32(base_board.m[2], _mm512_alignr_epi32(base_board.m[2], iz, 16 - 1));
+	in2 = _mm512_add_epi32(in2, _mm512_alignr_epi32(in2, iz, 16 - 2));
+	in2 = _mm512_add_epi32(in2, _mm512_alignr_epi32(in2, iz, 16 - 4));
+	in2 = _mm512_add_epi32(in2, _mm512_alignr_epi32(in2, iz, 16 - 8));
+	in2 = _mm512_add_epi32(in2, _mm512_set1_epi32(accumu.p[31]));
+	accumu.m[2] = in2;
+	__m512i in3 = _mm512_add_epi32(base_board.m[3], _mm512_alignr_epi32(base_board.m[3], iz, 16 - 1));
+	in3 = _mm512_add_epi32(in3, _mm512_alignr_epi32(in3, iz, 16 - 2));
+	in3 = _mm512_add_epi32(in3, _mm512_alignr_epi32(in3, iz, 16 - 4));
+	in3 = _mm512_add_epi32(in3, _mm512_alignr_epi32(in3, iz, 16 - 8));
+	in3 = _mm512_add_epi32(in3, _mm512_set1_epi32(accumu.p[47]));
+	accumu.m[3] = in3;
+	__m512i in4 = _mm512_add_epi32(base_board.m[4], _mm512_alignr_epi32(base_board.m[4], iz, 16 - 1));
+	in4 = _mm512_add_epi32(in4, _mm512_alignr_epi32(in4, iz, 16 - 2));
+	in4 = _mm512_add_epi32(in4, _mm512_alignr_epi32(in4, iz, 16 - 4));
+	in4 = _mm512_add_epi32(in4, _mm512_alignr_epi32(in4, iz, 16 - 8));
+	in4 = _mm512_add_epi32(in4, _mm512_set1_epi32(accumu.p[63]));
+	accumu.m[4] = in4;
+	accumu.p[80] = accumu.p[79] + base_board.p[80];
+	return accumu.p[80];
 };
 
 // __accumuと__randを両方行いたい時向け
 int __accumu_rand(IntBoard2& base_board, IntBoard2& accumu) {
 	// 累積和の計算
-	__m512i iz;
-	iz = _mm512_xor_epi32(iz, iz); // 0にする
+	__m512i iz = _mm512_set1_epi32(0); // 0にする
 	__m512i in0 = _mm512_add_epi32(base_board.m[0], _mm512_alignr_epi32(base_board.m[0], iz, 16 - 1));
 	in0 = _mm512_add_epi32(in0, _mm512_alignr_epi32(in0, iz, 16 - 2));
 	in0 = _mm512_add_epi32(in0, _mm512_alignr_epi32(in0, iz, 16 - 4));

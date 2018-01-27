@@ -32,6 +32,19 @@ double inv_elorating(double diff_rating) {
 	return 1.0 / (1.0 + std::pow(10.0, -diff_rating / 400.0));
 }
 
+constexpr double PONA_CONST = 600.0;
+// 評価値から勝率を求める
+double eval_winrate(int16_t eval) {
+	return 1.0 / (1.0 + std::exp(- eval / PONA_CONST));
+}
+
+// 勝率から評価値を求める
+double inv_eval_winrate(double winrate) {
+	if (winrate - 1.0 >= 0.0) { return 32768; }
+	if (winrate <= 0.0) { return -32768; }
+	return -PONA_CONST * log(1.0 / winrate - 1.0);
+}
+
 constexpr double MATH_PI = 3.141592653589793238462643383279;
 // 正規分布の確率密度関数
 inline double dnorm(double x) {

@@ -15,6 +15,11 @@ const Bitboard& BitUpper = RANK1_3;
 const Bitboard& BitMiddle = RANK4_6;
 const Bitboard& BitLower = RANK7_9;
 
+const Bitboard& BitLancePromoteBlack = RANK1_BB;
+const Bitboard& BitLancePromoteWhite = RANK9_BB;
+const Bitboard BitKnightPromoteBlack = RANK1_BB | RANK2_BB;
+const Bitboard BitKnightPromoteWhite = RANK8_BB | RANK9_BB;
+
 std::ostream& operator<<(std::ostream& os, const PieceExistence& pe) {
 	switch (pe) {
 	case PieceExistence::B_Board: os << "先手盤上"; break;
@@ -28,8 +33,8 @@ std::ostream& operator<<(std::ostream& os, const PieceExistence& pe) {
 std::ostream& operator<<(std::ostream& os, const RecheckReason& rr) {
 	switch (rr) {
 	case RecheckReason::None: os << "確認不要"; break;
-	case RecheckReason::B_Rook: os << "先手の飛車"; break;
-	case RecheckReason::W_Rook: os << "後手の飛車"; break;
+	case RecheckReason::B_ROOK: os << "先手の飛車"; break;
+	case RecheckReason::W_ROOK: os << "後手の飛車"; break;
 	case RecheckReason::B_BISHOP: os << "先手の角"; break;
 	case RecheckReason::W_BISHOP: os << "後手の角"; break;
 	case RecheckReason::B_LANCE: os << "先手の香"; break;

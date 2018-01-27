@@ -41,8 +41,8 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const PBoard& pos);
 };
 
-// 終盤のランダム局面を生成する
 void end_game_mate(Position& pos_);
+void plot_stat();
 
 // テスト用の関数
 void sq_test(); // sq列をBitBoardに変換してIntBoardに戻すテスト

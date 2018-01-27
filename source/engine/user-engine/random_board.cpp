@@ -62,6 +62,8 @@ int PBoard::rand() {
 	return __rand(this->board, this->accum);
 };
 
+u64 goto_count = 0; // gotoの回数をカウントする
+
 // 空の盤面で初期化します
 void set_blank(Position& pos_) {
 	pos_.set_blank();
@@ -200,13 +202,13 @@ void set_rook(Position& pos_, const Square &b_king, const Square &w_king,
 		// 盤上の自分の駒として配置する
 		case PieceExistence::B_Board: {
 			pb = BitRight & b_king_bit ? b_rook_right_king_p : b_rook_p; // 先手玉が右かどうかで確率分岐
-			set_rook_core(pos_, pb, w_king, w_king_bit, occupied, B_ROOK, B_DRAGON, b_rook_promote_p, checklist, RecheckReason::B_Rook);
+			set_rook_core(pos_, pb, w_king, w_king_bit, occupied, B_ROOK, B_DRAGON, b_rook_promote_p, checklist, RecheckReason::B_ROOK);
 			break;
 		}
 		// 盤上の相手の駒として配置する
 		case PieceExistence::W_Board: {
 			pb = w_rook_captured_p;
-			set_rook_core(pos_, pb, b_king, b_king_bit, occupied, W_ROOK, W_DRAGON, w_rook_promote_p, checklist, RecheckReason::W_Rook);
+			set_rook_core(pos_, pb, b_king, b_king_bit, occupied, W_ROOK, W_DRAGON, w_rook_promote_p, checklist, RecheckReason::W_ROOK);
 			break;
 		}
 	}
@@ -218,13 +220,13 @@ void set_rook(Position& pos_, const Square &b_king, const Square &w_king,
 		// 盤上の自分の駒として配置する
 		case PieceExistence::W_Board: {
 			pb = BitLeft & w_king_bit ? w_rook_right_king_p : w_rook_p; // 後手玉が(後手から見て)右かどうかで確率分岐
-			set_rook_core(pos_, pb, b_king, b_king_bit, occupied, W_ROOK, W_DRAGON, w_rook_promote_p, checklist, RecheckReason::W_Rook);
+			set_rook_core(pos_, pb, b_king, b_king_bit, occupied, W_ROOK, W_DRAGON, w_rook_promote_p, checklist, RecheckReason::W_ROOK);
 			break;
 		}
 		// 盤上の相手の駒として配置する
 		case PieceExistence::B_Board: {
 			pb = b_rook_captured_p;
-			set_rook_core(pos_, pb, w_king, w_king_bit, occupied, B_ROOK, B_DRAGON, b_rook_promote_p, checklist, RecheckReason::B_Rook);
+			set_rook_core(pos_, pb, w_king, w_king_bit, occupied, B_ROOK, B_DRAGON, b_rook_promote_p, checklist, RecheckReason::B_ROOK);
 			break;
 		}
 	}
@@ -233,9 +235,281 @@ void set_rook(Position& pos_, const Square &b_king, const Square &w_king,
 // -----------------------------------
 //     角の配置確率を定義する
 // -----------------------------------
+// 基本の確率テーブル
+const IntBoard b_bishop_p_intboard = {
+	120, 80, 80, 80, 80, 80, 100, 120, 120,
+	70, 110, 110, 120, 150, 150, 100, 250, 250,
+	100, 110, 150, 100, 120, 120, 150, 110, 150,
+	5, 120, 28, 220, 10, 220, 28, 120, 5,
+	40, 20, 28, 10, 200, 10, 28, 20, 40,
+	5, 50, 20, 180, 160, 180, 20, 50, 10,
+	100, 10, 570, 40, 50, 40, 100, 10, 10,
+	2, 620, 10, 80, 8, 40, 10, 80, 20,
+	4, 1, 10, 2, 10, 20, 10, 5, 10
+};
+// 元が相手の駒の時の確率テーブル
+const IntBoard b_bishop_captured_p_intboard = {
+	70, 60, 100, 180, 150, 180, 100, 60, 70,
+	60, 90, 100, 100, 180, 100, 100, 90, 60,
+	80, 100, 100, 100, 120, 100, 100, 100, 80,
+	15, 50, 80, 80, 100, 80, 80, 50, 15,
+	15, 50, 80, 80, 100, 80, 80, 50, 15,
+	15, 50, 80, 80, 100, 80, 80, 50, 15,
+	5, 4, 4, 4, 16, 4, 4, 4, 2,
+	10, 10, 20, 40, 20, 40, 20, 10, 10,
+	4, 20, 20, 20, 20, 20, 20, 10, 4
+};
+// 成りの確率
+constexpr PromoteP b_bishop_promote_p = { 0.2, 0.3, 0.3, 0.2, 0.18, 0.12, 0.12, 0.07, 0.03 };
+constexpr PromoteP w_bishop_promote_p = reverse(b_bishop_promote_p);
+
+const PBoard b_bishop_p(b_bishop_p_intboard);
+const PBoard b_bishop_captured_p(b_bishop_captured_p_intboard);
+const IntBoard w_bishop_p_intboard = reverse_123(b_bishop_p_intboard);
+const IntBoard w_bishop_captured_p_intboard = reverse_123(b_bishop_captured_p_intboard);
+const PBoard w_bishop_p(w_bishop_p_intboard);
+const PBoard w_bishop_captured_p(w_bishop_captured_p_intboard);
+// 角を配置するコア関数
+// pb: 確率テーブル, e_king: 相手玉のSquare, e_king_bit: 相手玉のBitboard, occupied: 配置済みのBitboard
+// set_piece: 配置する駒, set_piece_promote: 配置する成駒, promoto_p: 成り確率,
+// checklist: 再チェックリスト, reason: 再チェックの理由
+void set_bishop_core(
+	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Bitboard &occupied,
+	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p,
+	CheckList &checklist, const RecheckReason &reason) {
+#ifdef AVX512
+	pb.ninp(bitboard_to_intboard2(cross45StepEffectBB[e_king] | occupied)); // 相手玉斜め隣接と配置済みの位置を除く
+#else
+	pb.ninp(bitboard_to_intboard(cross45StepEffectBB[e_king] | occupied)); // 相手玉斜め隣接と配置済みの位置を除く
+#endif
+	Square sq = sq_table[pb.accumu_rand()]; // 角の位置を確定させる
+	occupied |= sq; // occupiedにorしていく
+	pos_.put_piece(sq,
+		is_promoted_rand(sq, promoto_p) // 成り判定
+		&& !(cross00StepEffectBB[e_king] & sq) // 十字隣接なら王手になるので除く
+		? set_piece_promote : set_piece // 馬か角を配置する
+	);
+	if (BishopStepEffectBB[sq] & e_king_bit) { // 相手玉が角の利きにあるか
+		checklist.add(sq, reason); // 再チェックリストに入れる
+	}
+}
 
 // 角を配置します
 void set_bishop(Position& pos_, const Square &b_king, const Square &w_king,
+	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied, CheckList &checklist) {
+	PieceExistence b_bishop_pos = piece_existence_rand(60, 120, 100, 200); // 先手の角だった駒を収束
+	PieceExistence w_bishop_pos = piece_existence_rand(120, 60, 200, 100); // 後手の角だった駒を収束
+	PBoard pb; // set_bishop_coreに渡すのはconstではないので作業用の変数
+	// 先手の角だった駒を配置する
+	switch (b_bishop_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], BISHOP); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], BISHOP); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = b_bishop_p;
+			set_bishop_core(pos_, pb, w_king, w_king_bit, occupied, B_BISHOP, B_HORSE, b_bishop_promote_p, checklist, RecheckReason::B_BISHOP);
+			break;
+	}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = w_bishop_captured_p;
+			set_bishop_core(pos_, pb, b_king, b_king_bit, occupied, W_BISHOP, W_HORSE, w_bishop_promote_p, checklist, RecheckReason::W_BISHOP);
+			break;
+		}
+	}
+	// 後手の角だった駒を配置する
+	switch (w_bishop_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], BISHOP); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], BISHOP); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = w_bishop_p;
+			set_bishop_core(pos_, pb, b_king, b_king_bit, occupied, W_BISHOP, W_HORSE, w_bishop_promote_p, checklist, RecheckReason::W_BISHOP);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = b_bishop_captured_p;
+			set_bishop_core(pos_, pb, w_king, w_king_bit, occupied, B_BISHOP, B_HORSE, b_bishop_promote_p, checklist, RecheckReason::B_BISHOP);
+			break;
+		}
+	}
+};
+
+// -----------------------------------
+//     香の配置確率を定義する
+// -----------------------------------
+// 基本の確率テーブル
+const IntBoard b_lance_l_p_intboard = {
+	80,  90, 30, 10, 8, 7, 7, 7, 7,
+	110, 80, 10, 8, 7, 7, 7, 7, 7,
+	190, 70, 8, 7, 7, 7, 7, 7, 7,
+	320, 8, 7, 6, 6, 6, 6, 6, 6,
+	520, 7, 6, 6, 6, 6, 6, 6, 6,
+	600, 6, 6, 6, 6, 6, 6, 6, 6,
+	1200, 7, 7, 7, 7, 7, 7, 7, 7,
+	4800, 10, 10, 10, 10, 10, 10, 10, 10,
+	9600, 20, 20, 20, 20, 20, 20, 20, 1
+};
+const IntBoard b_lance_r_p_intboard = reverse(b_lance_l_p_intboard);
+// 元が相手の駒の時の確率テーブル
+const IntBoard b_lance_captured_p_intboard = {
+	30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30,
+	10, 10, 10, 10, 10, 10, 10, 10, 10,
+	10, 10, 10, 10, 10, 10, 10, 10, 10,
+	30, 30, 30, 30, 30, 30, 30, 30, 30,
+	80, 80, 80, 80, 80, 80, 80, 80, 80,
+	100, 100, 100, 100, 100, 100, 100, 100, 100,
+	200, 200, 200, 200, 200, 200, 200, 200, 200
+};
+// 成りの確率
+constexpr PromoteP b_lance_promote_p = { 1.0, 0.92, 0.8, 0.3, 0.05, 0.001, 0.0001, 0.00001, 0.000005 };
+constexpr PromoteP w_lance_promote_p = reverse(b_lance_promote_p);
+
+const PBoard b_lance_l_p(b_lance_l_p_intboard);
+const PBoard b_lance_r_p(b_lance_r_p_intboard);
+const PBoard b_lance_captured_p(b_lance_captured_p_intboard);
+const IntBoard w_lance_l_p_intboard = reverse_123(b_lance_l_p_intboard);
+const IntBoard w_lance_r_p_intboard = reverse(w_lance_l_p_intboard);
+const IntBoard w_lance_captured_p_intboard = reverse_123(b_lance_captured_p_intboard);
+const PBoard w_lance_l_p(w_lance_l_p_intboard);
+const PBoard w_lance_r_p(w_lance_r_p_intboard);
+const PBoard w_lance_captured_p(w_lance_captured_p_intboard);
+// 香を配置するコア関数
+// pb: 確率テーブル, e_king: 相手玉のSquare, e_king_bit: 相手玉のBitboard, occupied: 配置済みのBitboard
+// set_piece: 配置する駒, set_piece_promote: 配置する成駒, promoto_p: 成り確率,
+// checklist: 再チェックリスト, reason: 再チェックの理由,
+// my_c: 自玉の手番, e_c: 相手玉の手番, confirm_promote: 確定成りになるBitboard (1行目か9行目)
+void set_lance_core(
+	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Bitboard &occupied,
+	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p,
+	CheckList &checklist, const RecheckReason &reason,
+	const Color my_c, const Color e_c, const Bitboard confirm_promote) {
+#ifdef AVX512
+	// 相手玉前と配置済みの位置を除く
+	pb.ninp(bitboard_to_intboard2(PawnEffectBB[e_king][e_c] | occupied | (cross00StepEffectBB[e_king] & confirm_promote)));
+#else
+	// 相手玉前と配置済みの位置を除く
+	pb.ninp(bitboard_to_intboard(PawnEffectBB[e_king][e_c] | occupied | (cross00StepEffectBB[e_king] & confirm_promote)));
+#endif
+	pb.accumu(); // 香は例外が発生することがあるので一旦累積和だけ計算しておく
+	Square sq;
+	gen_piece_pos: // 駒位置生成ポイントを表すステートメントラベル
+	sq = sq_table[pb.rand()]; // 香の位置を確定させる
+	if (cross00StepEffectBB[e_king] & confirm_promote & sq) { // この位置だと香でも成香でも合法にならない
+		++goto_count; // 想定ではここには来ないはずなんだが……
+		goto gen_piece_pos; // 条件を満たさなかったので駒位置生成からやり直す
+	}
+	occupied |= sq; // occupiedにorしていく
+	const bool is_promote = is_promoted_rand(sq, promoto_p) // 成り判定
+		&& !(e_king_bit & GoldEffectBB[sq][my_c]); // 金の利きに入るなら王手になるので除く
+	pos_.put_piece(sq, is_promote ? set_piece_promote : set_piece // 成香か香を配置する
+	);
+	if (!is_promote && (LanceStepEffectBB[sq][my_c] & e_king_bit)) { // 相手玉が香の利きにあるか
+		checklist.add(sq, reason); // 再チェックリストに入れる
+	}
+}
+
+// 香を配置します
+void set_lance(Position& pos_, const Square &b_king, const Square &w_king,
+	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied, CheckList &checklist) {
+	PieceExistence b_lance_l_pos = piece_existence_rand(400, 30, 100, 100); // 先手の左香だった駒を収束
+	PieceExistence b_lance_r_pos = piece_existence_rand(400, 30, 100, 100); // 先手の右香だった駒を収束
+	PieceExistence w_lance_l_pos = piece_existence_rand(400, 30, 100, 100); // 後手の左香だった駒を収束
+	PieceExistence w_lance_r_pos = piece_existence_rand(400, 30, 100, 100); // 後手の右香だった駒を収束
+	PBoard pb; // set_bishop_coreに渡すのはconstではないので作業用の変数
+	// 先手の左香だった駒を配置する
+	switch (b_lance_l_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], LANCE); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], LANCE); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = b_lance_l_p;
+			set_lance_core(pos_, pb, w_king, w_king_bit, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p, checklist, RecheckReason::B_LANCE,
+				BLACK, WHITE, BitLancePromoteBlack);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = w_lance_captured_p;
+			set_lance_core(pos_, pb, b_king, b_king_bit, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p, checklist, RecheckReason::W_LANCE,
+				WHITE, BLACK, BitLancePromoteWhite);
+			break;
+		}
+	}
+	// 先手の右香だった駒を配置する
+	switch (b_lance_r_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], LANCE); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], LANCE); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = b_lance_r_p;
+			set_lance_core(pos_, pb, w_king, w_king_bit, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p, checklist, RecheckReason::B_LANCE,
+				BLACK, WHITE, BitLancePromoteBlack);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = w_lance_captured_p;
+			set_lance_core(pos_, pb, b_king, b_king_bit, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p, checklist, RecheckReason::W_LANCE,
+				WHITE, BLACK, BitLancePromoteWhite);
+			break;
+		}
+	}
+	// 後手の左香だった駒を配置する
+	switch (b_lance_l_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], LANCE); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], LANCE); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = w_lance_l_p;
+			set_lance_core(pos_, pb, b_king, b_king_bit, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p, checklist, RecheckReason::W_LANCE,
+				WHITE, BLACK, BitLancePromoteWhite);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = b_lance_captured_p;
+			set_lance_core(pos_, pb, w_king, w_king_bit, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p, checklist, RecheckReason::B_LANCE,
+				BLACK, WHITE, BitLancePromoteBlack);
+			break;
+		}
+	}
+	// 後手の右香だった駒を配置する
+	switch (w_lance_r_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], LANCE); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], LANCE); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = w_lance_r_p;
+			set_lance_core(pos_, pb, b_king, b_king_bit, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p, checklist, RecheckReason::W_LANCE,
+				WHITE, BLACK, BitLancePromoteWhite);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = b_lance_captured_p;
+			set_lance_core(pos_, pb, w_king, w_king_bit, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p, checklist, RecheckReason::B_LANCE,
+				BLACK, WHITE, BitLancePromoteBlack);
+			break;
+		}
+	}
+};
+
+// -----------------------------------
+//     桂の配置確率を定義する
+// -----------------------------------
+
+// 桂を配置します
+void set_knight(Position& pos_, const Square &b_king, const Square &w_king,
 	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied, CheckList &checklist) {
 };
 
@@ -249,8 +523,14 @@ void end_game_mate(Position& pos_) {
 	CheckList checklist; // 盤面再チェック用のリスト
 	set_rook(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 飛車の配置
 	set_bishop(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 角の配置
+	set_lance(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 香の配置
+	set_knight(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 桂の配置
 	pos_.update_bitboards();
 };
+
+void plot_stat() { // 統計情報の表示
+	std::cout << "goto: " << goto_count << "回" << std::endl;
+}
 
 // -----------------------------------------------------------------
 // ここからテスト用の関数
