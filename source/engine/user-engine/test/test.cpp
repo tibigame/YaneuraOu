@@ -1,6 +1,5 @@
 ﻿#include <iomanip>
 #include "../../shogi.h"
-#include "../random_board.h"
 #include "../int_board.h"
 #include "../ex_board.h"
 #include "test_rand.h"
@@ -28,6 +27,7 @@ void test_main() {
 	test__ninp2();
 	test__accumu2();
 	test_bitboard_to_intboard2();
+	test_set_lance();
 #endif
 	test_rand_main();
 	std::cout << "エラーカウントは「" << error_count << "」です。" << std::endl;
@@ -502,6 +502,66 @@ void assert_bitboard_to_intboard2(const Bitboard &bit_board, const IntBoard2 &ex
 	if (result != expect) {
 		std::cout << "Assert[bitboard_to_intboard (AVX512)] -> result: " << std::endl << result << "expect: " << std::endl << expect << std::endl;
 		++error_count;
+	}
+};
+
+
+void test_set_lance() {
+	std::cout << "test: set_lance (AVX512)" << std::endl;
+	IntBoard2 i0({
+		10, 10, 10, 10, 10, 10, 10, 10, 10,
+		10, 10, 10, 10, 10, 10, 10, 10, 10,
+		10, 10, 10, 10, 10, 10, 10, 10, 10,
+		10, 10, 10, 10, 10, 10, 10, 10, 10,
+		10, 10, 10, 10, 10, 10, 10, 10, 10,
+		10, 10, 10, 10, 10, 10, 10, 10, 10,
+		10, 10, 10, 10, 10, 10, 10, 10, 10,
+		10, 10, 10, 10, 10, 10, 10, 10, 10,
+		10, 10, 10, 10, 10, 10, 10, 10, 10
+		});
+	IntBoard2 i1({
+		10, 10, 10, 10, 10, 10, 10, 10, 10,
+		10, 10, 10, 10, 10, 10, 10, 10, 10,
+		10, 10, 10, 10, 10, 10, 10, 10, 10,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0
+		});
+	PBoard p0(i0);
+	PBoard p1(i1);
+	assert_set_lance(p1, SQ_51, WHITE, BitLancePromoteBlack);
+	assert_set_lance(p1, SQ_52, WHITE, BitLancePromoteBlack);
+	assert_set_lance(p1, SQ_11, WHITE, BitLancePromoteBlack);
+	assert_set_lance(p1, SQ_12, WHITE, BitLancePromoteBlack);
+	assert_set_lance(p1, SQ_91, WHITE, BitLancePromoteBlack);
+	assert_set_lance(p1, SQ_92, WHITE, BitLancePromoteBlack);
+	for (auto i = 0; i < 100000; ++i) {
+		assert_set_lance(p1, sq_table[p0.rand()], WHITE, BitLancePromoteBlack);
+	}
+};
+void assert_set_lance(const PBoard &p, const Square &e_king, const Color e_c, const Bitboard confirm_promote) {
+	PBoard pb = p;
+	pb.ninp(bitboard_to_intboard2(PawnEffectBB[e_king][e_c] | e_king | (cross00StepEffectBB[e_king] & confirm_promote)));
+
+	pb.accumu(); // 香は例外が発生することがあるので一旦累積和だけ計算しておく
+	Square sq;
+gen_piece_pos: // 駒位置生成ポイントを表すステートメントラベル
+	sq = sq_table[pb.accumu_rand()]; // 香の位置を確定させる
+	if (cross00StepEffectBB[e_king] & confirm_promote & sq) { // この位置だと香でも成香でも合法にならない
+		std::cout << "Assert[set_lance (AVX512)] -> result: " << std::endl;
+		std::cout << "e_king: " << e_king << std::endl;
+		std::cout << "PawnEffectBB[e_king][e_c]" << std::endl;
+		std::cout << PawnEffectBB[e_king][e_c] << std::endl;
+		std::cout << "cross00StepEffectBB[e_king] & confirm_promote" << std::endl;
+		std::cout << (cross00StepEffectBB[e_king] & confirm_promote) << std::endl;
+		std::cout << "sq: " << sq << std::endl;
+		std::cout << Bitboard(sq) << std::endl;
+		std::cout << "pb" << std::endl;
+		std::cout << pb << std::endl;
+		goto gen_piece_pos; // 条件を満たさなかったので駒位置生成からやり直す
 	}
 };
 

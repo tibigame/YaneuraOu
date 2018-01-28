@@ -62,8 +62,6 @@ int PBoard::rand() {
 	return __rand(this->board, this->accum);
 };
 
-u64 goto_count = 0; // gotoの回数をカウントする
-
 // 空の盤面で初期化します
 void set_blank(Position& pos_) {
 	pos_.set_blank();
@@ -390,20 +388,13 @@ void set_lance_core(
 	CheckList &checklist, const RecheckReason &reason,
 	const Color my_c, const Color e_c, const Bitboard confirm_promote) {
 #ifdef AVX512
-	// 相手玉前と配置済みの位置を除く
+	// 相手玉前と配置済みの位置と非合法な位置を除く
 	pb.ninp(bitboard_to_intboard2(PawnEffectBB[e_king][e_c] | occupied | (cross00StepEffectBB[e_king] & confirm_promote)));
 #else
-	// 相手玉前と配置済みの位置を除く
+	// 相手玉前と配置済みの位置と非合法な位置を除く
 	pb.ninp(bitboard_to_intboard(PawnEffectBB[e_king][e_c] | occupied | (cross00StepEffectBB[e_king] & confirm_promote)));
 #endif
-	pb.accumu(); // 香は例外が発生することがあるので一旦累積和だけ計算しておく
-	Square sq;
-	gen_piece_pos: // 駒位置生成ポイントを表すステートメントラベル
-	sq = sq_table[pb.rand()]; // 香の位置を確定させる
-	if (cross00StepEffectBB[e_king] & confirm_promote & sq) { // この位置だと香でも成香でも合法にならない
-		++goto_count; // 想定ではここには来ないはずなんだが……
-		goto gen_piece_pos; // 条件を満たさなかったので駒位置生成からやり直す
-	}
+	Square sq = sq_table[pb.accumu_rand()]; // 香の位置を確定させる
 	occupied |= sq; // occupiedにorしていく
 	const bool is_promote = is_promoted_rand(sq, promoto_p) // 成り判定
 		&& !(e_king_bit & GoldEffectBB[sq][my_c]); // 金の利きに入るなら王手になるので除く
@@ -527,10 +518,6 @@ void end_game_mate(Position& pos_) {
 	set_knight(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 桂の配置
 	pos_.update_bitboards();
 };
-
-void plot_stat() { // 統計情報の表示
-	std::cout << "goto: " << goto_count << "回" << std::endl;
-}
 
 // -----------------------------------------------------------------
 // ここからテスト用の関数

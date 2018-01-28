@@ -16,9 +16,9 @@ void user_test(Position& pos_, istringstream& is)
 	CFileTime cTimeStart, cTimeEnd;
 	CFileTimeSpan cTimeSpan;
 	cTimeStart = CFileTime::GetCurrentTime();           // 現在時刻
-	const int loop_num = 100;
+	const int loop_num = 100000000;
 	for (auto i = 0; i < loop_num; ++i) {
-		//end_game_mate(pos_);
+		end_game_mate(pos_);
 	}
 	cTimeEnd = CFileTime::GetCurrentTime();           // 現在時刻
 	cTimeSpan = cTimeEnd - cTimeStart;
@@ -26,12 +26,7 @@ void user_test(Position& pos_, istringstream& is)
 	if (cTimeSpan.GetTimeSpan() * 0.0001 > 0.000000001) {
 		std::cout << "処理速度:" << loop_num / (cTimeSpan.GetTimeSpan() * 0.0001) << "[sfen/ms]" << std::endl;
 	}
-	test_main();
-	test_stat();
-	double a, b;
-	infar_rating(2610, 1500, 251, a, b, true, 0.99, true);
-	sim_battle(100000, 300, 0.6);
-	sim_battle_gacha(1000000, 1000, 100, 0.6);
+	myrand.cout();
 }
 
 #ifdef USER_ENGINE

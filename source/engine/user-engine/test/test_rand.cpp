@@ -8,7 +8,7 @@ constexpr bool debug_info_accumu_rand = false;
 constexpr bool debug_info_accumu_rand_avx512 = false;
 constexpr bool debug_info_is_promoted_rand = false;
 constexpr double permit_randomness = 0.05;
-constexpr u64 random_number_per_test = 160000000;
+constexpr u64 random_number_per_test = 16000000;
 
 void test_rand_main() {
 	std::cout << "乱数のテストを行います" << std::endl;
@@ -16,7 +16,9 @@ void test_rand_main() {
 	test_uniform();
 	test_piece_existence_rand();
 	test_accumu_rand();
+#ifdef AVX512
 	test_accumu_rand_avx512();
+#endif
 	test_is_promoted_rand();
 };
 
@@ -141,20 +143,20 @@ void test_accumu_rand() {
 	}
 }
 
+#ifdef AVX512
 // PBoard乱数のテスト (AVX512)
 void test_accumu_rand_avx512() {
-#ifdef AVX512
 	std::cout << "test_accumu_rand (AVX512)" << std::endl;
 	IntBoard2 p_intboard({
-		40, 20, 10, 20, 80, 150, 100, 420, 380,
-		10, 10, 10, 20, 50, 150, 100, 350, 250,
+		0, 0, 10, 20, 80, 150, 100, 420, 0,
+		0, 10, 10, 20, 50, 150, 100, 350, 250,
 		10, 10, 10, 10, 40, 60, 70, 180, 80,
 		5, 32, 28, 10, 10, 10, 28, 100, 5,
 		5, 32, 28, 10, 10, 10, 28, 100, 5,
 		10, 80, 120, 80, 160, 80, 160, 240, 10,
 		1, 1, 120, 40, 50, 40, 100, 50, 2,
 		2, 10, 50, 80, 110, 150, 100, 820, 250,
-		5, 10, 10, 20, 20, 20, 30, 250, 100
+		5, 10, 10, 20, 20, 20, 30, 250, 0
 	});
 	IntBoard2 accumu;
 	IntBoard count = IntBoard_ZERO;
@@ -191,8 +193,12 @@ void test_accumu_rand_avx512() {
 			std::cout << "期待値: " << expect[i] << ", 結果: " << result[i] << std::endl;
 		}
 	}
-#endif
+	if (expect[0] != 0 || expect[1] != 0 || expect[8] != 0 || expect[9] != 0 || expect[80] != 0) {
+		std::cout << "0のマスが出力されました" << std::endl;
+		++error_count;
+	}
 }
+#endif
 
 // is_promoted_randのテスト
 void test_is_promoted_rand() {

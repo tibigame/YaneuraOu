@@ -1,6 +1,8 @@
 ﻿#ifndef _USERENGINE_TEST_H_
 #define _USERENGINE_TEST_H_
 
+#include "../random_board.h"
+
 // この関数を他のファイルから呼んでください
 void test_main();
 
@@ -34,6 +36,8 @@ void test__accumu2();
 void assert__accumu2(const IntBoard2 &base_board, const IntBoard2 &accumu_board, const IntBoard2 &expect);
 void test_bitboard_to_intboard2();
 void assert_bitboard_to_intboard2(const Bitboard &bit_board, const IntBoard2 &expect);
+void test_set_lance();
+void assert_set_lance(const PBoard &pb, const Square &e_king, const Color e_c, const Bitboard confirm_promote);
 #endif
 
 #endif _USERENGINE_TEST_H_

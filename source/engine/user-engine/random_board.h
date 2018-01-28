@@ -42,7 +42,6 @@ public:
 };
 
 void end_game_mate(Position& pos_);
-void plot_stat();
 
 // テスト用の関数
 void sq_test(); // sq列をBitBoardに変換してIntBoardに戻すテスト

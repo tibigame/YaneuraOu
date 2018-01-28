@@ -290,11 +290,11 @@ int __accumu_rand(IntBoard2& base_board, IntBoard2& accumu) {
 	// sumが求まるので乱数の剰余を求める
 	// SIMDで比較を行い、累積和を超えるインデックスを導出
 	__m512i r0 = _mm512_set1_epi32(myrand.rand_m(accumu.p[80]));
-	__mmask16 cmp0 = _mm512_cmplt_epi32_mask(in0, r0);
-	__mmask16 cmp1 = _mm512_cmplt_epi32_mask(in1, r0);
-	__mmask16 cmp2 = _mm512_cmplt_epi32_mask(in2, r0);
-	__mmask16 cmp3 = _mm512_cmplt_epi32_mask(in3, r0);
-	__mmask16 cmp4 = _mm512_cmplt_epi32_mask(in4, r0);
+	__mmask16 cmp0 = _mm512_cmple_epi32_mask(in0, r0);
+	__mmask16 cmp1 = _mm512_cmple_epi32_mask(in1, r0);
+	__mmask16 cmp2 = _mm512_cmple_epi32_mask(in2, r0);
+	__mmask16 cmp3 = _mm512_cmple_epi32_mask(in3, r0);
+	__mmask16 cmp4 = _mm512_cmple_epi32_mask(in4, r0);
 	return __popcnt16(_mm512_mask2int(cmp0)) + __popcnt16(_mm512_mask2int(cmp1))
 		+ __popcnt16(_mm512_mask2int(cmp2)) + __popcnt16(_mm512_mask2int(cmp3)) + __popcnt16(_mm512_mask2int(cmp4));
 };
@@ -303,11 +303,11 @@ int __accumu_rand(IntBoard2& base_board, IntBoard2& accumu) {
 int __rand(IntBoard2& base_board, IntBoard2& accumu) {
 	// SIMDで比較を行い、累積和を超えるインデックスを導出
 	__m512i r0 = _mm512_set1_epi32(myrand.rand_m(accumu.p[80]));
-	__mmask16 cmp0 = _mm512_cmplt_epi32_mask(accumu.m[0], r0);
-	__mmask16 cmp1 = _mm512_cmplt_epi32_mask(accumu.m[1], r0);
-	__mmask16 cmp2 = _mm512_cmplt_epi32_mask(accumu.m[2], r0);
-	__mmask16 cmp3 = _mm512_cmplt_epi32_mask(accumu.m[3], r0);
-	__mmask16 cmp4 = _mm512_cmplt_epi32_mask(accumu.m[4], r0);
+	__mmask16 cmp0 = _mm512_cmple_epi32_mask(accumu.m[0], r0);
+	__mmask16 cmp1 = _mm512_cmple_epi32_mask(accumu.m[1], r0);
+	__mmask16 cmp2 = _mm512_cmple_epi32_mask(accumu.m[2], r0);
+	__mmask16 cmp3 = _mm512_cmple_epi32_mask(accumu.m[3], r0);
+	__mmask16 cmp4 = _mm512_cmple_epi32_mask(accumu.m[4], r0);
 	return __popcnt16(_mm512_mask2int(cmp0)) + __popcnt16(_mm512_mask2int(cmp1))
 		+ __popcnt16(_mm512_mask2int(cmp2)) + __popcnt16(_mm512_mask2int(cmp3)) + __popcnt16(_mm512_mask2int(cmp4));
 };
