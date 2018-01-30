@@ -348,7 +348,7 @@ const IntBoard b_lance_l_p_intboard = {
 	520, 7, 6, 6, 6, 6, 6, 6, 6,
 	600, 6, 6, 6, 6, 6, 6, 6, 6,
 	1200, 7, 7, 7, 7, 7, 7, 7, 7,
-	4800, 10, 10, 10, 10, 10, 10, 10, 10,
+	2000, 10, 10, 10, 10, 10, 10, 10, 10,
 	9600, 20, 20, 20, 20, 20, 20, 20, 1
 };
 const IntBoard b_lance_r_p_intboard = reverse(b_lance_l_p_intboard);
@@ -412,7 +412,7 @@ void set_lance(Position& pos_, const Square &b_king, const Square &w_king,
 	PieceExistence b_lance_r_pos = piece_existence_rand(400, 30, 100, 100); // 先手の右香だった駒を収束
 	PieceExistence w_lance_l_pos = piece_existence_rand(400, 30, 100, 100); // 後手の左香だった駒を収束
 	PieceExistence w_lance_r_pos = piece_existence_rand(400, 30, 100, 100); // 後手の右香だった駒を収束
-	PBoard pb; // set_bishop_coreに渡すのはconstではないので作業用の変数
+	PBoard pb; // set_lance_coreに渡すのはconstではないので作業用の変数
 	// 先手の左香だった駒を配置する
 	switch (b_lance_l_pos) {
 		// 手駒に配置する
@@ -498,11 +498,554 @@ void set_lance(Position& pos_, const Square &b_king, const Square &w_king,
 // -----------------------------------
 //     桂の配置確率を定義する
 // -----------------------------------
+// 基本の確率テーブル
+const IntBoard b_knight_l_p_intboard = {
+	20,  40, 40, 40, 40, 20, 20, 10, 5,
+	60, 80, 40, 40, 40, 20, 20, 10, 5,
+	220, 80, 380, 120, 380, 120, 90, 70, 20,
+	10, 60, 70, 60, 60, 60, 70, 60, 10,
+	6, 800, 40, 600, 40, 6, 6, 6, 6,
+	6, 6, 6, 6, 6, 6, 6, 6, 6,
+	1200, 7, 4800, 7, 7, 7, 7, 7, 7,
+	2, 6, 6, 10, 10, 10, 10, 2, 2,
+	2, 9600, 15, 15, 15, 15, 15, 2, 2
+};
+const IntBoard b_knight_r_p_intboard = reverse(b_knight_l_p_intboard);
+// 元が相手の駒の時の確率テーブル
+const IntBoard b_knight_captured_p_intboard = {
+	10, 25, 40, 40, 40, 40, 40, 25, 10,
+	50, 80, 100, 120, 120, 120, 100, 80, 50,
+	80, 150, 150, 250, 320, 250, 150, 150, 80,
+	120, 220, 340, 380, 400, 380, 340, 220, 120,
+	100, 250, 300, 300, 400, 300, 300, 250, 100,
+	20, 80, 80, 80, 80, 80, 80, 80, 20,
+	10, 10, 10, 10, 10, 10, 10, 10, 10,
+	5, 10, 30, 30, 30, 30, 30, 10, 5,
+	5, 40, 30, 30, 30, 30, 30, 40, 5
+};
+// 成りの確率
+constexpr PromoteP b_knight_promote_p = { 1.0, 1.0, 0.8, 0.3, 0.05, 0.001, 0.0001, 0.00001, 0.000005 };
+constexpr PromoteP w_knight_promote_p = reverse(b_knight_promote_p);
+
+const PBoard b_knight_l_p(b_knight_l_p_intboard);
+const PBoard b_knight_r_p(b_knight_r_p_intboard);
+const PBoard b_knight_captured_p(b_knight_captured_p_intboard);
+const IntBoard w_knight_l_p_intboard = reverse_123(b_knight_l_p_intboard);
+const IntBoard w_knight_r_p_intboard = reverse(w_knight_l_p_intboard);
+const IntBoard w_knight_captured_p_intboard = reverse_123(b_knight_captured_p_intboard);
+const PBoard w_knight_l_p(w_knight_l_p_intboard);
+const PBoard w_knight_r_p(w_knight_r_p_intboard);
+const PBoard w_knight_captured_p(w_knight_captured_p_intboard);
+// 桂を配置するコア関数
+// pb: 確率テーブル, e_king: 相手玉のSquare, e_king_bit: 相手玉のBitboard, occupied: 配置済みのBitboard
+// set_piece: 配置する駒, set_piece_promote: 配置する成駒, promoto_p: 成り確率,
+// my_c: 自玉の手番, e_c: 相手玉の手番, confirm_promote: 確定成りになるBitboard (1行目か9行目)
+void set_knight_core(
+	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Bitboard &occupied,
+	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p,
+	const Color my_c, const Color e_c, const Bitboard confirm_promote) {
+	Bitboard exclude_knight = ( // ケイマの位置を除外するBitboard (後段で非合法を除くときに不自然にならないように)
+		confirm_promote & e_king // 2段目までに相手玉がいるか
+		) ? ZERO_BB : KnightEffectBB[e_king][e_c]; // 自分の桂が5段目以下で王手になる位置で成桂の確率は低いので……
+#ifdef AVX512
+	// 特定条件でのケイマの位置と配置済みの位置と非合法な位置を除く
+	pb.ninp(bitboard_to_intboard2(exclude_knight | occupied | (GoldEffectBB[e_king][e_c] & confirm_promote)));
+#else
+	// 特定条件でのケイマの位置と配置済みの位置と非合法な位置を除く
+	pb.ninp(bitboard_to_intboard(exclude_knight | occupied | (GoldEffectBB[e_king][e_c] & confirm_promote)));
+#endif
+	Square sq = sq_table[pb.accumu_rand()]; // 桂の位置を確定させる
+	occupied |= sq; // occupiedにorしていく
+	bool is_promote = is_promoted_rand(sq, promoto_p) // 成り判定
+		&& !(e_king_bit & GoldEffectBB[sq][my_c]); // 金の利きに入るなら王手になるので除く
+	if (e_king_bit & KnightEffectBB[sq][e_c]) { is_promote = true; } // 桂の利きに入るなら成桂にする
+	pos_.put_piece(sq, is_promote ? set_piece_promote : set_piece // 成桂か桂を配置する
+	);
+}
 
 // 桂を配置します
 void set_knight(Position& pos_, const Square &b_king, const Square &w_king,
-	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied, CheckList &checklist) {
+	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied) {
+	PieceExistence b_knight_l_pos = BitRight & b_king_bit ? 
+		piece_existence_rand(50, 200, 200, 450) : piece_existence_rand(450, 50, 100, 100); // 先手の左桂だった駒を収束
+	PieceExistence b_knight_r_pos = BitRight & b_king_bit ?
+		piece_existence_rand(450, 50, 100, 100) : piece_existence_rand(50, 200, 200, 450); // 先手の右桂だった駒を収束
+	PieceExistence w_knight_l_pos = BitLeft & w_king_bit ?
+		piece_existence_rand(200, 50, 450, 200) : piece_existence_rand(50, 450, 100, 100); // 後手の左桂だった駒を収束
+	PieceExistence w_knight_r_pos = BitLeft & w_king_bit ?
+		piece_existence_rand(50, 450, 100, 100) : piece_existence_rand(200, 50, 450, 200); // 後手の右桂だった駒を収束
+	PBoard pb; // set_knight_coreに渡すのはconstではないので作業用の変数
+	// 先手の左桂だった駒を配置する
+	switch (b_knight_l_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], KNIGHT); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], KNIGHT); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = b_knight_l_p;
+			set_knight_core(pos_, pb, w_king, w_king_bit, occupied, B_KNIGHT, B_PRO_KNIGHT, b_knight_promote_p,
+				BLACK, WHITE, BitKnightPromoteBlack);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = w_knight_captured_p;
+			set_knight_core(pos_, pb, b_king, b_king_bit, occupied, W_KNIGHT, W_PRO_KNIGHT, w_knight_promote_p,
+				WHITE, BLACK, BitKnightPromoteWhite);
+			break;
+		}
+	}
+	// 先手の右桂だった駒を配置する
+	switch (b_knight_r_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], KNIGHT); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], KNIGHT); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = b_knight_r_p;
+			set_knight_core(pos_, pb, w_king, w_king_bit, occupied, B_KNIGHT, B_PRO_KNIGHT, b_knight_promote_p,
+				BLACK, WHITE, BitKnightPromoteBlack);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = w_knight_captured_p;
+			set_knight_core(pos_, pb, b_king, b_king_bit, occupied, W_KNIGHT, W_PRO_KNIGHT, w_knight_promote_p,
+				WHITE, BLACK, BitKnightPromoteWhite);
+			break;
+		}
+	}
+	// 後手の左桂だった駒を配置する
+	switch (b_knight_l_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], KNIGHT); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], KNIGHT); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = w_knight_l_p;
+			set_knight_core(pos_, pb, b_king, b_king_bit, occupied, W_KNIGHT, W_PRO_KNIGHT, w_knight_promote_p,
+				WHITE, BLACK, BitKnightPromoteWhite);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = b_knight_captured_p;
+			set_knight_core(pos_, pb, w_king, w_king_bit, occupied, B_KNIGHT, B_PRO_KNIGHT, b_knight_promote_p,
+				BLACK, WHITE, BitKnightPromoteBlack);
+			break;
+		}
+	}
+	// 後手の右桂だった駒を配置する
+	switch (w_knight_r_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], KNIGHT); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], KNIGHT); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = w_knight_r_p;
+			set_knight_core(pos_, pb, b_king, b_king_bit, occupied, W_KNIGHT, W_PRO_KNIGHT, w_knight_promote_p,
+				WHITE, BLACK, BitKnightPromoteWhite);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = b_knight_captured_p;
+			set_knight_core(pos_, pb, w_king, w_king_bit, occupied, B_KNIGHT, B_PRO_KNIGHT, b_knight_promote_p,
+				BLACK, WHITE, BitKnightPromoteBlack);
+			break;
+		}
+	}
 };
+
+// -----------------------------------
+//     銀の配置確率を定義する
+// -----------------------------------
+// 基本の確率テーブル
+const IntBoard b_silver_l_p_intboard = {
+	20, 50, 100, 100, 100, 100, 100, 50, 20,
+	10, 50, 100, 100, 100, 100, 100, 50, 10,
+	10, 50, 100, 100, 100, 100, 100, 50, 10,
+	20, 50, 100, 100, 100, 100, 100, 50, 20,
+	50, 100, 100, 150, 200, 150, 120, 50, 50,
+	100, 320, 300, 280, 200, 100, 50, 40, 20,
+	150, 400, 480, 380, 200, 35, 60, 15, 7,
+	30, 450, 280, 200, 200, 20, 10, 10, 5,
+	20, 120, 450, 120, 60, 6, 4, 4, 3
+};
+const IntBoard b_silver_r_p_intboard = {
+	20, 50, 100, 100, 100, 100, 100, 50, 10,
+	10, 50, 100, 100, 100, 100, 100, 50, 20,
+	10, 50, 100, 100, 100, 100, 100, 50, 30,
+	10, 40, 100, 100, 100, 100, 100, 50, 20,
+	10, 20, 100, 150, 200, 150, 120, 70, 50,
+	5, 10, 100, 180, 380, 150, 150, 80, 8,
+	3, 80, 100, 50, 250, 280, 200, 150, 7,
+	2, 50, 80, 150, 10, 350, 400, 80, 5,
+	1, 5, 120, 50, 100, 1, 450, 1, 4
+};
+const IntBoard b_silver_l_king_r_p_intboard = {
+	10, 20, 70, 100, 100, 100, 80, 50, 20,
+	10, 20, 70, 100, 100, 100, 80, 50, 10,
+	10, 40, 70, 100, 100, 100, 80, 50, 10,
+	5, 50, 100, 100, 100, 100, 100, 50, 20,
+	10, 100, 150, 150, 200, 140, 80, 30, 10,
+	10, 150, 200, 280, 280, 100, 50, 20, 10,
+	30, 100, 250, 380, 200, 120, 80, 60, 7,
+	5, 80, 280, 200, 100, 120, 100, 80, 1,
+	5, 5, 450, 10, 60, 10, 120, 1, 1
+};
+const IntBoard b_silver_r_king_r_p_intboard = {
+	10, 20, 70, 100, 100, 100, 100, 80, 20,
+	10, 20, 70, 100, 100, 100, 100, 80, 10,
+	10, 40, 70, 100, 100, 100, 100, 80, 10,
+	5, 50, 100, 100, 100, 100, 100, 100, 20,
+	10, 100, 100, 120, 200, 140, 100, 100, 10,
+	10, 40, 70, 100, 100, 120, 120, 160, 30,
+	2, 10, 70, 100, 100, 100, 220, 320, 40,
+	1, 5, 10, 80, 100, 230, 450, 450, 10,
+	1, 2, 5, 10, 50, 10, 450, 30, 10
+};
+// 元が相手の駒の時の確率テーブル
+const IntBoard b_silver_captured_p_intboard = {
+	40, 100, 150, 320, 320, 320, 150, 100, 40,
+	40, 100, 150, 320, 320, 320, 150, 100, 40,
+	40, 100, 150, 320, 320, 320, 150, 100, 40,
+	20, 80, 80, 80, 80, 80, 80, 80, 20,
+	20, 80, 80, 80, 80, 80, 80, 80, 20,
+	20, 80, 80, 80, 80, 80, 80, 80, 20,
+	30, 50, 100, 80, 80, 80, 100, 50, 30,
+	30, 50, 100, 100, 100, 100, 100, 50, 30,
+	30, 50, 100, 100, 100, 100, 100, 50, 30,
+};
+// 成りの確率
+constexpr PromoteP b_silver_promote_p = { 0.3, 0.5, 0.7, 0.3, 0.05, 0.002, 0.0002, 0.00001, 0.000005 };
+constexpr PromoteP w_silver_promote_p = reverse(b_silver_promote_p);
+
+const PBoard b_silver_l_p(b_silver_l_p_intboard);
+const PBoard b_silver_r_p(b_silver_r_p_intboard);
+const PBoard b_silver_l_king_r_p(b_silver_l_king_r_p_intboard);
+const PBoard b_silver_r_king_r_p(b_silver_r_king_r_p_intboard);
+const PBoard b_silver_captured_p(b_silver_captured_p_intboard);
+const IntBoard w_silver_l_p_intboard = reverse_123(b_silver_l_p_intboard);
+const IntBoard w_silver_r_p_intboard = reverse_123(b_silver_r_p_intboard);
+const IntBoard w_silver_l_king_r_p_intboard = reverse_123(b_silver_r_king_r_p_intboard);
+const IntBoard w_silver_r_king_r_p_intboard = reverse_123(b_silver_r_king_r_p_intboard);
+const IntBoard w_silver_captured_p_intboard = reverse_123(b_silver_captured_p_intboard);
+const PBoard w_silver_l_p(w_silver_l_p_intboard);
+const PBoard w_silver_r_p(w_silver_r_p_intboard);
+const PBoard w_silver_l_king_r_p(w_silver_l_king_r_p_intboard);
+const PBoard w_silver_r_king_r_p(w_silver_r_king_r_p_intboard);
+const PBoard w_silver_captured_p(w_silver_captured_p_intboard);
+// 銀を配置するコア関数
+// pb: 確率テーブル, e_king: 相手玉のSquare, e_king_bit: 相手玉のBitboard, occupied: 配置済みのBitboard
+// set_piece: 配置する駒, set_piece_promote: 配置する成駒, promoto_p: 成り確率,
+// my_c: 自玉の手番, e_c: 相手玉の手番
+void set_silver_core(
+	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Bitboard &occupied,
+	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p,
+	const Color my_c, const Color e_c) {
+#ifdef AVX512
+	// 配置済みの位置と非合法な位置を除く
+	pb.ninp(bitboard_to_intboard2(occupied | (GoldEffectBB[e_king][e_c] & SilverEffectBB[e_king][e_c])));
+#else
+	// 配置済みの位置と非合法な位置を除く
+	pb.ninp(bitboard_to_intboard(occupied | (GoldEffectBB[e_king][e_c] & SilverEffectBB[e_king][e_c])));
+#endif
+	Square sq = sq_table[pb.accumu_rand()]; // 銀の位置を確定させる
+	occupied |= sq; // occupiedにorしていく
+	bool is_promote = is_promoted_rand(sq, promoto_p) // 成り判定
+		&& !(e_king_bit & GoldEffectBB[sq][my_c]); // 金の利きに入るなら王手になるので除く
+	if (e_king_bit & SilverEffectBB[sq][my_c]) { is_promote = true; } // 銀の利きに入るなら成銀にする
+	pos_.put_piece(sq, is_promote ? set_piece_promote : set_piece // 成銀か銀を配置する
+	);
+}
+
+// 銀を配置します
+void set_silver(Position& pos_, const Square &b_king, const Square &w_king,
+	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied) {
+	PieceExistence b_silver_l_pos = BitRight & b_king_bit ?
+		piece_existence_rand(40, 100, 200, 450) : piece_existence_rand(450, 50, 100, 100); // 先手の左銀だった駒を収束
+	PieceExistence b_silver_r_pos = BitRight & b_king_bit ?
+		piece_existence_rand(450, 50, 100, 100) : piece_existence_rand(50, 50, 200, 450); // 先手の右銀だった駒を収束
+	PieceExistence w_silver_l_pos = BitLeft & w_king_bit ?
+		piece_existence_rand(100, 40, 450, 200) : piece_existence_rand(50, 450, 100, 100); // 後手の左銀だった駒を収束
+	PieceExistence w_silver_r_pos = BitLeft & w_king_bit ?
+		piece_existence_rand(50, 450, 100, 100) : piece_existence_rand(50, 50, 450, 200); // 後手の右銀だった駒を収束
+	PBoard pb; // set_silver_coreに渡すのはconstではないので作業用の変数
+	// 先手の左銀だった駒を配置する
+	switch (b_silver_l_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], SILVER); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], SILVER); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = BitRight & b_king_bit ? b_silver_l_king_r_p : b_silver_l_p;
+			set_silver_core(pos_, pb, w_king, w_king_bit, occupied, B_SILVER, B_PRO_SILVER, b_silver_promote_p,
+				BLACK, WHITE);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = w_silver_captured_p;
+			set_silver_core(pos_, pb, b_king, b_king_bit, occupied, W_SILVER, W_PRO_SILVER, w_silver_promote_p,
+				WHITE, BLACK);
+			break;
+		}
+	}
+	// 先手の右銀だった駒を配置する
+	switch (b_silver_r_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], SILVER); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], SILVER); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = BitRight & b_king_bit ? b_silver_r_king_r_p : b_silver_r_p;
+			set_silver_core(pos_, pb, w_king, w_king_bit, occupied, B_SILVER, B_PRO_SILVER, b_silver_promote_p,
+				BLACK, WHITE);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = w_silver_captured_p;
+			set_silver_core(pos_, pb, b_king, b_king_bit, occupied, W_SILVER, W_PRO_SILVER, w_silver_promote_p,
+				WHITE, BLACK);
+			break;
+		}
+	}
+	// 後手の左銀だった駒を配置する
+	switch (b_silver_l_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], SILVER); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], SILVER); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = BitLeft & w_king_bit ? w_silver_l_king_r_p : w_silver_l_p;
+			set_silver_core(pos_, pb, b_king, b_king_bit, occupied, W_SILVER, W_PRO_SILVER, w_silver_promote_p,
+				WHITE, BLACK);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = b_silver_captured_p;
+			set_silver_core(pos_, pb, w_king, w_king_bit, occupied, B_SILVER, B_PRO_SILVER, b_silver_promote_p,
+				BLACK, WHITE);
+			break;
+		}
+	}
+	// 後手の右銀だった駒を配置する
+	switch (w_silver_r_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], SILVER); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], SILVER); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = BitLeft & w_king_bit ? w_silver_r_king_r_p : w_silver_r_p;
+			set_silver_core(pos_, pb, b_king, b_king_bit, occupied, W_SILVER, W_PRO_SILVER, w_silver_promote_p,
+				WHITE, BLACK);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = b_silver_captured_p;
+			set_silver_core(pos_, pb, w_king, w_king_bit, occupied, B_SILVER, B_PRO_SILVER, b_silver_promote_p,
+				BLACK, WHITE);
+			break;
+		}
+	}
+}
+
+// -----------------------------------
+//    金の配置確率を定義する
+// -----------------------------------
+// 基本の確率テーブル
+const IntBoard b_gold_l_p_intboard = {
+	5, 20, 70, 80, 80, 80, 70, 50, 5,
+	10, 50, 150, 150, 150, 150, 150, 50, 10,
+	10, 50, 150, 150, 150, 150, 150, 50, 10,
+	20, 50, 150, 150, 150, 150, 150, 50, 10,
+	50, 100, 100, 150, 200, 150, 120, 50, 50,
+	80, 150, 300, 280, 200, 100, 50, 40, 20,
+	80, 180, 320, 400, 200, 35, 60, 15, 7,
+	30, 300, 450, 200, 200, 20, 10, 10, 5,
+	20, 100, 300, 450, 100, 6, 4, 4, 3
+};
+const IntBoard b_gold_r_p_intboard = {
+	5, 20, 70, 80, 80, 80, 70, 50, 5,
+	10, 50, 150, 150, 150, 150, 150, 50, 10,
+	10, 50, 150, 150, 150, 150, 150, 50, 10,
+	10, 50, 150, 150, 150, 150, 150, 50, 20,
+	10, 20, 100, 150, 200, 150, 120, 70, 50,
+	5, 10, 100, 180, 380, 150, 150, 80, 8,
+	3, 80, 100, 280, 250, 280, 200, 80, 7,
+	2, 50, 80, 200, 450, 350, 400, 80, 5,
+	1, 5, 120, 100, 100, 450, 80, 20, 4
+};
+const IntBoard b_gold_l_king_r_p_intboard = {
+	5, 10, 50, 70, 80, 80, 70, 10, 5,
+	10, 20, 150, 150, 150, 150, 150, 50, 10,
+	10, 40, 150, 150, 150, 150, 150, 50, 10,
+	5, 50, 150, 150, 150, 150, 150, 50, 20,
+	10, 50, 150, 150, 200, 140, 80, 30, 10,
+	10, 50, 150, 280, 280, 100, 50, 20, 10,
+	30, 40, 180, 380, 200, 120, 80, 60, 7,
+	5, 60, 320, 200, 300, 180, 120, 80, 1,
+	1, 5, 100, 450, 200, 180, 120, 5, 1
+};
+const IntBoard b_gold_r_king_r_p_intboard = {
+	5, 10, 50, 70, 80, 80, 70, 10, 5,
+	10, 20, 70, 150, 150, 150, 80, 50, 10,
+	10, 40, 70, 150, 150, 150, 80, 50, 10,
+	5, 50, 100, 100, 100, 100, 100, 100, 20,
+	10, 100, 100, 120, 200, 140, 100, 100, 10,
+	10, 40, 70, 100, 100, 120, 120, 160, 30,
+	2, 10, 70, 100, 100, 100, 220, 320, 40,
+	1, 5, 10, 80, 100, 230, 450, 450, 10,
+	1, 2, 5, 10, 100, 450, 300, 30, 10
+};
+// 元が相手の駒の時の確率テーブル
+const IntBoard b_gold_captured_p_intboard = {
+	5, 30, 50, 60, 70, 60, 50, 30, 5,
+	10, 80, 150, 150, 150, 150, 150, 80, 10,
+	10, 100, 150, 200, 200, 200, 150, 100, 10,
+	10, 100, 150, 200, 200, 200, 150, 100, 10,
+	10,100, 150, 200, 200, 200, 150, 100, 10,
+	10, 80, 80, 80, 80, 80, 80, 80, 10,
+	10, 50, 100, 80, 80, 80, 100, 50, 10,
+	10, 50, 100, 100, 100, 100, 100, 50, 10,
+	5, 20, 100, 100, 100, 100, 100, 20, 5,
+};
+
+const PBoard b_gold_l_p(b_gold_l_p_intboard);
+const PBoard b_gold_r_p(b_gold_r_p_intboard);
+const PBoard b_gold_l_king_r_p(b_gold_l_king_r_p_intboard);
+const PBoard b_gold_r_king_r_p(b_gold_r_king_r_p_intboard);
+const PBoard b_gold_captured_p(b_gold_captured_p_intboard);
+const IntBoard w_gold_l_p_intboard = reverse_123(b_gold_l_p_intboard);
+const IntBoard w_gold_r_p_intboard = reverse_123(b_gold_r_p_intboard);
+const IntBoard w_gold_l_king_r_p_intboard = reverse_123(b_gold_r_king_r_p_intboard);
+const IntBoard w_gold_r_king_r_p_intboard = reverse_123(b_gold_r_king_r_p_intboard);
+const IntBoard w_gold_captured_p_intboard = reverse_123(b_gold_captured_p_intboard);
+const PBoard w_gold_l_p(w_gold_l_p_intboard);
+const PBoard w_gold_r_p(w_gold_r_p_intboard);
+const PBoard w_gold_l_king_r_p(w_gold_l_king_r_p_intboard);
+const PBoard w_gold_r_king_r_p(w_gold_r_king_r_p_intboard);
+const PBoard w_gold_captured_p(w_gold_captured_p_intboard);
+// 金を配置するコア関数
+// pb: 確率テーブル, e_king: 相手玉のSquare, e_king_bit: 相手玉のBitboard, occupied: 配置済みのBitboard
+// set_piece: 配置する駒, my_c: 自玉の手番, e_c: 相手玉の手番
+void set_gold_core(
+	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Bitboard &occupied,
+	const Piece &set_piece, const Color my_c, const Color e_c) {
+#ifdef AVX512
+	pb.ninp(bitboard_to_intboard2(occupied | GoldEffectBB[e_king][e_c])); // 配置済みの位置と非合法な位置を除く
+#else
+	pb.ninp(bitboard_to_intboard(occupied | GoldEffectBB[e_king][e_c])); // 配置済みの位置と非合法な位置を除く
+#endif
+	Square sq = sq_table[pb.accumu_rand()]; // 金の位置を確定させる
+	occupied |= sq; // occupiedにorしていく
+	pos_.put_piece(sq, set_piece);
+}
+
+// 金を配置します
+void set_gold(Position& pos_, const Square &b_king, const Square &w_king,
+	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied) {
+	PieceExistence b_gold_l_pos = BitRight & b_king_bit ?
+		piece_existence_rand(40, 100, 200, 450) : piece_existence_rand(450, 50, 80, 80); // 先手の左金だった駒を収束
+	PieceExistence b_gold_r_pos = BitRight & b_king_bit ?
+		piece_existence_rand(450, 50, 100, 100) : piece_existence_rand(100, 60, 100, 150); // 先手の右金だった駒を収束
+	PieceExistence w_gold_l_pos = BitLeft & w_king_bit ?
+		piece_existence_rand(100, 40, 450, 200) : piece_existence_rand(50, 450, 80, 80); // 後手の左金だった駒を収束
+	PieceExistence w_gold_r_pos = BitLeft & w_king_bit ?
+		piece_existence_rand(50, 450, 100, 100) : piece_existence_rand(60, 100, 150, 100); // 後手の右金だった駒を収束
+	PBoard pb; // set_gold_coreに渡すのはconstではないので作業用の変数
+	// 先手の左金だった駒を配置する
+	switch (b_gold_l_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], GOLD); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], GOLD); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = BitRight & b_king_bit ? b_gold_l_king_r_p : b_gold_l_p;
+			set_gold_core(pos_, pb, w_king, w_king_bit, occupied, B_GOLD, BLACK, WHITE);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = w_gold_captured_p;
+			set_gold_core(pos_, pb, b_king, b_king_bit, occupied, W_GOLD, WHITE, BLACK);
+			break;
+		}
+	}
+	// 先手の右金だった駒を配置する
+	switch (b_gold_r_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], GOLD); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], GOLD); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = BitRight & b_king_bit ? b_gold_r_king_r_p : b_gold_r_p;
+			set_gold_core(pos_, pb, w_king, w_king_bit, occupied, B_GOLD, BLACK, WHITE);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = w_gold_captured_p;
+			set_gold_core(pos_, pb, b_king, b_king_bit, occupied, W_GOLD, WHITE, BLACK);
+			break;
+		}
+	}
+	// 後手の左金だった駒を配置する
+	switch (b_gold_l_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], GOLD); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], GOLD); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = BitLeft & w_king_bit ? w_gold_l_king_r_p : w_gold_l_p;
+			set_gold_core(pos_, pb, b_king, b_king_bit, occupied, W_GOLD, WHITE, BLACK);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = b_gold_captured_p;
+			set_gold_core(pos_, pb, w_king, w_king_bit, occupied, B_GOLD, BLACK, WHITE);
+			break;
+		}
+	}
+	// 後手の右金だった駒を配置する
+	switch (w_gold_r_pos) {
+		// 手駒に配置する
+		case PieceExistence::B_Hand: add_hand(pos_.hand[BLACK], GOLD); break;
+		case PieceExistence::W_Hand: add_hand(pos_.hand[WHITE], GOLD); break;
+		// 盤上の自分の駒として配置する
+		case PieceExistence::B_Board: {
+			pb = BitLeft & w_king_bit ? w_gold_r_king_r_p : w_gold_r_p;
+			set_gold_core(pos_, pb, b_king, b_king_bit, occupied, W_GOLD, WHITE, BLACK);
+			break;
+		}
+		// 盤上の相手の駒として配置する
+		case PieceExistence::W_Board: {
+			pb = b_gold_captured_p;
+			set_gold_core(pos_, pb, w_king, w_king_bit, occupied, B_GOLD, BLACK, WHITE);
+			break;
+		}
+	}
+}
+
+// 飛び道具の利きによる王手の再チェックを行います
+void recheck() {
+};
+
+// -----------------------------------
+//     歩の配置確率を定義する
+// -----------------------------------
+
+// 歩を配置します
+void set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
+	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied) {
+	recheck(); // 歩によって帳尻を合わせます
+	std::cout << pos_ << std::endl;
+}
 
 void end_game_mate(Position& pos_) {
 	pos_.set_blank(); // 空の盤面で初期化する
@@ -515,8 +1058,15 @@ void end_game_mate(Position& pos_) {
 	set_rook(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 飛車の配置
 	set_bishop(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 角の配置
 	set_lance(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 香の配置
-	set_knight(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 桂の配置
+	set_knight(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied); // 桂の配置
+	set_silver(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied); // 銀の配置
+	set_gold(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied); // 金の配置
+	set_pawn(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied); // 歩の配置
 	pos_.update_bitboards();
+	//std::cout << dragonEffect(sq_b_king, rookStepEffect(sq_w_king)) << std::endl;
+	//std::cout << pos_.sfen() << std::endl;
+	//std::cout << pos_ << std::endl;
+	//std::cout << bitboard_to_intboard(LanceStepEffectBB[sq_w_king][WHITE]) << std::endl;
 };
 
 // -----------------------------------------------------------------
