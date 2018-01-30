@@ -33,21 +33,10 @@ std::ostream& operator<<(std::ostream& os, const PieceExistence& pe) {
 std::ostream& operator<<(std::ostream& os, const RecheckReason& rr) {
 	switch (rr) {
 	case RecheckReason::None: os << "確認不要"; break;
-	case RecheckReason::B_ROOK: os << "先手の飛車"; break;
-	case RecheckReason::W_ROOK: os << "後手の飛車"; break;
-	case RecheckReason::B_BISHOP: os << "先手の角"; break;
-	case RecheckReason::W_BISHOP: os << "後手の角"; break;
-	case RecheckReason::B_LANCE: os << "先手の香"; break;
-	case RecheckReason::W_LANCE: os << "後手の香"; break;
-	}
-	return os;
-};
-
-std::ostream& operator<<(std::ostream& os, const CheckList& cl) {
-	for (auto i = 0; i<9; ++i) {
-		if (cl.check_item[i].reason != RecheckReason::None) {
-			std::cout << cl.check_item[0].sq << ": " << cl.check_item[0].reason;
-		}
+	case RecheckReason::LANCE: os << "香"; break;
+	case RecheckReason::ROOK: os << "飛"; break;
+	case RecheckReason::BISHOP: os << "角"; break;
+	case RecheckReason::CLEAR: os << "確認OK"; break;
 	}
 	return os;
 };
@@ -58,8 +47,46 @@ CheckList::CheckList() {
 CheckList::~CheckList() {
 }
 
-void CheckList::add(const Square &sq, const RecheckReason &reason) {
-	check_item[index].sq = sq;
-	check_item[index].reason = reason;
-	++index;
-}
+void CheckList::add(const Color c, const RecheckReason &reason, const Bitboard b) {
+	switch (reason) {
+		case RecheckReason::LANCE: {
+			if (check_item_lance[(int)c].commit == ZERO_BB) { // 未代入
+				check_item_lance[(int)c].commit = b;
+			}
+			else {
+				check_item_lance[(int)c].commit &= b; // ZERO_BBにはならない
+			}
+			break; 
+		}
+		case RecheckReason::ROOK: {
+			Bitboard pre = check_item_rook[0].commit;
+			if (pre == ZERO_BB) { // 未代入
+				check_item_rook[0].commit = b;
+				check_item_rook[0].color = c;
+			}
+			else if (pre & b & (check_item_rook[0].color == c)) { // 共通部分がある
+				check_item_rook[0].commit &= b; // 同じ利きのライン
+			}
+			else { // 共通部分がない
+				check_item_rook[1].commit = b; // 別の利きのライン
+				check_item_rook[1].color = c;
+			}
+			break;
+		}
+		case RecheckReason::BISHOP: {
+			Bitboard pre = check_item_bishop[0].commit;
+			if (pre == ZERO_BB) { // 未代入
+				check_item_bishop[0].commit = b;
+				check_item_bishop[0].color = c;
+			}
+			else if (pre & b & (check_item_bishop[0].color == c)) { // 共通部分がある
+				check_item_bishop[0].commit &= b; // 同じ利きのライン
+			}
+			else { // 共通部分がない
+				check_item_bishop[1].commit = b; // 別の利きのライン
+				check_item_bishop[1].color = c;
+			}
+			break;
+		}
+	}
+};

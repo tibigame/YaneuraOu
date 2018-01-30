@@ -62,31 +62,33 @@ constexpr int rank_index_table[82] = {
 enum class RecheckReason
 {
 	None = 0, // 確認不要
-	B_ROOK, // 先手の飛車
-	W_ROOK, // 後手の飛車
-	B_BISHOP, // 先手の角
-	W_BISHOP, // 後手の角
-	B_LANCE, // 先手の香
-	W_LANCE // 後手の香
+	LANCE, // 香
+	ROOK, // 飛車 (香の利きを除く)
+	BISHOP, // 角
+	CLEAR // 確認OK
 };
 std::ostream& operator<<(std::ostream& os, const RecheckReason& rr);
 
 // 盤面再チェック用の項目を表す構造体
 struct CheckItem {
-	Square sq = SQ_NB;
-	RecheckReason reason = RecheckReason::None;
+	Color color; // commitに置かないと王手がかかる方の手番
+	Bitboard commit = ZERO_BB;; // 何らかの駒を置く必要のあるマス
 };
 // 盤面再チェック用のリストを管理するクラス
 // write onceで使い捨てです
 // 走査する時はcheck_itemをNoneでないまでループしてください。
 class CheckList {
 public:
-	CheckItem check_item[9]; // 飛2角2香4+NULL用の9個
+	CheckItem check_item_rook[2]; // 飛2
+	CheckItem check_item_bishop[2]; // 角2
+	CheckItem check_item_lance[2]; // 香先後
 	int index = 0;
+	Bitboard commit_black = ZERO_BB; // Blackの全てのcommitのor
+	Bitboard commit_white = ZERO_BB; // Whiteの全てのcommitのor
+
 	CheckList();
 	~CheckList();
-	void add(const Square &sq, const RecheckReason &reason);
-	friend std::ostream& operator<<(std::ostream& os, const CheckList& cl);
+	void add(const Color c, const RecheckReason &reason, const Bitboard b);
 };
 
 #endif _EXBOARD_H_

@@ -162,13 +162,12 @@ const PBoard w_rook_p(w_rook_p_intboard);
 const PBoard w_rook_right_king_p(w_rook_right_king_p_intboard);
 const PBoard w_rook_captured_p(w_rook_captured_p_intboard);
 // 飛車を配置するコア関数
-// pb: 確率テーブル, e_king: 相手玉のSquare, e_king_bit: 相手玉のBitboard, occupied: 配置済みのBitboard
+// pb: 確率テーブル, e_king: 相手玉のSquare, e_king_bit: 相手玉のBitboard, e_c: 相手の手番, my_c: 自分の手番, occupied: 配置済みのBitboard
 // set_piece: 配置する駒, set_piece_promote: 配置する成駒, promoto_p: 成り確率,
-// checklist: 再チェックリスト, reason: 再チェックの理由
+// checklist: 再チェックリスト
 void set_rook_core(
-	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Bitboard &occupied,
-	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p,
-	CheckList &checklist, const RecheckReason &reason) {
+	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Color e_c, Color my_c, Bitboard &occupied,
+	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p, CheckList &checklist) {
 #ifdef AVX512
 	pb.ninp(bitboard_to_intboard2(cross00StepEffectBB[e_king] | occupied)); // 相手玉十字隣接と配置済みの位置を除く
 #else
@@ -182,7 +181,14 @@ void set_rook_core(
 		? set_piece_promote : set_piece // 龍か飛車を配置する
 	);
 	if (RookStepEffectBB[sq] & e_king_bit) { // 相手玉が飛車の利きにあるか
-		checklist.add(sq, reason); // 再チェックリストに入れる
+		Bitboard lance_bitboard = LanceStepEffectBB[e_king][e_c] & LanceStepEffectBB[sq][my_c]; // 香車の位置
+		// 再チェックリストに入れる
+		if (lance_bitboard) {
+			checklist.add(e_c, RecheckReason::LANCE, lance_bitboard); // 香と同一視する
+		}
+		else {
+			checklist.add(e_c, RecheckReason::ROOK, between_bb(e_king, sq));
+		}
 	}
 }
 
@@ -200,13 +206,13 @@ void set_rook(Position& pos_, const Square &b_king, const Square &w_king,
 		// 盤上の自分の駒として配置する
 		case PieceExistence::B_Board: {
 			pb = BitRight & b_king_bit ? b_rook_right_king_p : b_rook_p; // 先手玉が右かどうかで確率分岐
-			set_rook_core(pos_, pb, w_king, w_king_bit, occupied, B_ROOK, B_DRAGON, b_rook_promote_p, checklist, RecheckReason::B_ROOK);
+			set_rook_core(pos_, pb, w_king, w_king_bit, WHITE, BLACK, occupied, B_ROOK, B_DRAGON, b_rook_promote_p, checklist);
 			break;
 		}
 		// 盤上の相手の駒として配置する
 		case PieceExistence::W_Board: {
 			pb = w_rook_captured_p;
-			set_rook_core(pos_, pb, b_king, b_king_bit, occupied, W_ROOK, W_DRAGON, w_rook_promote_p, checklist, RecheckReason::W_ROOK);
+			set_rook_core(pos_, pb, b_king, b_king_bit, BLACK, WHITE, occupied, W_ROOK, W_DRAGON, w_rook_promote_p, checklist);
 			break;
 		}
 	}
@@ -218,13 +224,13 @@ void set_rook(Position& pos_, const Square &b_king, const Square &w_king,
 		// 盤上の自分の駒として配置する
 		case PieceExistence::W_Board: {
 			pb = BitLeft & w_king_bit ? w_rook_right_king_p : w_rook_p; // 後手玉が(後手から見て)右かどうかで確率分岐
-			set_rook_core(pos_, pb, b_king, b_king_bit, occupied, W_ROOK, W_DRAGON, w_rook_promote_p, checklist, RecheckReason::W_ROOK);
+			set_rook_core(pos_, pb, b_king, b_king_bit, BLACK, WHITE, occupied, W_ROOK, W_DRAGON, w_rook_promote_p, checklist);
 			break;
 		}
 		// 盤上の相手の駒として配置する
 		case PieceExistence::B_Board: {
 			pb = b_rook_captured_p;
-			set_rook_core(pos_, pb, w_king, w_king_bit, occupied, B_ROOK, B_DRAGON, b_rook_promote_p, checklist, RecheckReason::B_ROOK);
+			set_rook_core(pos_, pb, w_king, w_king_bit, WHITE, BLACK, occupied, B_ROOK, B_DRAGON, b_rook_promote_p, checklist);
 			break;
 		}
 	}
@@ -268,13 +274,11 @@ const IntBoard w_bishop_captured_p_intboard = reverse_123(b_bishop_captured_p_in
 const PBoard w_bishop_p(w_bishop_p_intboard);
 const PBoard w_bishop_captured_p(w_bishop_captured_p_intboard);
 // 角を配置するコア関数
-// pb: 確率テーブル, e_king: 相手玉のSquare, e_king_bit: 相手玉のBitboard, occupied: 配置済みのBitboard
-// set_piece: 配置する駒, set_piece_promote: 配置する成駒, promoto_p: 成り確率,
-// checklist: 再チェックリスト, reason: 再チェックの理由
+// pb: 確率テーブル, e_king: 相手玉のSquare, e_king_bit: 相手玉のBitboard, e_c: 相手の手番, my_c: 自分の手番, occupied: 配置済みのBitboard
+// set_piece: 配置する駒, set_piece_promote: 配置する成駒, promoto_p: 成り確率, checklist: 再チェックリスト
 void set_bishop_core(
-	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Bitboard &occupied,
-	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p,
-	CheckList &checklist, const RecheckReason &reason) {
+	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Color e_c, Color my_c, Bitboard &occupied,
+	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p, CheckList &checklist) {
 #ifdef AVX512
 	pb.ninp(bitboard_to_intboard2(cross45StepEffectBB[e_king] | occupied)); // 相手玉斜め隣接と配置済みの位置を除く
 #else
@@ -288,7 +292,7 @@ void set_bishop_core(
 		? set_piece_promote : set_piece // 馬か角を配置する
 	);
 	if (BishopStepEffectBB[sq] & e_king_bit) { // 相手玉が角の利きにあるか
-		checklist.add(sq, reason); // 再チェックリストに入れる
+		checklist.add(e_c, RecheckReason::BISHOP, between_bb(e_king, sq)); // 再チェックリストに入れる
 	}
 }
 
@@ -306,13 +310,13 @@ void set_bishop(Position& pos_, const Square &b_king, const Square &w_king,
 		// 盤上の自分の駒として配置する
 		case PieceExistence::B_Board: {
 			pb = b_bishop_p;
-			set_bishop_core(pos_, pb, w_king, w_king_bit, occupied, B_BISHOP, B_HORSE, b_bishop_promote_p, checklist, RecheckReason::B_BISHOP);
+			set_bishop_core(pos_, pb, w_king, w_king_bit, WHITE, BLACK, occupied, B_BISHOP, B_HORSE, b_bishop_promote_p, checklist);
 			break;
 	}
 		// 盤上の相手の駒として配置する
 		case PieceExistence::W_Board: {
 			pb = w_bishop_captured_p;
-			set_bishop_core(pos_, pb, b_king, b_king_bit, occupied, W_BISHOP, W_HORSE, w_bishop_promote_p, checklist, RecheckReason::W_BISHOP);
+			set_bishop_core(pos_, pb, b_king, b_king_bit, BLACK, WHITE, occupied, W_BISHOP, W_HORSE, w_bishop_promote_p, checklist);
 			break;
 		}
 	}
@@ -324,13 +328,13 @@ void set_bishop(Position& pos_, const Square &b_king, const Square &w_king,
 		// 盤上の自分の駒として配置する
 		case PieceExistence::W_Board: {
 			pb = w_bishop_p;
-			set_bishop_core(pos_, pb, b_king, b_king_bit, occupied, W_BISHOP, W_HORSE, w_bishop_promote_p, checklist, RecheckReason::W_BISHOP);
+			set_bishop_core(pos_, pb, b_king, b_king_bit, BLACK, WHITE, occupied, W_BISHOP, W_HORSE, w_bishop_promote_p, checklist);
 			break;
 		}
 		// 盤上の相手の駒として配置する
 		case PieceExistence::B_Board: {
 			pb = b_bishop_captured_p;
-			set_bishop_core(pos_, pb, w_king, w_king_bit, occupied, B_BISHOP, B_HORSE, b_bishop_promote_p, checklist, RecheckReason::B_BISHOP);
+			set_bishop_core(pos_, pb, w_king, w_king_bit, WHITE, BLACK, occupied, B_BISHOP, B_HORSE, b_bishop_promote_p, checklist);
 			break;
 		}
 	}
@@ -380,13 +384,12 @@ const PBoard w_lance_captured_p(w_lance_captured_p_intboard);
 // 香を配置するコア関数
 // pb: 確率テーブル, e_king: 相手玉のSquare, e_king_bit: 相手玉のBitboard, occupied: 配置済みのBitboard
 // set_piece: 配置する駒, set_piece_promote: 配置する成駒, promoto_p: 成り確率,
-// checklist: 再チェックリスト, reason: 再チェックの理由,
-// my_c: 自玉の手番, e_c: 相手玉の手番, confirm_promote: 確定成りになるBitboard (1行目か9行目)
+// checklist: 再チェックリスト, my_c: 自玉の手番, e_c: 相手玉の手番,
+// confirm_promote: 確定成りになるBitboard (1行目か9行目)
 void set_lance_core(
 	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Bitboard &occupied,
 	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p,
-	CheckList &checklist, const RecheckReason &reason,
-	const Color my_c, const Color e_c, const Bitboard confirm_promote) {
+	CheckList &checklist, const Color my_c, const Color e_c, const Bitboard confirm_promote) {
 #ifdef AVX512
 	// 相手玉前と配置済みの位置と非合法な位置を除く
 	pb.ninp(bitboard_to_intboard2(PawnEffectBB[e_king][e_c] | occupied | (cross00StepEffectBB[e_king] & confirm_promote)));
@@ -401,11 +404,11 @@ void set_lance_core(
 	pos_.put_piece(sq, is_promote ? set_piece_promote : set_piece // 成香か香を配置する
 	);
 	if (!is_promote && (LanceStepEffectBB[sq][my_c] & e_king_bit)) { // 相手玉が香の利きにあるか
-		checklist.add(sq, reason); // 再チェックリストに入れる
+		checklist.add(e_c, RecheckReason::LANCE, LanceStepEffectBB[e_king][e_c] & LanceStepEffectBB[sq][my_c]);
 	}
 }
 
-// 香を配置します
+// 香を配置しますBitboard lance_bitboard = LanceStepEffectBB[e_king][e_c] & LanceStepEffectBB[sq][my_c]; // 香車の位置
 void set_lance(Position& pos_, const Square &b_king, const Square &w_king,
 	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied, CheckList &checklist) {
 	PieceExistence b_lance_l_pos = piece_existence_rand(400, 30, 100, 100); // 先手の左香だった駒を収束
@@ -421,14 +424,14 @@ void set_lance(Position& pos_, const Square &b_king, const Square &w_king,
 		// 盤上の自分の駒として配置する
 		case PieceExistence::B_Board: {
 			pb = b_lance_l_p;
-			set_lance_core(pos_, pb, w_king, w_king_bit, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p, checklist, RecheckReason::B_LANCE,
+			set_lance_core(pos_, pb, w_king, w_king_bit, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p, checklist,
 				BLACK, WHITE, BitLancePromoteBlack);
 			break;
 		}
 		// 盤上の相手の駒として配置する
 		case PieceExistence::W_Board: {
 			pb = w_lance_captured_p;
-			set_lance_core(pos_, pb, b_king, b_king_bit, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p, checklist, RecheckReason::W_LANCE,
+			set_lance_core(pos_, pb, b_king, b_king_bit, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p, checklist,
 				WHITE, BLACK, BitLancePromoteWhite);
 			break;
 		}
@@ -441,14 +444,14 @@ void set_lance(Position& pos_, const Square &b_king, const Square &w_king,
 		// 盤上の自分の駒として配置する
 		case PieceExistence::B_Board: {
 			pb = b_lance_r_p;
-			set_lance_core(pos_, pb, w_king, w_king_bit, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p, checklist, RecheckReason::B_LANCE,
+			set_lance_core(pos_, pb, w_king, w_king_bit, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p, checklist,
 				BLACK, WHITE, BitLancePromoteBlack);
 			break;
 		}
 		// 盤上の相手の駒として配置する
 		case PieceExistence::W_Board: {
 			pb = w_lance_captured_p;
-			set_lance_core(pos_, pb, b_king, b_king_bit, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p, checklist, RecheckReason::W_LANCE,
+			set_lance_core(pos_, pb, b_king, b_king_bit, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p, checklist,
 				WHITE, BLACK, BitLancePromoteWhite);
 			break;
 		}
@@ -461,14 +464,14 @@ void set_lance(Position& pos_, const Square &b_king, const Square &w_king,
 		// 盤上の自分の駒として配置する
 		case PieceExistence::B_Board: {
 			pb = w_lance_l_p;
-			set_lance_core(pos_, pb, b_king, b_king_bit, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p, checklist, RecheckReason::W_LANCE,
+			set_lance_core(pos_, pb, b_king, b_king_bit, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p, checklist,
 				WHITE, BLACK, BitLancePromoteWhite);
 			break;
 		}
 		// 盤上の相手の駒として配置する
 		case PieceExistence::W_Board: {
 			pb = b_lance_captured_p;
-			set_lance_core(pos_, pb, w_king, w_king_bit, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p, checklist, RecheckReason::B_LANCE,
+			set_lance_core(pos_, pb, w_king, w_king_bit, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p, checklist,
 				BLACK, WHITE, BitLancePromoteBlack);
 			break;
 		}
@@ -481,14 +484,14 @@ void set_lance(Position& pos_, const Square &b_king, const Square &w_king,
 		// 盤上の自分の駒として配置する
 		case PieceExistence::B_Board: {
 			pb = w_lance_r_p;
-			set_lance_core(pos_, pb, b_king, b_king_bit, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p, checklist, RecheckReason::W_LANCE,
+			set_lance_core(pos_, pb, b_king, b_king_bit, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p, checklist,
 				WHITE, BLACK, BitLancePromoteWhite);
 			break;
 		}
 		// 盤上の相手の駒として配置する
 		case PieceExistence::W_Board: {
 			pb = b_lance_captured_p;
-			set_lance_core(pos_, pb, w_king, w_king_bit, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p, checklist, RecheckReason::B_LANCE,
+			set_lance_core(pos_, pb, w_king, w_king_bit, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p, checklist,
 				BLACK, WHITE, BitLancePromoteBlack);
 			break;
 		}
@@ -1032,8 +1035,69 @@ void set_gold(Position& pos_, const Square &b_king, const Square &w_king,
 	}
 }
 
+u64 cnt = 0;
+
+
 // 飛び道具の利きによる王手の再チェックを行います
-void recheck() {
+void recheck(CheckList &checklist, Bitboard &occupied) {
+	if (checklist.check_item_lance[0].commit) {
+		if (checklist.check_item_lance[0].commit & occupied) { // クリア
+
+		}
+		else {
+			++cnt;
+			return;
+		}
+		if (checklist.check_item_lance[1].commit) {
+			if (checklist.check_item_lance[1].commit & occupied) { // クリア
+
+			}
+			else {
+				++cnt;
+				return;
+			}
+		}
+	}
+	if (checklist.check_item_rook[0].commit) {
+		if (checklist.check_item_rook[0].commit & occupied) { // クリア
+
+		}
+		else {
+			++cnt;
+			return;
+		}
+		if (checklist.check_item_rook[1].commit) {
+			if (checklist.check_item_rook[1].commit & occupied) { // クリア
+
+			}
+			else {
+				++cnt;
+				return;
+			}
+		}
+	}
+	if (checklist.check_item_bishop[0].commit) {
+		if (checklist.check_item_bishop[0].commit & occupied) { // クリア
+
+		}
+		else {
+			++cnt;
+			return;
+		}
+		if (checklist.check_item_bishop[1].commit) {
+			if (checklist.check_item_bishop[1].commit & occupied) { // クリア
+
+			}
+			else {
+				++cnt;
+				return;
+			}
+		}
+	}
+};
+
+void view() {
+	std::cout << "再チェック回数: " << cnt << std::endl;
 };
 
 // -----------------------------------
@@ -1042,9 +1106,8 @@ void recheck() {
 
 // 歩を配置します
 void set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
-	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied) {
-	recheck(); // 歩によって帳尻を合わせます
-	std::cout << pos_ << std::endl;
+	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied, CheckList &checklist) {
+	recheck(checklist, occupied); // 歩によって帳尻を合わせます
 }
 
 void end_game_mate(Position& pos_) {
@@ -1061,12 +1124,8 @@ void end_game_mate(Position& pos_) {
 	set_knight(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied); // 桂の配置
 	set_silver(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied); // 銀の配置
 	set_gold(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied); // 金の配置
-	set_pawn(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied); // 歩の配置
+	set_pawn(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 歩の配置
 	pos_.update_bitboards();
-	//std::cout << dragonEffect(sq_b_king, rookStepEffect(sq_w_king)) << std::endl;
-	//std::cout << pos_.sfen() << std::endl;
-	//std::cout << pos_ << std::endl;
-	//std::cout << bitboard_to_intboard(LanceStepEffectBB[sq_w_king][WHITE]) << std::endl;
 };
 
 // -----------------------------------------------------------------
