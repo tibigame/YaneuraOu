@@ -75,8 +75,6 @@ struct CheckItem {
 	Bitboard commit = ZERO_BB;; // 何らかの駒を置く必要のあるマス
 };
 // 盤面再チェック用のリストを管理するクラス
-// write onceで使い捨てです
-// 走査する時はcheck_itemをNoneでないまでループしてください。
 class CheckList {
 public:
 	CheckItem check_item_rook[2]; // 飛2

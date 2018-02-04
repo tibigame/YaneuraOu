@@ -16,7 +16,7 @@ void user_test(Position& pos_, istringstream& is)
 	CFileTime cTimeStart, cTimeEnd;
 	CFileTimeSpan cTimeSpan;
 	cTimeStart = CFileTime::GetCurrentTime();           // 現在時刻
-	const int loop_num = 100000000;
+	const int loop_num = 10000000;
 	for (auto i = 0; i < loop_num; ++i) {
 		end_game_mate(pos_);
 	}
@@ -27,6 +27,7 @@ void user_test(Position& pos_, istringstream& is)
 		std::cout << "処理速度:" << loop_num / (cTimeSpan.GetTimeSpan() * 0.0001) << "[sfen/ms]" << std::endl;
 	}
 	myrand.cout();
+	view();
 }
 
 #ifdef USER_ENGINE

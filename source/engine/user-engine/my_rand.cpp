@@ -51,6 +51,14 @@ uint32_t MyRand::rand_m(const uint32_t mod) {
 	return (uint64_t)rand() * (uint64_t)mod >> 32;
 };
 
+constexpr uint32_t rand_b_constexpr(double p) {
+	return static_cast<uint32_t>(p * UINT_MAX);
+};
+// キャッシュした乱数を1つ取り出し、確率pでtrueを返す
+bool MyRand::rand_b(double p) {
+	return rand() <= rand_b_constexpr(p);
+};
+
 // 使用した乱数の数を返します
 uint64_t MyRand::get_rand_count() {
 	return gen_count * CACHE_RAND_NUMBER - counter;

@@ -109,6 +109,46 @@ Square set_w_king(Position& pos_, const Square& b_king) {
 	return sq;
 };
 
+bool null_bool; // temp用の場所 (ここに書いた情報は捨てられる)
+// 駒を配置するコア関数 (配置に失敗するとfalseを返す)
+// sq: 配置する駒の位置, occupied: 配置済みのBitboard
+// set_piece: 配置する駒, set_piece_promote: 配置する成駒, promoto_p: 成り確率,
+// not_check: 不成で王手にならない, not_check_promote: 成りで王手にならない, add_judge: 追加の判定 (二歩や2段目の桂など)
+inline bool set_piece_core(
+	Position& pos_, const Square sq, Bitboard &occupied,
+	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p,
+	const bool not_check, const bool not_check_promote, const bool add_judge, bool &not_promote = null_bool) {
+	if (is_promoted_rand(sq, promoto_p)) { // 成り→不成の順で判定
+		if (not_check_promote) { // 成りで王手にならない
+			pos_.put_piece(sq, set_piece_promote); // 成りを配置する
+			occupied |= sq; // occupiedにorしていく
+			not_promote = false;
+			return true;
+		}
+		if (not_check && add_judge) { // 不成で王手にならない & 追加の判定 (二歩や2段目の桂など)
+			pos_.put_piece(sq, set_piece); // 不成を配置する
+			occupied |= sq; // occupiedにorしていく
+			not_promote = true;
+			return true;
+		}
+	}
+	else { // 不成→成りの順で判定
+		if (not_check && add_judge) { // 不成で王手にならない & 追加の判定 (二歩や2段目の桂など)
+			pos_.put_piece(sq, set_piece); // 不成を配置する
+			occupied |= sq; // occupiedにorしていく
+			not_promote = true;
+			return true;
+		}
+		if (not_check_promote) { // 成りで王手にならない
+			pos_.put_piece(sq, set_piece_promote); // 成りを配置する
+			occupied |= sq; // occupiedにorしていく
+			not_promote = false;
+			return true;
+		}
+	}
+	return false; // 合法な位置に配置できなかった
+}
+
 // -----------------------------------
 //     飛車の配置確率を定義する
 // -----------------------------------
@@ -174,12 +214,15 @@ void set_rook_core(
 	pb.ninp(bitboard_to_intboard(cross00StepEffectBB[e_king] | occupied)); // 相手玉十字隣接と配置済みの位置を除く
 #endif
 	Square sq = sq_table[pb.accumu_rand()]; // 飛車の位置を確定させる
+	set_piece_core(pos_, sq, occupied, set_piece, set_piece_promote, promoto_p, true, !(cross45StepEffectBB[e_king] & sq), true);
+	/*
 	occupied |= sq; // occupiedにorしていく
 	pos_.put_piece(sq,
 		is_promoted_rand(sq, promoto_p) // 成り判定
 		&& !(cross45StepEffectBB[e_king] & sq) // 斜め隣接なら王手になるので除く
 		? set_piece_promote : set_piece // 龍か飛車を配置する
 	);
+	*/
 	if (RookStepEffectBB[sq] & e_king_bit) { // 相手玉が飛車の利きにあるか
 		Bitboard lance_bitboard = LanceStepEffectBB[e_king][e_c] & LanceStepEffectBB[sq][my_c]; // 香車の位置
 		// 再チェックリストに入れる
@@ -285,12 +328,15 @@ void set_bishop_core(
 	pb.ninp(bitboard_to_intboard(cross45StepEffectBB[e_king] | occupied)); // 相手玉斜め隣接と配置済みの位置を除く
 #endif
 	Square sq = sq_table[pb.accumu_rand()]; // 角の位置を確定させる
+	set_piece_core(pos_, sq, occupied, set_piece, set_piece_promote, promoto_p, true, !(cross00StepEffectBB[e_king] & sq), true);
+	/*
 	occupied |= sq; // occupiedにorしていく
 	pos_.put_piece(sq,
-		is_promoted_rand(sq, promoto_p) // 成り判定
-		&& !(cross00StepEffectBB[e_king] & sq) // 十字隣接なら王手になるので除く
-		? set_piece_promote : set_piece // 馬か角を配置する
+	is_promoted_rand(sq, promoto_p) // 成り判定
+	&& !(cross00StepEffectBB[e_king] & sq) // 十字隣接なら王手になるので除く
+	? set_piece_promote : set_piece // 馬か角を配置する
 	);
+	*/
 	if (BishopStepEffectBB[sq] & e_king_bit) { // 相手玉が角の利きにあるか
 		checklist.add(e_c, RecheckReason::BISHOP, between_bb(e_king, sq)); // 再チェックリストに入れる
 	}
@@ -398,13 +444,16 @@ void set_lance_core(
 	pb.ninp(bitboard_to_intboard(PawnEffectBB[e_king][e_c] | occupied | (cross00StepEffectBB[e_king] & confirm_promote)));
 #endif
 	Square sq = sq_table[pb.accumu_rand()]; // 香の位置を確定させる
+	const bool not_promote = set_piece_core(pos_, sq, occupied, set_piece, set_piece_promote, promoto_p, true, !(e_king_bit & GoldEffectBB[sq][my_c]), true);
+	/*
 	occupied |= sq; // occupiedにorしていく
 	const bool is_promote = is_promoted_rand(sq, promoto_p) // 成り判定
 		&& !(e_king_bit & GoldEffectBB[sq][my_c]); // 金の利きに入るなら王手になるので除く
 	pos_.put_piece(sq, is_promote ? set_piece_promote : set_piece // 成香か香を配置する
 	);
-	if (!is_promote && (LanceStepEffectBB[sq][my_c] & e_king_bit)) { // 相手玉が香の利きにあるか
-		checklist.add(e_c, RecheckReason::LANCE, LanceStepEffectBB[e_king][e_c] & LanceStepEffectBB[sq][my_c]);
+	*/
+	if (not_promote && (LanceStepEffectBB[sq][my_c] & e_king_bit)) { // 相手玉が香の利きにあるか
+		checklist.add(my_c, RecheckReason::LANCE, LanceStepEffectBB[e_king][e_c] & LanceStepEffectBB[sq][my_c]);
 	}
 }
 
@@ -558,12 +607,15 @@ void set_knight_core(
 	pb.ninp(bitboard_to_intboard(exclude_knight | occupied | (GoldEffectBB[e_king][e_c] & confirm_promote)));
 #endif
 	Square sq = sq_table[pb.accumu_rand()]; // 桂の位置を確定させる
+	set_piece_core(pos_, sq, occupied, set_piece, set_piece_promote, promoto_p,
+		!(e_king_bit & KnightEffectBB[sq][e_c]), !(e_king_bit & GoldEffectBB[sq][my_c]), true);
+	/*
 	occupied |= sq; // occupiedにorしていく
 	bool is_promote = is_promoted_rand(sq, promoto_p) // 成り判定
-		&& !(e_king_bit & GoldEffectBB[sq][my_c]); // 金の利きに入るなら王手になるので除く
+	&& !(e_king_bit & GoldEffectBB[sq][my_c]); // 金の利きに入るなら王手になるので除く
 	if (e_king_bit & KnightEffectBB[sq][e_c]) { is_promote = true; } // 桂の利きに入るなら成桂にする
-	pos_.put_piece(sq, is_promote ? set_piece_promote : set_piece // 成桂か桂を配置する
-	);
+	pos_.put_piece(sq, is_promote ? set_piece_promote : set_piece); // 成桂か桂を配置する
+	*/
 }
 
 // 桂を配置します
@@ -755,12 +807,15 @@ void set_silver_core(
 	pb.ninp(bitboard_to_intboard(occupied | (GoldEffectBB[e_king][e_c] & SilverEffectBB[e_king][e_c])));
 #endif
 	Square sq = sq_table[pb.accumu_rand()]; // 銀の位置を確定させる
+	set_piece_core(pos_, sq, occupied, set_piece, set_piece_promote, promoto_p,
+		!(e_king_bit & SilverEffectBB[sq][my_c]), !(e_king_bit & GoldEffectBB[sq][my_c]), true);
+	/*
 	occupied |= sq; // occupiedにorしていく
 	bool is_promote = is_promoted_rand(sq, promoto_p) // 成り判定
 		&& !(e_king_bit & GoldEffectBB[sq][my_c]); // 金の利きに入るなら王手になるので除く
 	if (e_king_bit & SilverEffectBB[sq][my_c]) { is_promote = true; } // 銀の利きに入るなら成銀にする
-	pos_.put_piece(sq, is_promote ? set_piece_promote : set_piece // 成銀か銀を配置する
-	);
+	pos_.put_piece(sq, is_promote ? set_piece_promote : set_piece); // 成銀か銀を配置する
+	*/
 }
 
 // 銀を配置します
@@ -917,6 +972,8 @@ const IntBoard b_gold_captured_p_intboard = {
 	10, 50, 100, 100, 100, 100, 100, 50, 10,
 	5, 20, 100, 100, 100, 100, 100, 20, 5,
 };
+constexpr PromoteP b_gold_promote_p = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+constexpr PromoteP w_gold_promote_p = reverse(b_gold_promote_p);
 
 const PBoard b_gold_l_p(b_gold_l_p_intboard);
 const PBoard b_gold_r_p(b_gold_r_p_intboard);
@@ -1035,82 +1092,471 @@ void set_gold(Position& pos_, const Square &b_king, const Square &w_king,
 	}
 }
 
+// -----------------------------------
+//     歩の配置確率を定義する
+// -----------------------------------
+// 基本の確率テーブル
+const IntBoard b_pawn_p_intboard = {
+	200, 200, 200, 200, 200, 200, 200, 200, 200,
+	300, 300, 200, 200, 200, 200, 200, 300, 300,
+	600, 500, 400, 400, 400, 400, 400, 500, 600,
+	800, 600, 600, 600, 600, 600, 600, 600, 800,
+	800, 800, 800, 800, 800, 800, 800, 800, 800,
+	800, 800, 1000, 800, 800, 800, 800, 1000, 800,
+	800, 1000, 400, 1000, 1000, 1000, 1000, 500, 800,
+	30, 30, 30, 30, 30, 30, 30, 30, 30,
+	30, 30, 30, 30, 30, 30, 30, 30, 30
+};
+const IntBoard w_pawn_p_intboard = reverse(b_pawn_p_intboard);
+const PBoard b_pawn_p(b_pawn_p_intboard);
+const PBoard w_pawn_p(w_pawn_p_intboard);
+
+// 成りの確率
+constexpr PromoteP b_pawn_promote_p = { 1.0, 0.9, 0.7, 0.3, 0.02, 0.001, 0.0003, 0.0001, 0.00003 };
+constexpr PromoteP w_pawn_promote_p = reverse(b_pawn_promote_p);
 u64 cnt = 0;
 
+// コクのある歩の乱数
+void pawn_distribution(int &b_pawn, int &w_pawn, int &b_board, int &w_board) {
+	int tolal_hands_pawns = 0;
+	for (auto i = 0; i < 18; ++i) { // 持ち歩の合計を二項分布で求める
+		if (myrand.rand_b(0.38)) { ++tolal_hands_pawns; }
+	}
+	if (myrand.rand_b(0.5)) { // 先後どちらが持ち歩が多いかの判定
+		for (auto i = 0; i < tolal_hands_pawns; ++i) { // 多い方が確率多めの二項分布
+			if (myrand.rand_b(0.67)) { ++b_pawn; }
+		}
+		w_pawn = tolal_hands_pawns - b_pawn;
+	}
+	else {
+		for (auto i = 0; i < tolal_hands_pawns; ++i) {
+			if (myrand.rand_b(0.67)) { ++w_pawn; }
+		}
+		b_pawn = tolal_hands_pawns - w_pawn;
+	}
+	int tolal_board_pawns = 18 - tolal_hands_pawns;
+	for (auto i = 0; i < tolal_board_pawns; ++i) { // 盤上の歩の二項分布
+		if (myrand.rand_b(0.5)) { ++b_board; }
+	}
+	w_board = tolal_board_pawns - b_board;
+	// std::cout << "b_board: " << b_board << ", w_board: " << w_board << ", b_pawn: " << b_pawn << ", w_pawn:" << w_pawn << std::endl;
+};
+
+// 適当に合い駒を発生させて王手を回避する (先手が王手をかけられている)
+// pos_: 盤面, sq: 駒を打つ場所,
+// b_king_bit: 先手玉の位置, w_king_bit: 後手玉の位置, occupied: 既に置かれているマス
+// b_enable_set_pawn: 先手の歩の置けるFILE, w_enable_set_pawn: 後手の歩の置けるFILE
+bool _aigoma_b(Position& pos_, const Square sq,
+	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied, int &b_enable_set_pawn, int &w_enable_set_pawn) {
+	bool not_double_pawn_b = (b_enable_set_pawn & (1 << file_index_table[sq])) && hand_exists(pos_.hand[0], PAWN); // 二歩でない+歩を持っている
+	bool not_double_pawn_w = (w_enable_set_pawn & (1 << file_index_table[sq])) && hand_exists(pos_.hand[1], PAWN); // 二歩でない+歩を持っている
+	bool not_promote;
+	// 一定確率で歩の合い駒を発生させる
+	if (not_double_pawn_b && myrand.rand_b(0.8)) { // 二歩判定を上段で入れる
+		if (set_piece_core(pos_, sq, occupied, B_PAWN, B_PRO_PAWN, b_pawn_promote_p,
+			w_king_bit & PawnEffectBB[sq][BLACK], !(w_king_bit & GoldEffectBB[sq][BLACK]), (~BitLancePromoteBlack) & sq, not_promote)){
+			if (not_promote) {
+				b_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
+			}
+			sub_hand(pos_.hand[0], PAWN);
+			return true;
+		}
+	};
+	if (not_double_pawn_w && myrand.rand_b(0.4)) { // 二歩判定を上段で入れる
+		if (set_piece_core(pos_, sq, occupied, W_PAWN, W_PRO_PAWN, w_pawn_promote_p,
+			b_king_bit & PawnEffectBB[sq][WHITE],!(b_king_bit & GoldEffectBB[sq][WHITE]), (~BitLancePromoteWhite) & sq, not_promote)) {
+			if (not_promote) {
+				w_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
+			}
+			sub_hand(pos_.hand[1], PAWN);
+			return true;
+		}
+	};
+	double select_p = not_double_pawn_b ? 0.4 : 0.8; // 先手が歩を打てない条件なら配置確率を上げる
+	// 香、桂、銀、金の順で合い駒を試みる
+	if (hand_exists(pos_.hand[0], LANCE) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p,
+			!(lanceEffect(BLACK, sq, occupied) & w_king_bit), !(w_king_bit & GoldEffectBB[sq][BLACK]), (~BitLancePromoteBlack) & sq)) {
+			sub_hand(pos_.hand[0], LANCE);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[1], LANCE) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p,
+			!(lanceEffect(WHITE, sq, occupied) & b_king_bit), !(b_king_bit & GoldEffectBB[sq][WHITE]), (~BitLancePromoteWhite) & sq)) {
+			sub_hand(pos_.hand[1], LANCE);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[0], KNIGHT) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, B_KNIGHT, B_PRO_KNIGHT, b_knight_promote_p,
+			!(KnightEffectBB[w_king_bit][WHITE] & sq), !(w_king_bit & GoldEffectBB[sq][BLACK]), (~BitKnightPromoteBlack) & sq)) {
+			sub_hand(pos_.hand[0], KNIGHT);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[1], KNIGHT) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, W_KNIGHT, W_PRO_KNIGHT, w_knight_promote_p,
+			!(KnightEffectBB[b_king_bit][BLACK] & sq), !(b_king_bit & GoldEffectBB[sq][WHITE]), (~BitKnightPromoteWhite) & sq)) {
+			sub_hand(pos_.hand[1], KNIGHT);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[0], SILVER) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, B_SILVER, B_PRO_SILVER, b_silver_promote_p,
+			!(w_king_bit & SilverEffectBB[sq][BLACK]), !(w_king_bit & GoldEffectBB[sq][BLACK]), true)) {
+			sub_hand(pos_.hand[0], SILVER);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[1], SILVER) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, W_SILVER, W_PRO_SILVER, w_silver_promote_p,
+			!(b_king_bit & SilverEffectBB[sq][WHITE]), !(b_king_bit & GoldEffectBB[sq][WHITE]), true)) {
+			sub_hand(pos_.hand[1], SILVER);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[0], GOLD) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, B_GOLD, B_GOLD, b_gold_promote_p,
+			!(w_king_bit & GoldEffectBB[sq][BLACK]), true, true)) {
+			sub_hand(pos_.hand[0], GOLD);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[1], GOLD) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, W_GOLD, W_GOLD, w_gold_promote_p,
+			!(b_king_bit & GoldEffectBB[sq][WHITE]), true, true)) {
+			sub_hand(pos_.hand[1], GOLD);
+			return true;
+		}
+	};
+	// 最後に先手の歩を強制的に採用する
+	if (not_double_pawn_b && myrand.rand_b(1.0)) {
+		if (set_piece_core(pos_, sq, occupied, B_PAWN, B_PRO_PAWN, b_pawn_promote_p,
+			w_king_bit & PawnEffectBB[sq][BLACK], !(w_king_bit & GoldEffectBB[sq][BLACK]), (~BitLancePromoteBlack) & sq, not_promote)) {
+			if (not_promote) {
+				b_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
+			}
+			sub_hand(pos_.hand[0], PAWN);
+			return true;
+		}
+	};
+	return false;
+};
+
+// 適当に合い駒を発生させて王手を回避する (後手が王手をかけられている)
+// pos_: 盤面, sq: 駒を打つ場所,
+// b_king_bit: 先手玉の位置, w_king_bit: 後手玉の位置, occupied: 既に置かれているマス
+// b_enable_set_pawn: 先手の歩の置けるFILE, w_enable_set_pawn: 後手の歩の置けるFILE
+bool _aigoma_w(Position& pos_, const Square sq,
+	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied, int &b_enable_set_pawn, int &w_enable_set_pawn) {
+	bool not_double_pawn_b = (b_enable_set_pawn & (1 << file_index_table[sq])) && hand_exists(pos_.hand[0], PAWN); // 二歩でない+歩を持っている
+	bool not_double_pawn_w = (w_enable_set_pawn & (1 << file_index_table[sq])) && hand_exists(pos_.hand[1], PAWN); // 二歩でない+歩を持っている
+
+	bool not_promote;
+	// 一定確率で歩の合い駒を発生させる
+	if (not_double_pawn_w && myrand.rand_b(0.8)) { // 二歩判定を上段で入れる
+		if (set_piece_core(pos_, sq, occupied, W_PAWN, W_PRO_PAWN, w_pawn_promote_p,
+			b_king_bit & PawnEffectBB[sq][WHITE], !(b_king_bit & GoldEffectBB[sq][WHITE]), (~BitLancePromoteWhite) & sq, not_promote)) {
+			if (not_promote) {
+				w_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
+			}
+			sub_hand(pos_.hand[1], PAWN);
+			return true;
+		}
+	};
+	if (not_double_pawn_b && myrand.rand_b(0.4)) { // 二歩判定を上段で入れる
+		if (set_piece_core(pos_, sq, occupied, B_PAWN, B_PRO_PAWN, b_pawn_promote_p,
+			w_king_bit & PawnEffectBB[sq][BLACK], !(w_king_bit & GoldEffectBB[sq][BLACK]), (~BitLancePromoteBlack) & sq, not_promote)) {
+			if (not_promote) {
+				b_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
+			}
+			sub_hand(pos_.hand[0], PAWN);
+			return true;
+		}
+	};
+	double select_p = not_double_pawn_w ? 0.4 : 0.8; // 後手が歩を打てない条件なら配置確率を上げる
+	// 香、桂、銀、金の順で合い駒を試みる
+	if (hand_exists(pos_.hand[1], LANCE) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, W_LANCE, W_PRO_LANCE, w_lance_promote_p,
+			!(lanceEffect(WHITE, sq, occupied) & b_king_bit), !(b_king_bit & GoldEffectBB[sq][WHITE]), (~BitLancePromoteWhite) & sq)) {
+			sub_hand(pos_.hand[1], LANCE);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[0], LANCE) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, B_LANCE, B_PRO_LANCE, b_lance_promote_p,
+			!(lanceEffect(BLACK, sq, occupied) & w_king_bit), !(w_king_bit & GoldEffectBB[sq][BLACK]), (~BitLancePromoteBlack) & sq)) {
+			sub_hand(pos_.hand[0], LANCE);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[1], KNIGHT) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, W_KNIGHT, W_PRO_KNIGHT, w_knight_promote_p,
+			!(KnightEffectBB[b_king_bit][BLACK] & sq), !(b_king_bit & GoldEffectBB[sq][WHITE]), (~BitKnightPromoteWhite) & sq)) {
+			sub_hand(pos_.hand[1], KNIGHT);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[0], KNIGHT) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, B_KNIGHT, B_PRO_KNIGHT, b_knight_promote_p,
+			!(KnightEffectBB[w_king_bit][WHITE] & sq), !(w_king_bit & GoldEffectBB[sq][BLACK]), (~BitKnightPromoteBlack) & sq)) {
+			sub_hand(pos_.hand[0], KNIGHT);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[1], SILVER) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, W_SILVER, W_PRO_SILVER, w_silver_promote_p,
+			!(b_king_bit & SilverEffectBB[sq][WHITE]), !(b_king_bit & GoldEffectBB[sq][WHITE]), true)) {
+			sub_hand(pos_.hand[1], SILVER);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[0], SILVER) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, B_SILVER, B_PRO_SILVER, b_silver_promote_p,
+			!(w_king_bit & SilverEffectBB[sq][BLACK]), !(w_king_bit & GoldEffectBB[sq][BLACK]), true)) {
+			sub_hand(pos_.hand[0], SILVER);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[1], GOLD) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, W_GOLD, W_GOLD, w_gold_promote_p,
+			!(b_king_bit & GoldEffectBB[sq][WHITE]), true, true)) {
+			sub_hand(pos_.hand[1], GOLD);
+			return true;
+		}
+	};
+	if (hand_exists(pos_.hand[0], GOLD) && myrand.rand_b(select_p)) {
+		if (set_piece_core(pos_, sq, occupied, B_GOLD, B_GOLD, b_gold_promote_p,
+			!(w_king_bit & GoldEffectBB[sq][BLACK]), true, true)) {
+			sub_hand(pos_.hand[0], GOLD);
+			return true;
+		}
+	};
+	// 最後に後手の歩を強制的に採用する
+	if (not_double_pawn_w && myrand.rand_b(1.0)) {
+		if (set_piece_core(pos_, sq, occupied, W_PAWN, W_PRO_PAWN, w_pawn_promote_p,
+			b_king_bit & PawnEffectBB[sq][WHITE], !(b_king_bit & GoldEffectBB[sq][WHITE]), (~BitLancePromoteWhite) & sq, not_promote)) {
+			if (not_promote) {
+				w_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
+			}
+			sub_hand(pos_.hand[1], PAWN);
+			return true;
+		}
+	};
+	return false;
+};
 
 // 飛び道具の利きによる王手の再チェックを行います
-void recheck(CheckList &checklist, Bitboard &occupied) {
-	if (checklist.check_item_lance[0].commit) {
-		if (checklist.check_item_lance[0].commit & occupied) { // クリア
-
+bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied,
+	const PBoard &b_pawn_p, const PBoard &w_pawn_p, int &b_enable_set_pawn, int &w_enable_set_pawn, int &b_board, int &w_board) {
+	if (checklist.check_item_lance[0].commit) { // ここは先手の香の利き固定
+		Bitboard must_occupy = checklist.check_item_lance[0].commit;
+		if (must_occupy & occupied) { // クリア
 		}
 		else {
-			++cnt;
-			return;
+			PBoard temp_p = b_pawn_p;
+#ifdef AVX512
+			temp_p.and(bitboard_to_intboard2(must_occupy));
+#else
+			temp_p.and(bitboard_to_intboard(must_occupy));
+#endif
+			Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
+			if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
+				// エラー
+				++cnt;
+				return false;
+			}
 		}
-		if (checklist.check_item_lance[1].commit) {
+		if (checklist.check_item_lance[1].commit) { // ここは後手の香の利き固定
+			Bitboard must_occupy = checklist.check_item_lance[1].commit;
 			if (checklist.check_item_lance[1].commit & occupied) { // クリア
-
 			}
 			else {
-				++cnt;
-				return;
+				PBoard temp_p = w_pawn_p;
+#ifdef AVX512
+				temp_p.and(bitboard_to_intboard2(must_occupy));
+#else
+				temp_p.and(bitboard_to_intboard(must_occupy));
+#endif
+				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
+				if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
+					// エラー
+					++cnt;
+					return false;
+				}
 			}
 		}
 	}
 	if (checklist.check_item_rook[0].commit) {
+		Bitboard must_occupy = checklist.check_item_rook[0].commit;
 		if (checklist.check_item_rook[0].commit & occupied) { // クリア
-
 		}
 		else {
-			++cnt;
-			return;
-		}
-		if (checklist.check_item_rook[1].commit) {
-			if (checklist.check_item_rook[1].commit & occupied) { // クリア
-
+			if (checklist.check_item_rook[0].color == BLACK) {
+				PBoard temp_p = b_pawn_p;
+#ifdef AVX512
+				temp_p.and(bitboard_to_intboard2(must_occupy));
+#else
+				temp_p.and(bitboard_to_intboard(must_occupy));
+#endif
+				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
+				if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
+					// エラー
+					++cnt;
+					return false;
+				}
 			}
 			else {
-				++cnt;
-				return;
+				PBoard temp_p = w_pawn_p;
+#ifdef AVX512
+				temp_p.and(bitboard_to_intboard2(must_occupy));
+#else
+				temp_p.and(bitboard_to_intboard(must_occupy));
+#endif
+				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
+				if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
+					// エラー
+					++cnt;
+					return false;
+				}
+			}
+		}
+		if (checklist.check_item_rook[1].commit) {
+			Bitboard must_occupy = checklist.check_item_rook[1].commit;
+			if (checklist.check_item_rook[1].commit & occupied) { // クリア
+			}
+			else {
+				if (checklist.check_item_rook[0].color == BLACK) {
+					PBoard temp_p = b_pawn_p;
+#ifdef AVX512
+					temp_p.and(bitboard_to_intboard2(must_occupy));
+#else
+					temp_p.and(bitboard_to_intboard(must_occupy));
+#endif
+					Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
+					if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
+						// エラー
+						++cnt;
+						return false;
+					}
+				}
+				else {
+					PBoard temp_p = w_pawn_p;
+#ifdef AVX512
+					temp_p.and(bitboard_to_intboard2(must_occupy));
+#else
+					temp_p.and(bitboard_to_intboard(must_occupy));
+#endif
+					Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
+					if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
+						// エラー
+						++cnt;
+						return false;
+					}
+				}
 			}
 		}
 	}
 	if (checklist.check_item_bishop[0].commit) {
+		Bitboard must_occupy = checklist.check_item_bishop[0].commit;
 		if (checklist.check_item_bishop[0].commit & occupied) { // クリア
-
 		}
 		else {
-			++cnt;
-			return;
-		}
-		if (checklist.check_item_bishop[1].commit) {
-			if (checklist.check_item_bishop[1].commit & occupied) { // クリア
-
+			if (checklist.check_item_bishop[0].color == BLACK) {
+				PBoard temp_p = b_pawn_p;
+#ifdef AVX512
+				temp_p.and(bitboard_to_intboard2(must_occupy));
+#else
+				temp_p.and(bitboard_to_intboard(must_occupy));
+#endif
+				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
+				if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
+					// エラー
+					++cnt;
+					return false;
+				}
 			}
 			else {
-				++cnt;
-				return;
+				PBoard temp_p = w_pawn_p;
+#ifdef AVX512
+				temp_p.and(bitboard_to_intboard2(must_occupy));
+#else
+				temp_p.and(bitboard_to_intboard(must_occupy));
+#endif
+				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
+				if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
+					// エラー
+					++cnt;
+					return false;
+				}
+			}
+		}
+		if (checklist.check_item_bishop[1].commit) {
+			Bitboard must_occupy = checklist.check_item_bishop[1].commit;
+			if (checklist.check_item_bishop[1].commit & occupied) { // クリア
+			}
+			else {
+				if (checklist.check_item_bishop[1].color == BLACK) {
+					PBoard temp_p = b_pawn_p;
+#ifdef AVX512
+					temp_p.and(bitboard_to_intboard2(must_occupy));
+#else
+					temp_p.and(bitboard_to_intboard(must_occupy));
+#endif
+					Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
+					if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
+						// エラー
+						++cnt;
+						return false;
+					}
+				}
+				else {
+					PBoard temp_p = w_pawn_p;
+#ifdef AVX512
+					temp_p.and(bitboard_to_intboard2(must_occupy));
+#else
+					temp_p.and(bitboard_to_intboard(must_occupy));
+#endif
+					Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
+					if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
+						// エラー
+						++cnt;
+						return false;
+					}
+				}
 			}
 		}
 	}
+	return true;
 };
 
-void view() {
-	std::cout << "再チェック回数: " << cnt << std::endl;
+void view() { // gotoで再生成した回数と一致する
+	std::cout << "再チェック: " << cnt << std::endl;
 };
-
-// -----------------------------------
-//     歩の配置確率を定義する
-// -----------------------------------
 
 // 歩を配置します
-void set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
+bool set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
 	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied, CheckList &checklist) {
-	recheck(checklist, occupied); // 歩によって帳尻を合わせます
+	int b_enable_set_pawn = 0b111111111;
+	int w_enable_set_pawn = 0b111111111;
+	int b_pawn = 0;
+	int w_pawn = 0;
+	int b_board = 0;
+	int w_board = 0;
+	pawn_distribution(b_pawn, w_pawn, b_board, w_board);
+	add_hand(pos_.hand[BLACK], PAWN, b_pawn);
+	add_hand(pos_.hand[WHITE], PAWN, w_pawn);
+	// 再チェックを合い駒によって帳尻を合わせます
+	if (!recheck(pos_, checklist, b_king_bit, w_king_bit, occupied,
+		b_pawn_p, w_pawn_p, b_enable_set_pawn, w_enable_set_pawn, b_board, w_board)) {
+		return false; // 0.07%で失敗する
+	};
+	return true;
 }
 
 void end_game_mate(Position& pos_) {
+START_CREATE_BOARD:
 	pos_.set_blank(); // 空の盤面で初期化する
 	Square sq_b_king = set_b_king(pos_); // 先手玉の配置
 	Square sq_w_king = set_w_king(pos_, sq_b_king); // 後手玉の配置
@@ -1124,7 +1570,9 @@ void end_game_mate(Position& pos_) {
 	set_knight(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied); // 桂の配置
 	set_silver(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied); // 銀の配置
 	set_gold(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied); // 金の配置
-	set_pawn(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist); // 歩の配置
+	if (!set_pawn(pos_, sq_b_king, sq_w_king, bit_b_king, bit_w_king, occupied, checklist)) { // 歩の配置
+		goto START_CREATE_BOARD; // 王手回避ができなかったので局面生成をやり直す
+	};
 	pos_.update_bitboards();
 };
 

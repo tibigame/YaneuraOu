@@ -33,6 +33,7 @@ public:
 	~MyRand();
 	uint32_t rand(); // キャッシュした乱数を1つ取り出す
 	uint32_t rand_m(const uint32_t mod); // キャッシュした乱数を1つ取り出し、0～m-1までにして返す
+	bool rand_b(double p); // キャッシュした乱数を1つ取り出し、確率pでtrueを返す
 
 	uint64_t gen_count = 0; // 乱数をいくつ生成したかをカウントする
 	uint64_t get_rand_count(); // 使用した乱数の数を返します
