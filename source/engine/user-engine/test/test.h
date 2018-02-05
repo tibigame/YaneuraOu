@@ -2,6 +2,7 @@
 #define _USERENGINE_TEST_H_
 
 #include "../random_board.h"
+#include "../pboard.h"
 
 // この関数を他のファイルから呼んでください
 void test_main();

@@ -141,7 +141,7 @@ struct bitboard_to_intboard2_func {
 		u64 p0 = bit_board.p[0];
 		u64 p1 = bit_board.p[1];
 		IntBoard2 result = IntBoard2_ZERO; // 0初期化
-										   // result[index_table[shifted - 1]]と参照したいがここで減算したくないので
+		// result[index_table[shifted - 1]]と参照したいがここで減算したくないので
 		int shifted = -1; // shifted = 0でなく -1で初期化
 		int ntz_i;
 		while (p0) { // ビットがすべて0になるまでループ

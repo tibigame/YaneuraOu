@@ -3,64 +3,8 @@
 #include "../../shogi.h"
 #include "random_board.h"
 #include "int_board.h"
+#include "pboard.h"
 #include "ex_board.h"
-
-// 盤面を出力する。デバッグ用。
-std::ostream& operator<<(std::ostream& os, const PBoard& pb) {
-	os << reverse(pb.board);
-	return os;
-};
-
-#ifdef AVX512
-// Arrayは+1でFILEが増える方、+9でRANKが増える方
-PBoard::PBoard(const IntBoard2 init_board) {
-	board = reverse(init_board); // 入力が逆転列なので元に戻す
-	p_sum = __accumu(this->board, this->accum); // 累計加算を計算する
-}
-// IntBoardが立っていない部分を0にしてaccumを計算し直す
-void PBoard::and(IntBoard2& int_board) {
-	__and(this->board, int_board);
-};
-// IntBoardが立っている部分を0にしてaccumを計算し直す
-void PBoard::ninp(IntBoard2& int_board) {
-	__ninp(this->board, int_board);
-};
-#else
-// IntBoardが立っていない部分を0にしてaccumを計算し直す
-void PBoard::and(IntBoard& int_board) {
-	__and(this->board, int_board);
-};
-
-// IntBoardが立っている部分を0にしてaccumを計算し直す
-void PBoard::ninp(IntBoard& int_board) {
-	__ninp(this->board, int_board);
-};
-#endif
-
-PBoard::PBoard() {
-}
-PBoard::PBoard(const PBoard &p_board) {
-	board = p_board.board;
-	accum = p_board.accum;
-}
-
-// Arrayは+1でFILEが増える方、+9でRANKが増える方
-PBoard::PBoard(const IntBoard init_board) {
-	board = reverse(init_board); // 入力が逆転列なので元に戻す
-	p_sum = __accumu(this->board, this->accum); // 累計加算を計算する
-}
-
-void PBoard::accumu() {
-	p_sum = __accumu(this->board, this->accum);
-};
-
-int PBoard::accumu_rand() {
-	return __accumu_rand(this->board, this->accum);
-};
-
-int PBoard::rand() {
-	return __rand(this->board, this->accum);
-};
 
 // 空の盤面で初期化します
 void set_blank(Position& pos_) {
@@ -98,11 +42,7 @@ const PBoard w_king_p(w_king_p_intboard);
 // 後手玉をpdで指定された確率で配置します(返り値は配置された場所のSquare)
 Square set_w_king(Position& pos_, const Square& b_king) {
 	PBoard pb2 = w_king_p;
-#ifdef AVX512
-	pb2.ninp(bitboard_to_intboard2(KingEffectBB[b_king] | b_king)); // 先手玉の9近傍を除く
-#else
-	pb2.ninp(bitboard_to_intboard(KingEffectBB[b_king] | b_king)); // 先手玉の9近傍を除く
-#endif
+	pb2.ninp(KingEffectBB[b_king] | b_king); // 先手玉の9近傍を除く
 	Square sq = sq_table[pb2.accumu_rand()];
 	pos_.put_piece(sq, W_KING);
 	pos_.update_kingSquare();
@@ -208,11 +148,7 @@ const PBoard w_rook_captured_p(w_rook_captured_p_intboard);
 void set_rook_core(
 	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Color e_c, Color my_c, Bitboard &occupied,
 	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p, CheckList &checklist) {
-#ifdef AVX512
-	pb.ninp(bitboard_to_intboard2(cross00StepEffectBB[e_king] | occupied)); // 相手玉十字隣接と配置済みの位置を除く
-#else
-	pb.ninp(bitboard_to_intboard(cross00StepEffectBB[e_king] | occupied)); // 相手玉十字隣接と配置済みの位置を除く
-#endif
+	pb.ninp(cross00StepEffectBB[e_king] | occupied); // 相手玉十字隣接と配置済みの位置を除く
 	Square sq = sq_table[pb.accumu_rand()]; // 飛車の位置を確定させる
 	set_piece_core(pos_, sq, occupied, set_piece, set_piece_promote, promoto_p, true, !(cross45StepEffectBB[e_king] & sq), true);
 	/*
@@ -322,11 +258,7 @@ const PBoard w_bishop_captured_p(w_bishop_captured_p_intboard);
 void set_bishop_core(
 	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Color e_c, Color my_c, Bitboard &occupied,
 	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p, CheckList &checklist) {
-#ifdef AVX512
-	pb.ninp(bitboard_to_intboard2(cross45StepEffectBB[e_king] | occupied)); // 相手玉斜め隣接と配置済みの位置を除く
-#else
-	pb.ninp(bitboard_to_intboard(cross45StepEffectBB[e_king] | occupied)); // 相手玉斜め隣接と配置済みの位置を除く
-#endif
+	pb.ninp(cross45StepEffectBB[e_king] | occupied); // 相手玉斜め隣接と配置済みの位置を除く
 	Square sq = sq_table[pb.accumu_rand()]; // 角の位置を確定させる
 	set_piece_core(pos_, sq, occupied, set_piece, set_piece_promote, promoto_p, true, !(cross00StepEffectBB[e_king] & sq), true);
 	/*
@@ -436,13 +368,8 @@ void set_lance_core(
 	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Bitboard &occupied,
 	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p,
 	CheckList &checklist, const Color my_c, const Color e_c, const Bitboard confirm_promote) {
-#ifdef AVX512
 	// 相手玉前と配置済みの位置と非合法な位置を除く
-	pb.ninp(bitboard_to_intboard2(PawnEffectBB[e_king][e_c] | occupied | (cross00StepEffectBB[e_king] & confirm_promote)));
-#else
-	// 相手玉前と配置済みの位置と非合法な位置を除く
-	pb.ninp(bitboard_to_intboard(PawnEffectBB[e_king][e_c] | occupied | (cross00StepEffectBB[e_king] & confirm_promote)));
-#endif
+	pb.ninp(PawnEffectBB[e_king][e_c] | occupied | (cross00StepEffectBB[e_king] & confirm_promote));
 	Square sq = sq_table[pb.accumu_rand()]; // 香の位置を確定させる
 	const bool not_promote = set_piece_core(pos_, sq, occupied, set_piece, set_piece_promote, promoto_p, true, !(e_king_bit & GoldEffectBB[sq][my_c]), true);
 	/*
@@ -599,13 +526,8 @@ void set_knight_core(
 	Bitboard exclude_knight = ( // ケイマの位置を除外するBitboard (後段で非合法を除くときに不自然にならないように)
 		confirm_promote & e_king // 2段目までに相手玉がいるか
 		) ? ZERO_BB : KnightEffectBB[e_king][e_c]; // 自分の桂が5段目以下で王手になる位置で成桂の確率は低いので……
-#ifdef AVX512
 	// 特定条件でのケイマの位置と配置済みの位置と非合法な位置を除く
-	pb.ninp(bitboard_to_intboard2(exclude_knight | occupied | (GoldEffectBB[e_king][e_c] & confirm_promote)));
-#else
-	// 特定条件でのケイマの位置と配置済みの位置と非合法な位置を除く
-	pb.ninp(bitboard_to_intboard(exclude_knight | occupied | (GoldEffectBB[e_king][e_c] & confirm_promote)));
-#endif
+	pb.ninp(exclude_knight | occupied | (GoldEffectBB[e_king][e_c] & confirm_promote));
 	Square sq = sq_table[pb.accumu_rand()]; // 桂の位置を確定させる
 	set_piece_core(pos_, sq, occupied, set_piece, set_piece_promote, promoto_p,
 		!(e_king_bit & KnightEffectBB[sq][e_c]), !(e_king_bit & GoldEffectBB[sq][my_c]), true);
@@ -799,13 +721,8 @@ void set_silver_core(
 	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Bitboard &occupied,
 	const Piece &set_piece, const Piece &set_piece_promote, const PromoteP &promoto_p,
 	const Color my_c, const Color e_c) {
-#ifdef AVX512
 	// 配置済みの位置と非合法な位置を除く
-	pb.ninp(bitboard_to_intboard2(occupied | (GoldEffectBB[e_king][e_c] & SilverEffectBB[e_king][e_c])));
-#else
-	// 配置済みの位置と非合法な位置を除く
-	pb.ninp(bitboard_to_intboard(occupied | (GoldEffectBB[e_king][e_c] & SilverEffectBB[e_king][e_c])));
-#endif
+	pb.ninp(occupied | (GoldEffectBB[e_king][e_c] & SilverEffectBB[e_king][e_c]));
 	Square sq = sq_table[pb.accumu_rand()]; // 銀の位置を確定させる
 	set_piece_core(pos_, sq, occupied, set_piece, set_piece_promote, promoto_p,
 		!(e_king_bit & SilverEffectBB[sq][my_c]), !(e_king_bit & GoldEffectBB[sq][my_c]), true);
@@ -996,11 +913,7 @@ const PBoard w_gold_captured_p(w_gold_captured_p_intboard);
 void set_gold_core(
 	Position& pos_, PBoard &pb, const Square &e_king, const Bitboard &e_king_bit, Bitboard &occupied,
 	const Piece &set_piece, const Color my_c, const Color e_c) {
-#ifdef AVX512
-	pb.ninp(bitboard_to_intboard2(occupied | GoldEffectBB[e_king][e_c])); // 配置済みの位置と非合法な位置を除く
-#else
-	pb.ninp(bitboard_to_intboard(occupied | GoldEffectBB[e_king][e_c])); // 配置済みの位置と非合法な位置を除く
-#endif
+	pb.ninp(occupied | GoldEffectBB[e_king][e_c]); // 配置済みの位置と非合法な位置を除く
 	Square sq = sq_table[pb.accumu_rand()]; // 金の位置を確定させる
 	occupied |= sq; // occupiedにorしていく
 	pos_.put_piece(sq, set_piece);
@@ -1356,11 +1269,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 		}
 		else {
 			PBoard temp_p = b_pawn_p;
-#ifdef AVX512
-			temp_p.and(bitboard_to_intboard2(must_occupy));
-#else
-			temp_p.and(bitboard_to_intboard(must_occupy));
-#endif
+			temp_p.and(must_occupy);
 			Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 			if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 				// エラー
@@ -1374,11 +1283,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 			}
 			else {
 				PBoard temp_p = w_pawn_p;
-#ifdef AVX512
-				temp_p.and(bitboard_to_intboard2(must_occupy));
-#else
-				temp_p.and(bitboard_to_intboard(must_occupy));
-#endif
+				temp_p.and(must_occupy);
 				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 				if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 					// エラー
@@ -1395,11 +1300,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 		else {
 			if (checklist.check_item_rook[0].color == BLACK) {
 				PBoard temp_p = b_pawn_p;
-#ifdef AVX512
-				temp_p.and(bitboard_to_intboard2(must_occupy));
-#else
-				temp_p.and(bitboard_to_intboard(must_occupy));
-#endif
+				temp_p.and(must_occupy);
 				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 				if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 					// エラー
@@ -1409,11 +1310,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 			}
 			else {
 				PBoard temp_p = w_pawn_p;
-#ifdef AVX512
-				temp_p.and(bitboard_to_intboard2(must_occupy));
-#else
-				temp_p.and(bitboard_to_intboard(must_occupy));
-#endif
+				temp_p.and(must_occupy);
 				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 				if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 					// エラー
@@ -1429,11 +1326,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 			else {
 				if (checklist.check_item_rook[0].color == BLACK) {
 					PBoard temp_p = b_pawn_p;
-#ifdef AVX512
-					temp_p.and(bitboard_to_intboard2(must_occupy));
-#else
-					temp_p.and(bitboard_to_intboard(must_occupy));
-#endif
+					temp_p.and(must_occupy);
 					Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 					if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 						// エラー
@@ -1443,11 +1336,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 				}
 				else {
 					PBoard temp_p = w_pawn_p;
-#ifdef AVX512
-					temp_p.and(bitboard_to_intboard2(must_occupy));
-#else
-					temp_p.and(bitboard_to_intboard(must_occupy));
-#endif
+					temp_p.and(must_occupy);
 					Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 					if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 						// エラー
@@ -1465,11 +1354,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 		else {
 			if (checklist.check_item_bishop[0].color == BLACK) {
 				PBoard temp_p = b_pawn_p;
-#ifdef AVX512
-				temp_p.and(bitboard_to_intboard2(must_occupy));
-#else
-				temp_p.and(bitboard_to_intboard(must_occupy));
-#endif
+				temp_p.and(must_occupy);
 				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 				if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 					// エラー
@@ -1479,11 +1364,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 			}
 			else {
 				PBoard temp_p = w_pawn_p;
-#ifdef AVX512
-				temp_p.and(bitboard_to_intboard2(must_occupy));
-#else
-				temp_p.and(bitboard_to_intboard(must_occupy));
-#endif
+				temp_p.and(must_occupy);
 				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 				if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 					// エラー
@@ -1499,11 +1380,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 			else {
 				if (checklist.check_item_bishop[1].color == BLACK) {
 					PBoard temp_p = b_pawn_p;
-#ifdef AVX512
-					temp_p.and(bitboard_to_intboard2(must_occupy));
-#else
-					temp_p.and(bitboard_to_intboard(must_occupy));
-#endif
+					temp_p.and(must_occupy);
 					Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 					if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 						// エラー
@@ -1513,11 +1390,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 				}
 				else {
 					PBoard temp_p = w_pawn_p;
-#ifdef AVX512
-					temp_p.and(bitboard_to_intboard2(must_occupy));
-#else
-					temp_p.and(bitboard_to_intboard(must_occupy));
-#endif
+					temp_p.and(must_occupy);
 					Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 					if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 						// エラー
@@ -1531,7 +1404,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 	return true;
 };
 
-void view() { // gotoで再生成した回数と一致する
+void view() {
 	std::cout << "再チェック: " << cnt << std::endl;
 };
 
