@@ -1020,9 +1020,24 @@ const IntBoard b_pawn_p_intboard = {
 	30, 30, 30, 30, 30, 30, 30, 30, 30,
 	30, 30, 30, 30, 30, 30, 30, 30, 30
 };
+// 必ずと金が配置される時の確率テーブル
+const IntBoard b_pawn_pro_p_intboard = {
+	3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 3600,
+	2800, 2800, 2800, 2800, 2800, 2800, 2800, 2800, 2800,
+	2200, 2200, 2200, 2200, 2200, 2200, 2200, 2200, 2200,
+	1600, 1600, 1600, 1600, 1600, 1600, 1600, 1600, 1600,
+	400, 400, 400, 400, 400, 400, 400, 400, 400,
+	100, 100, 100, 100, 100, 100, 100, 100, 100,
+	25, 25, 25, 25, 25, 25, 25, 25, 25,
+	10, 10, 10, 10, 10, 10, 10, 10, 10,
+	1, 1, 1, 1, 1, 1, 1, 1, 1
+};
 const IntBoard w_pawn_p_intboard = reverse(b_pawn_p_intboard);
+const IntBoard w_pawn_pro_p_intboard = reverse(b_pawn_pro_p_intboard);
 const PBoard b_pawn_p(b_pawn_p_intboard);
 const PBoard w_pawn_p(w_pawn_p_intboard);
+const PBoard b_pawn_pro_p(b_pawn_pro_p_intboard);
+const PBoard w_pawn_pro_p(w_pawn_pro_p_intboard);
 
 // 成りの確率
 constexpr PromoteP b_pawn_promote_p = { 1.0, 0.9, 0.7, 0.3, 0.02, 0.001, 0.0003, 0.0001, 0.00003 };
@@ -1067,7 +1082,7 @@ bool _aigoma_b(Position& pos_, const Square sq,
 	// 一定確率で歩の合い駒を発生させる
 	if (not_double_pawn_b && myrand.rand_b(0.8)) { // 二歩判定を上段で入れる
 		if (set_piece_core(pos_, sq, occupied, B_PAWN, B_PRO_PAWN, b_pawn_promote_p,
-			w_king_bit & PawnEffectBB[sq][BLACK], !(w_king_bit & GoldEffectBB[sq][BLACK]), (~BitLancePromoteBlack) & sq, not_promote)){
+			!(w_king_bit & PawnEffectBB[sq][BLACK]), !(w_king_bit & GoldEffectBB[sq][BLACK]), (~BitLancePromoteBlack) & sq, not_promote)){
 			if (not_promote) {
 				b_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
 			}
@@ -1077,7 +1092,7 @@ bool _aigoma_b(Position& pos_, const Square sq,
 	};
 	if (not_double_pawn_w && myrand.rand_b(0.4)) { // 二歩判定を上段で入れる
 		if (set_piece_core(pos_, sq, occupied, W_PAWN, W_PRO_PAWN, w_pawn_promote_p,
-			b_king_bit & PawnEffectBB[sq][WHITE],!(b_king_bit & GoldEffectBB[sq][WHITE]), (~BitLancePromoteWhite) & sq, not_promote)) {
+			!(b_king_bit & PawnEffectBB[sq][WHITE]), !(b_king_bit & GoldEffectBB[sq][WHITE]), (~BitLancePromoteWhite) & sq, not_promote)) {
 			if (not_promote) {
 				w_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
 			}
@@ -1146,7 +1161,7 @@ bool _aigoma_b(Position& pos_, const Square sq,
 	// 最後に先手の歩を強制的に採用する
 	if (not_double_pawn_b && myrand.rand_b(1.0)) {
 		if (set_piece_core(pos_, sq, occupied, B_PAWN, B_PRO_PAWN, b_pawn_promote_p,
-			w_king_bit & PawnEffectBB[sq][BLACK], !(w_king_bit & GoldEffectBB[sq][BLACK]), (~BitLancePromoteBlack) & sq, not_promote)) {
+			!(w_king_bit & PawnEffectBB[sq][BLACK]), !(w_king_bit & GoldEffectBB[sq][BLACK]), (~BitLancePromoteBlack) & sq, not_promote)) {
 			if (not_promote) {
 				b_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
 			}
@@ -1170,7 +1185,7 @@ bool _aigoma_w(Position& pos_, const Square sq,
 	// 一定確率で歩の合い駒を発生させる
 	if (not_double_pawn_w && myrand.rand_b(0.8)) { // 二歩判定を上段で入れる
 		if (set_piece_core(pos_, sq, occupied, W_PAWN, W_PRO_PAWN, w_pawn_promote_p,
-			b_king_bit & PawnEffectBB[sq][WHITE], !(b_king_bit & GoldEffectBB[sq][WHITE]), (~BitLancePromoteWhite) & sq, not_promote)) {
+			!(b_king_bit & PawnEffectBB[sq][WHITE]), !(b_king_bit & GoldEffectBB[sq][WHITE]), (~BitLancePromoteWhite) & sq, not_promote)) {
 			if (not_promote) {
 				w_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
 			}
@@ -1180,7 +1195,7 @@ bool _aigoma_w(Position& pos_, const Square sq,
 	};
 	if (not_double_pawn_b && myrand.rand_b(0.4)) { // 二歩判定を上段で入れる
 		if (set_piece_core(pos_, sq, occupied, B_PAWN, B_PRO_PAWN, b_pawn_promote_p,
-			w_king_bit & PawnEffectBB[sq][BLACK], !(w_king_bit & GoldEffectBB[sq][BLACK]), (~BitLancePromoteBlack) & sq, not_promote)) {
+			!(w_king_bit & PawnEffectBB[sq][BLACK]), !(w_king_bit & GoldEffectBB[sq][BLACK]), (~BitLancePromoteBlack) & sq, not_promote)) {
 			if (not_promote) {
 				b_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
 			}
@@ -1249,7 +1264,7 @@ bool _aigoma_w(Position& pos_, const Square sq,
 	// 最後に後手の歩を強制的に採用する
 	if (not_double_pawn_w && myrand.rand_b(1.0)) {
 		if (set_piece_core(pos_, sq, occupied, W_PAWN, W_PRO_PAWN, w_pawn_promote_p,
-			b_king_bit & PawnEffectBB[sq][WHITE], !(b_king_bit & GoldEffectBB[sq][WHITE]), (~BitLancePromoteWhite) & sq, not_promote)) {
+			!(b_king_bit & PawnEffectBB[sq][WHITE]), !(b_king_bit & GoldEffectBB[sq][WHITE]), (~BitLancePromoteWhite) & sq, not_promote)) {
 			if (not_promote) {
 				w_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
 			}
@@ -1425,6 +1440,94 @@ bool set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
 		b_pawn_p, w_pawn_p, b_enable_set_pawn, w_enable_set_pawn, b_board, w_board)) {
 		return false; // 0.07%で失敗する
 	};
+	PBoard pb;
+	Square sq;
+	bool not_promote;
+	bool not_double_pawn;
+	int file;
+	// TODO: 駒柱ができたときに配置できるか
+	// 先手の歩を配置します
+	for (auto i = 0; i < b_board; ++i) {
+	START_SET_BLACK_PAWN:
+		file = myrand.rand_m(9); // 筋を確定させる
+		not_double_pawn = b_enable_set_pawn & (1 << file);
+		if (!not_double_pawn && myrand.rand_b(0.6)) { // 二歩のときは一定確率で再生成させる
+			goto START_SET_BLACK_PAWN;
+		}
+		if (not_double_pawn) { // 二歩でない
+			pb = b_pawn_p;
+			pb.ninp(PawnEffectBB[w_king][WHITE] | occupied); // 相手玉前と配置済みの位置を除く
+			pb.and(FILE_BB[file]); // その筋だけのpboard
+			sq = sq_table[pb.accumu_rand()];
+			if (set_piece_core(pos_, sq, occupied, B_PAWN, B_PRO_PAWN, b_pawn_promote_p,
+				true, !(w_king_bit & GoldEffectBB[sq][BLACK]), (Bitboard(sq) & (~BitLancePromoteBlack)), not_promote)) {
+				if (not_promote) {
+					b_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
+				}
+			}
+			else {
+				add_hand(pos_.hand[BLACK], PAWN); // 配置に失敗したら手駒に加えておく
+			}
+		}
+		else { // 二歩になる
+			if (myrand.rand_b(0.6)) {
+				add_hand(pos_.hand[BLACK], PAWN); // 一定確率で手駒に落とす
+			}
+			else { // 必ずと金で配置される
+				pb = b_pawn_pro_p;
+				pb.ninp(PawnEffectBB[w_king][WHITE] | occupied); // 相手玉前と配置済みの位置を除く
+				pb.and(FILE_BB[file]); // その筋だけのpboard
+				sq = sq_table[pb.accumu_rand()];
+				if (set_piece_core(pos_, sq, occupied, B_PRO_PAWN, B_PRO_PAWN, b_pawn_promote_p,
+					false, !(w_king_bit & GoldEffectBB[sq][BLACK]), false)) {
+				}
+				else {
+					add_hand(pos_.hand[BLACK], PAWN); // 配置に失敗したら手駒に加えておく
+				}
+			}
+		}
+	}
+	// 後手の歩を配置します
+	for (auto i = 0; i < w_board; ++i) {
+	START_SET_WHITE_PAWN:
+		file = myrand.rand_m(9); // 筋を確定させる
+		not_double_pawn = w_enable_set_pawn & (1 << file);
+		if (!not_double_pawn && myrand.rand_b(0.6)) { // 二歩のときは一定確率で再生成させる
+			goto START_SET_WHITE_PAWN;
+		}
+		if (not_double_pawn) { // 二歩でない
+			pb = w_pawn_p;
+			pb.ninp(PawnEffectBB[b_king][BLACK] | occupied); // 相手玉前と配置済みの位置を除く
+			pb.and(FILE_BB[file]); // その筋だけのpboard
+			sq = sq_table[pb.accumu_rand()];
+			if (set_piece_core(pos_, sq, occupied, W_PAWN, W_PRO_PAWN, w_pawn_promote_p,
+				true, !(b_king_bit & GoldEffectBB[sq][WHITE]), (Bitboard(sq) & (~BitLancePromoteWhite)), not_promote)) {
+				if (not_promote) {
+					w_enable_set_pawn &= ~(1 << file_index_table[sq]); // 歩の配置フラグを立てる
+				}
+			}
+			else {
+				add_hand(pos_.hand[WHITE], PAWN); // 配置に失敗したら手駒に加えておく
+			}
+		}
+		else { // 二歩になる
+			if (myrand.rand_b(0.6)) {
+				add_hand(pos_.hand[WHITE], PAWN); // 一定確率で手駒に落とす
+			}
+			else { // 必ずと金で配置される
+				pb = w_pawn_pro_p;
+				pb.ninp(PawnEffectBB[b_king][BLACK] | occupied); // 相手玉前と配置済みの位置を除く
+				pb.and(FILE_BB[file]); // その筋だけのpboard
+				sq = sq_table[pb.accumu_rand()];
+				if (set_piece_core(pos_, sq, occupied, W_PRO_PAWN, W_PRO_PAWN, w_pawn_promote_p,
+					false, !(b_king_bit & GoldEffectBB[sq][WHITE]), false)) {
+				}
+				else {
+					add_hand(pos_.hand[WHITE], PAWN); // 配置に失敗したら手駒に加えておく
+				}
+			}
+		}
+	}
 	return true;
 }
 
