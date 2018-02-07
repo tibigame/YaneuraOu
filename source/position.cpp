@@ -112,6 +112,8 @@ void Position::init() {
 
 	for (int i = 0; i < MAX_PLY; ++i)
 		SET_HASH(Zobrist::depth[i], rng.rand<Key>() & ~1ULL, rng.rand<Key>(), rng.rand<Key>(), rng.rand<Key>());
+
+	position_sfen_init(); // sfen出力用テーブルの初期化を行う
 }
 
 // depthに応じたZobrist Hashを得る。depthを含めてhash keyを求めたいときに用いる。
@@ -426,6 +428,8 @@ void Position::set_blank(){
 	sideToMove = BLACK;
 	// --- 初期局面からの手数
 	gamePly = 1;
+	update_bitboards();
+	update_kingSquare();
 }
 
 // put_piece(),remove_piece(),xor_piece()を用いたあとに呼び出す必要がある。

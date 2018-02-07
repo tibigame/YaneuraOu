@@ -271,6 +271,9 @@
     <ClInclude Include="engine\user-engine\test\test_rand.h">
       <Filter>リソース ファイル\engine\user-engine\test</Filter>
     </ClInclude>
+    <ClInclude Include="engine\user-engine\pboard.h">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="movegen.cpp">
@@ -443,6 +446,12 @@
     </ClCompile>
     <ClCompile Include="engine\user-engine\test\test_rand.cpp">
       <Filter>リソース ファイル\engine\user-engine\test</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\pboard.cpp">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClCompile>
+    <ClCompile Include="position_sfen_fast.cpp">
+      <Filter>リソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

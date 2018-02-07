@@ -176,6 +176,7 @@ struct Position
 	// ※ USIプロトコルにおいては不要な機能ではあるが、デバッグのために局面を標準出力に出力して
 	// 　その局面から開始させたりしたいときに、sfenで現在の局面を出力出来ないと困るので用意してある。
 	const std::string sfen() const;
+	const std::string sfen_fast() const;
 
 	// 平手の初期盤面を設定する。
 	// siについては、上記のset()にある説明を読むこと。
@@ -761,5 +762,8 @@ std::ostream& operator<<(std::ostream& os, const Position& pos);
 
 // depthに応じたZobrist Hashを得る。depthを含めてhash keyを求めたいときに用いる。
 HASH_KEY DepthHash(int depth);
+
+// sfen出力用のテーブルの初期化を行う。
+void position_sfen_init();
 
 #endif // of #ifndef _POSITION_H_

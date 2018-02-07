@@ -586,6 +586,7 @@
     <ClInclude Include="engine\user-engine\ex_board.h" />
     <ClInclude Include="engine\user-engine\int_board.h" />
     <ClInclude Include="engine\user-engine\my_rand.h" />
+    <ClInclude Include="engine\user-engine\pboard.h" />
     <ClInclude Include="engine\user-engine\random_board.h" />
     <ClInclude Include="engine\user-engine\SFMT\SFMT-alti.h" />
     <ClInclude Include="engine\user-engine\SFMT\SFMT-common.h" />
@@ -653,6 +654,7 @@
     <ClCompile Include="engine\user-engine\ex_board.cpp" />
     <ClCompile Include="engine\user-engine\int_board.cpp" />
     <ClCompile Include="engine\user-engine\my_rand.cpp" />
+    <ClCompile Include="engine\user-engine\pboard.cpp" />
     <ClCompile Include="engine\user-engine\random_board.cpp" />
     <ClCompile Include="engine\user-engine\SFMT\SFMT.c" />
     <ClCompile Include="engine\user-engine\test\test.cpp" />
@@ -697,6 +699,7 @@
     <ClCompile Include="misc.cpp" />
     <ClCompile Include="movegen.cpp" />
     <ClCompile Include="move_picker.cpp" />
+    <ClCompile Include="position_sfen_fast.cpp" />
     <ClCompile Include="shogi.cpp" />
     <ClCompile Include="position.cpp" />
     <ClCompile Include="thread.cpp" />
