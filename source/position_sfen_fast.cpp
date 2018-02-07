@@ -154,20 +154,26 @@ const std::string Position::sfen_fast() const
 	p += 3;
 	
 	// ここから手駒の文字列
-	p += hand_rb_write(p, hand[BLACK], hand_rb_b);
-	p += hand_gsnlp_write(p, hand[BLACK], PIECE_BIT_MASK2[GOLD], PIECE_BITS[GOLD], 'G');
-	p += hand_gsnlp_write(p, hand[BLACK], PIECE_BIT_MASK2[SILVER], PIECE_BITS[SILVER], 'S');
-	p += hand_gsnlp_write(p, hand[BLACK], PIECE_BIT_MASK2[KNIGHT], PIECE_BITS[KNIGHT], 'N');
-	p += hand_gsnlp_write(p, hand[BLACK], PIECE_BIT_MASK2[LANCE], PIECE_BITS[LANCE], 'L');
-	p += hand_gsnlp_write(p, hand[BLACK], PIECE_BIT_MASK2[PAWN], PIECE_BITS[PAWN], 'P');
-	p += hand_rb_write(p, hand[WHITE], hand_rb_w);
-	p += hand_gsnlp_write(p, hand[WHITE], PIECE_BIT_MASK2[GOLD], PIECE_BITS[GOLD], 'g');
-	p += hand_gsnlp_write(p, hand[WHITE], PIECE_BIT_MASK2[SILVER], PIECE_BITS[SILVER], 's');
-	p += hand_gsnlp_write(p, hand[WHITE], PIECE_BIT_MASK2[KNIGHT], PIECE_BITS[KNIGHT], 'n');
-	p += hand_gsnlp_write(p, hand[WHITE], PIECE_BIT_MASK2[LANCE], PIECE_BITS[LANCE], 'l');
-	p += hand_gsnlp_write(p, hand[WHITE], PIECE_BIT_MASK2[PAWN], PIECE_BITS[PAWN], 'p');
-	*p = ' ';
-	++p;
+	if (hand[BLACK] || hand[WHITE]) { // 手駒なしのとき
+		memcpy(p, "- ", 2);
+		p += 2;
+	}
+	else {
+		p += hand_rb_write(p, hand[BLACK], hand_rb_b);
+		p += hand_gsnlp_write(p, hand[BLACK], PIECE_BIT_MASK2[GOLD], PIECE_BITS[GOLD], 'G');
+		p += hand_gsnlp_write(p, hand[BLACK], PIECE_BIT_MASK2[SILVER], PIECE_BITS[SILVER], 'S');
+		p += hand_gsnlp_write(p, hand[BLACK], PIECE_BIT_MASK2[KNIGHT], PIECE_BITS[KNIGHT], 'N');
+		p += hand_gsnlp_write(p, hand[BLACK], PIECE_BIT_MASK2[LANCE], PIECE_BITS[LANCE], 'L');
+		p += hand_gsnlp_write(p, hand[BLACK], PIECE_BIT_MASK2[PAWN], PIECE_BITS[PAWN], 'P');
+		p += hand_rb_write(p, hand[WHITE], hand_rb_w);
+		p += hand_gsnlp_write(p, hand[WHITE], PIECE_BIT_MASK2[GOLD], PIECE_BITS[GOLD], 'g');
+		p += hand_gsnlp_write(p, hand[WHITE], PIECE_BIT_MASK2[SILVER], PIECE_BITS[SILVER], 's');
+		p += hand_gsnlp_write(p, hand[WHITE], PIECE_BIT_MASK2[KNIGHT], PIECE_BITS[KNIGHT], 'n');
+		p += hand_gsnlp_write(p, hand[WHITE], PIECE_BIT_MASK2[LANCE], PIECE_BITS[LANCE], 'l');
+		p += hand_gsnlp_write(p, hand[WHITE], PIECE_BIT_MASK2[PAWN], PIECE_BITS[PAWN], 'p');
+		*p = ' ';
+		++p;
+	}
 
 	// ここから手数の文字列
 	int gp = gamePly;
