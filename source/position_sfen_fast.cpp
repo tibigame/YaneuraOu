@@ -70,11 +70,6 @@ void Position::set_fast(std::string sfen, StateInfo* si, Thread* th) {
 		SQ_98, SQ_88, SQ_78, SQ_68, SQ_58, SQ_48, SQ_38, SQ_28, SQ_18,
 		SQ_99, SQ_89, SQ_79, SQ_69, SQ_59, SQ_49, SQ_39, SQ_29, SQ_19
 	};
-	//char *token = new char[sfen.size() + 1];
-	//std::copy(sfen.begin(), sfen.end(), token);
-	//token[sfen.size()] = '\0';
-	//std::cout << token << std::endl;
-
 	char *token = const_cast<char *>(sfen.c_str()); // stringを1文字ずつスキャンするポインタ
 	bool promote = false; // 成り駒のフラグ
 	Piece pi;
