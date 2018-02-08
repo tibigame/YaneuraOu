@@ -7,7 +7,7 @@ Position::sfen_fast()はPosition::sfen()比で約20倍高速
 
 constexpr char CHAR0 = '0';
 
-Piece char_to_piece(char c) {
+inline Piece char_to_piece(char c) {
 	switch (c) {
 	case 'K': return B_KING;
 	case 'R': return B_ROOK;
