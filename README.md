@@ -30,6 +30,6 @@
 - 新規実装コードはほぼ「user-engine」ディレクトリ内に閉じています。
 - position.h: 一部privateの項目をpublicに変更。
 - position.cpp: 盤面を空で初期化する関数set_blank()の実装。
-- position_sfen_fast.cpp: Position::sfen()の20倍ほど速いPosition::sfen_fast()の実装。
+- position_sfen_fast.cpp: Position::set_fast(), Position::sfen_fast()の実装。
 - Bitboard.h: cross00StepEffectBB, cross45StepEffectBBテーブルの作成。
 - Bitboard.cpp: cross00StepEffectBB, cross45StepEffectBBテーブルの初期化。

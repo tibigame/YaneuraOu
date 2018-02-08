@@ -1,13 +1,236 @@
 ﻿#include "position.h"
 
-using namespace std;
+/*
+Position::set_fast()はPosition::set()比で約2.6倍高速
+Position::sfen_fast()はPosition::sfen()比で約20倍高速
+*/
+
+constexpr char CHAR0 = '0';
+
+Piece char_to_piece(char c) {
+	switch (c) {
+	case 'K': return B_KING;
+	case 'R': return B_ROOK;
+	case 'B': return B_BISHOP;
+	case 'G': return B_GOLD;
+	case 'S': return B_SILVER;
+	case 'N': return B_KNIGHT;
+	case 'L': return B_LANCE;
+	case 'P': return B_PAWN;
+	case 'k': return W_KING;
+	case 'r': return W_ROOK;
+	case 'b': return W_BISHOP;
+	case 'g': return W_GOLD;
+	case 's': return W_SILVER;
+	case 'n': return W_KNIGHT;
+	case 'l': return W_LANCE;
+	case 'p': return W_PAWN;
+	}
+	return NO_PIECE;
+}
+
+void Position::set_fast(std::string sfen, StateInfo* si, Thread* th) {
+	std::memset(this, 0, sizeof(Position));
+
+	// 局面をrootより遡るためには、ここまでの局面情報が必要で、それは引数のsiとして渡されているという解釈。
+	// ThreadPool::start_thinking()では、
+	// ここをいったんゼロクリアしたのちに、呼び出し側で、そのsiを復元することにより、局面を遡る。
+	std::memset(si, 0, sizeof(StateInfo));
+	st = si;
+
+	// 変な入力をされることはあまり想定していない。
+	// sfen文字列は、普通GUI側から渡ってくるのでおかしい入力であることはありえないからである。
+
+	// --- 盤面
+#if defined (USE_FV38)
+	// PieceListを更新する上で、どの駒がどこにあるかを設定しなければならないが、
+	// それぞれの駒をどこまで使ったかのカウンター
+	PieceNumber piece_no_count[KING] = { PIECE_NUMBER_ZERO,PIECE_NUMBER_PAWN,PIECE_NUMBER_LANCE,PIECE_NUMBER_KNIGHT,
+		PIECE_NUMBER_SILVER, PIECE_NUMBER_BISHOP, PIECE_NUMBER_ROOK,PIECE_NUMBER_GOLD };
+
+	// 先手玉のいない詰将棋とか、駒落ちに対応させるために、存在しない駒はすべてBONA_PIECE_ZEROにいることにする。
+	// 上のevalList.clear()で、ゼロクリアしているので、それは達成しているはず。
+#elif defined(USE_FV_VAR)
+	auto& dp = st->dirtyPiece;
+	// FV_VARのときは直接evalListに追加せず、DirtyPieceにいったん追加して、
+	// そのあと、DirtyPiece::update()でevalListに追加する。このupdate()の時に組み換えなどの操作をしたいため。
+	dp.set_state_info(st);
+#endif
+
+	kingSquare[BLACK] = kingSquare[WHITE] = SQ_NB;
+
+	constexpr Square board_index[81] = { // Squareテーブル
+		SQ_91, SQ_81, SQ_71, SQ_61, SQ_51, SQ_41, SQ_31, SQ_21, SQ_11,
+		SQ_92, SQ_82, SQ_72, SQ_62, SQ_52, SQ_42, SQ_32, SQ_22, SQ_12,
+		SQ_93, SQ_83, SQ_73, SQ_63, SQ_53, SQ_43, SQ_33, SQ_23, SQ_13,
+		SQ_94, SQ_84, SQ_74, SQ_64, SQ_54, SQ_44, SQ_34, SQ_24, SQ_14,
+		SQ_95, SQ_85, SQ_75, SQ_65, SQ_55, SQ_45, SQ_35, SQ_25, SQ_15,
+		SQ_96, SQ_86, SQ_76, SQ_66, SQ_56, SQ_46, SQ_36, SQ_26, SQ_16,
+		SQ_97, SQ_87, SQ_77, SQ_67, SQ_57, SQ_47, SQ_37, SQ_27, SQ_17,
+		SQ_98, SQ_88, SQ_78, SQ_68, SQ_58, SQ_48, SQ_38, SQ_28, SQ_18,
+		SQ_99, SQ_89, SQ_79, SQ_69, SQ_59, SQ_49, SQ_39, SQ_29, SQ_19
+	};
+	//char *token = new char[sfen.size() + 1];
+	//std::copy(sfen.begin(), sfen.end(), token);
+	//token[sfen.size()] = '\0';
+	//std::cout << token << std::endl;
+
+	char *token = const_cast<char *>(sfen.c_str()); // stringを1文字ずつスキャンするポインタ
+	bool promote = false; // 成り駒のフラグ
+	Piece pi;
+	int sq_count = 0; // 読んだ升のカウント
+	while (sq_count < 81) { // 正規のsfen文字列でないとパースに失敗する
+		if (*token == '\0') { // せめてもの安全装置
+			return; // ここに来ることはない
+		}
+		if (*token >= 'A') { // 駒文字を想定
+			pi = char_to_piece(*token); // Pieceの導出
+			if (promote) {
+				pi += PIECE_PROMOTE; // 成り駒にする
+				promote = false; // フラグを戻しておく
+			}
+			put_piece(board_index[sq_count], pi);
+
+#if defined(USE_FV38)
+			PieceNumber piece_no =
+				(pi == B_KING) ? PIECE_NUMBER_BKING : // 先手玉
+				(pi == W_KING) ? PIECE_NUMBER_WKING : // 後手玉
+				piece_no_count[raw_type_of(pi)]++; // それ以外
+			evalList.put_piece(piece_no, board_index[sq_count], pi); // sqの升にpcの駒を配置する
+#elif defined(USE_FV_VAR)
+			if (type_of(pi) != KING)
+			{
+				dp.add_piece(board_index[sq_count], pi);
+				dp.do_update(evalList);
+				dp.clear();
+				// DirtyPieceのBonaPieceを格納するバッファ、極めて小さいのでevalListに反映させるごとにクリアしておく。
+
+				//Eval::print_eval_list(*this);
+			}
+#endif
+			sq_count++; // 駒文字を読んだので升をカウントする
+		}
+		else if (*token >= '0') { // 48-57の数字を想定
+			sq_count += (*token - CHAR0); // 升目の数だけカウントする
+		}
+		else if (*token == '+') { // 43
+			promote = true; // '+'は次の駒が成駒であることを意味する
+		}
+		// 他の文字「/」などは意味をなさないのでスキップして次の文字を読む
+		++token;
+	}
+
+	// put_piece()を使ったので更新しておく。
+	// set_state()で駒種別のbitboardを参照するのでそれまでにこの関数を呼び出す必要がある。
+	update_bitboards();
+
+	// kingSquare[]の更新
+	update_kingSquare();
+
+	// --- 手番
+
+	// 正規のsfen文字列ならこの直後に「スペース, 手番, スペース」が続くはずである
+	++token;
+	sideToMove = (*token == 'w' ? WHITE : BLACK);
+	token += 2;
+
+	// --- 手駒
+
+	hand[BLACK] = hand[WHITE] = (Hand)0;
+
+	// 手駒なし
+	if (*token == '-') {
+		token += 2; // "- "を飛ばす
+	}
+	else {
+		int ct = 0; // 駒数のカウント
+		bool under_ten = true;
+		// 歩が20枚以上などは考慮されていない
+		while (*token != ' ') { // スペースなら手駒終端に達したということ
+			if (*token == '1' && under_ten) { // 1が現れるのは歩が10枚以上のときのみ (ここは十の位で通過する)
+				under_ten = false;
+			} else if (*token <= '9') { // ここは一の位で通過する
+				ct = *token - '0';
+				if (!under_ten) { // 十の位のフローを通過していれば
+					ct += 10;
+					under_ten = true; // フラグを元に戻す
+				}
+			}
+			else { // 駒文字の想定
+				if (ct == 0) { // 1は省略されていると考える
+					ct = 1;
+				}
+				pi = char_to_piece(*token);
+				add_hand(hand[color_of(pi)], type_of(pi), ct); // 手駒を加える
+
+				// FV38などではこの個数分だけpieceListに突っ込まないといけない。
+				for (int i = 0; i < ct; ++i)
+				{
+					Piece rpc = raw_type_of(pi);
+#if defined (USE_FV38)
+					PieceNumber piece_no = piece_no_count[rpc]++;
+					ASSERT_LV1(is_ok(piece_no));
+					evalList.put_piece(piece_no, color_of(pi), rpc, i);
+#elif defined(USE_FV_VAR)
+					dp.add_piece(color_of(pi), rpc, i);
+					dp.do_update(evalList);
+					dp.clear();
+#endif
+				}
+				ct = 0; // 駒数カウントを元に戻す
+			}
+			++token;
+		}
+		++token;
+	}
+
+	// --- 手数(平手の初期局面からの手数)
+
+	// gamePlyとして将棋所では(検討モードなどにおいて)ここで常に1が渡されている。
+	// 検討モードにおいても棋譜上の手数を渡して欲しい気がするし、棋譜上の手数がないなら0を渡して欲しい気はする。
+	// ここで渡されてきた局面をもとに探索してその指し手を定跡DBに登録しようとするときに、ここの手数が不正確であるのは困る。
+	gamePly = 0;
+	while (*token >= '0' && *token <= '9') { // 数字以外が出るまで読む
+		if (gamePly > 1000000) { // 手数が発散してきたら適当な所でループを抜けておく
+			break;
+		}
+		gamePly *= 10;
+		gamePly += (*token - '0');
+		++token;
+	}
+
+	// --- StateInfoの更新
+
+	set_state(st);
+
+	// --- evaluate
+
+	st->materialValue = Eval::material(*this);
+	Eval::compute_eval(*this);
+
+	// --- effect
+
+#if defined (LONG_EFFECT_LIBRARY)
+	// 利きの全計算による更新
+	LongEffect::calc_effect(*this);
+#endif
+
+	// --- validation
+
+#if ASSERT_LV >= 3
+	// これassertにしてしまうと、先手玉のいない局面や駒落ちの局面で落ちて困る。
+	if (!is_ok(*this))
+		std::cout << "info string Illigal Position?" << endl;
+#endif
+
+	thisThread = th;
+}
 
 constexpr int MAX_SFEN_SIZE = 128; // 128バイト (おそらくsfenはここに収まる)
 constexpr char *sfen_ = "sfen ";
-constexpr int PIECE_ENUM_NUM = 64; // 多分これぐらい
+constexpr int PIECE_ENUM_NUM = 34; // 多分これぐらい
 size_t piece_enum_str_size[PIECE_ENUM_NUM]; // 文字サイズを表す
 char *piece_enum_str[PIECE_ENUM_NUM * 2]; // PIECE1個あたり2文字分を確保する
-constexpr char CHAR0 = '0';
 
 // Position::sfen_fast()関連の各種テーブルの初期化。
 void position_sfen_init_helper(Piece pi, char* str, size_t length) {
@@ -90,32 +313,35 @@ inline int hand_rb_write(char* Dest, const Hand hand, const char *rb_str) {
 // Destにhandにmaskとshiftをして駒数を求めてから駒文字pieceを書き込む
 // 返り値は書き込んだ文字数
 inline int hand_gsnlp_write(char* Dest, const Hand hand, const uint32_t mask, const uint32_t shift, const char piece) {
-	int n = (hand & mask) >> shift;
+	auto n = (hand & mask) >> shift;
 	if (n == 0) { // その駒を持っていないので何もしない
 		return 0;
 	}
-	if (n >= 10) { // 10-18枚以上の場合
-		*Dest = CHAR0 + 1;
-		*(Dest + 1) = CHAR0 + n - 10;
-		*(Dest + 2) = piece;
-		return 3;
+	if (n == 1) { // 駒文字を書き込む
+		*Dest = piece;
+		return 1;
 	}
-	if (n != 1) { // 駒数と駒文字を書き込む
+	if (n < 10) { // 駒数と駒文字を書き込む
 		*Dest = CHAR0 + n;
 		*(Dest + 1) = piece;
 		return 2;
 	}
-	else { // 駒文字を書き込む
-		*Dest = piece;
-		return 1;
-	}
+	// 10-18枚以上の場合
+	*Dest = CHAR0 + 1;
+	*(Dest + 1) = CHAR0 + n - 10;
+	*(Dest + 2) = piece;
+	return 3;
 }
 
-const std::string Position::sfen_fast() const
+// is_prefixがtrueのときは先頭に「sfen 」の接頭辞を付けます
+const std::string Position::sfen_fast(bool is_prefix) const
 {
 	char *str = static_cast<char*>(_aligned_malloc(MAX_SFEN_SIZE, 64));
-	char *p = str + 5; // 文字列操作用のポインタ
-	memcpy(str, sfen_, 5); // 接頭辞
+	char *p = str; // 文字列操作用のポインタ
+	if (is_prefix) {
+		memcpy(str, sfen_, 5); // 接頭辞
+		p += 5;
+	}
 	// ここから盤面の文字列
 	char empty_cnt = 0;
 	int enum_int;
@@ -147,13 +373,17 @@ const std::string Position::sfen_fast() const
 			++empty_cnt;
 		}
 	}
+	if (empty_cnt) { // 空升が残っていればフラッシュする
+		*p = CHAR0 + empty_cnt;
+		++p;
+	}
 	
 	// ここから手番の文字列
 	memcpy(p, sideToMove == WHITE ? " w " : " b ", 3);
 	p += 3;
 	
 	// ここから手駒の文字列
-	if (hand[BLACK] || hand[WHITE]) { // 手駒なしのとき
+	if (!(hand[BLACK] || hand[WHITE])) { // 手駒なしのとき
 		memcpy(p, "- ", 2);
 		p += 2;
 	}
