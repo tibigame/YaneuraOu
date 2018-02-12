@@ -70,11 +70,13 @@ void Gui::main() {
 		draw_loop_init();
 		draw_shogiboard(textureID_shogiboard);
 		draw_shogiboard_rank_file_number(gl_string);
+		draw_info(info, gl_string);
 
 		if (is_render_pos) { // pos_が送られてくると盤面が表示される
 			draw_board(pos_, gl_string);
 			draw_hand(pos_, gl_string);
 			draw_teban(pos_, gl_string);
+			
 		}
 		else { // デバッグ用に適当に駒を出力しておく
 			board_piece_string(B_KNIGHT, SQ_89, gl_string, BLACK);
@@ -134,6 +136,11 @@ void Gui::set_pos(const Position &p) {
 	pos_.kingSquare[BLACK] = p.kingSquare[BLACK];
 	pos_.kingSquare[WHITE] = p.kingSquare[WHITE];
 	is_render_pos = true;
+}
+
+// 新しいstringをコピーしてセットする
+void Gui::set_info(const std::string &str) {
+	info = str;
 }
 
 #endif

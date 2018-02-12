@@ -323,12 +323,29 @@ void draw_teban(const Position &pos_, GlString* gl_string) {
 			conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.49f,
 			display_x + str_length1 + 0.5f, display_y, 0.0, 1.f, 0.f, true, textureID);
 	}
-	char itoa_buf[21];
-	_itoa_s(pos_.gamePly, itoa_buf, 10);
-	setlocale(LC_CTYPE, "jpn");
-	int byte = mblen(itoa_buf, 20);
 	int_string(pos_.gamePly, NumberType::HalfAlabic, 0.8f,
 		display_x + str_length1 + str_length2 + 0.2f, display_y - 1.2f * 0.7f, 0.0, gl_string);
+}
+
+// info情報を出力します (u8で改行なしの文字列ならアスペクト比は変だが出る)
+void draw_info(const std::string &info_, GlString* gl_string) {
+	std::string std_str = info_;
+	StringLength a(std_str);
+	auto len = a.render_length; // 文字列のサイズとする
+	auto f_size = 0.6f;
+	char *char_str = new char[std_str.size() + 1];
+	std::char_traits<char>::copy(char_str, std_str.c_str(), std_str.size() + 1);
+
+	const GLfloat display_x = -board_size - board_border - hand_inner_margin - hand_size - hand_outer_margin + 0.2f;
+	const GLfloat display_y = -board_size - board_border - 1.2f;
+
+	GLuint textureID = gl_string->create_and_get_texture_id(char_str);
+	if (textureID) {
+		draw_rect_ex(0.f, -f_size, len * f_size * 0.5f, 0.f,
+			conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.49f,
+			display_x, display_y, 0.0, 1.f, 0.f, true, textureID);
+	}
+	delete[] char_str;
 }
 
 #endif

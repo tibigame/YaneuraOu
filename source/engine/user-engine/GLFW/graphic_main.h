@@ -16,6 +16,7 @@ private:
 	GlString* gl_string; // 文字列を管理する
 	Position pos_; // Position構造体を受け取る
 	bool is_render_pos = false; // pos_を描写するかのフラグ
+	std::string info = u8" "; // 汎用の情報出力用の文字列を格納します
 
 	GLuint textureID_shogiboard; // 将棋盤のテクスチャIDを格納する
 
@@ -27,6 +28,7 @@ public:
 	~Gui();
 	void create_thread(); // 新しいスレッドで初期化系を呼ばないといけない
 	void set_pos(const Position &p); // 新しいPositionをコピーしてセットする
+	void set_info(const std::string &str); // 新しいstringをコピーしてセットする
 };
 
 extern Gui gui;

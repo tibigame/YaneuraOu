@@ -41,6 +41,7 @@ void hand_piece_string(const Piece pc, const int num, const Color c, GlString* g
 	const GLfloat f_size, const GLfloat f_size_offset); // 手駒領域に文字1つを描写します
 void draw_hand(const Position &pos_, GlString* gl_string); // 手駒の駒文字を描写します
 void draw_teban(const Position &pos_, GlString* gl_string); // 手番と手数を描写します
+void draw_info(const std::string &info_, GlString* gl_string); // info情報を出力します
 #endif
 
 #endif _GRAPHIC_OBJECT_H_

@@ -292,4 +292,51 @@ bool GlString::get_texture_id(const int gameply, GLuint &textureID) {
 	return true;
 }
 
+
+StringLength::StringLength(std::string &str) {
+	lenUtf8(str);
+}
+
+StringLength::~StringLength() {
+}
+
+static inline int lenByte(unsigned char c)
+{
+	if ((c >= 0x00) && (c <= 0x7f))
+	{
+		return 1;
+	}
+	else if ((c >= 0xc2) && (c <= 0xdf))
+	{
+		return 2;
+	}
+	else if ((c >= 0xe0) && (c <= 0xef))
+	{
+		return 3;
+	}
+	else if ((c >= 0xf0) && (c <= 0xf7))
+	{
+		return 4;
+	}
+	return 0;
+}
+
+int StringLength::lenUtf8(std::string &str) {
+	auto _pstr = str.c_str();
+	int i = 0;
+	int len = 0;
+	int len1_count = 0;
+	int temp_length = 0;
+	while (_pstr[i] != '\0')
+	{
+		++len;
+		temp_length = lenByte(_pstr[i]);
+		if (temp_length == 1) { ++len1_count; }
+		i += temp_length;
+	}
+	length = len;
+	render_length = len - len1_count / 2;
+	return len;
+}
+
 #endif

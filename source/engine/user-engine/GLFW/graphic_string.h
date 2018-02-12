@@ -35,6 +35,16 @@ public:
 	bool get_texture_id(const int gameply, GLuint &textureID); // 手数文字列に対応するテクスチャIDを取得します。なければfalseを返します
 };
 
+class StringLength {
+public:
+	StringLength(std::string &str);
+	~StringLength();
+	int length=0;
+	int render_length = 0;
+
+	int lenUtf8(std::string &str);
+};
+
 #endif
 
 #endif _GRAPHIC_STRING_H_
