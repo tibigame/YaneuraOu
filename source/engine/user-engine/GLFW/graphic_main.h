@@ -29,6 +29,7 @@ public:
 	void create_thread(); // 新しいスレッドで初期化系を呼ばないといけない
 	void set_pos(const Position &p); // 新しいPositionをコピーしてセットする
 	void set_info(const std::string &str); // 新しいstringをコピーしてセットする
+	void mouse(const double xpos, const double ypos); //マウスがクリックされたときのウィンドウのx座標とy座標の位置を受け取ります
 };
 
 extern Gui gui;

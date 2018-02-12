@@ -43,6 +43,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
+void mouse_callback(GLFWwindow* window, int button, int action, int mods) {
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+	gui.mouse(xpos, ypos);
+}
+
 // 初期化処理
 // 主にウィンドウの属性指定とコールバックの設定
 void Gui::init() {
@@ -58,12 +64,13 @@ void Gui::init() {
 	glfwSetWindowPos(window, 1280, 280); // 位置を指定
 	glfwMakeContextCurrent(window);
 	glfwSetKeyCallback(window, key_callback);
+	glfwSetMouseButtonCallback(window, mouse_callback);
+
 	gl_string->font_init(); // フォントの読み込みと駒文字などのフォントキャッシュの生成
 }
 
 // OpenGLのメインループ
 void Gui::main() {
-	//P.set("knsg1g1nl/l3r1s2/pppp1pbpp/6p2/4p2P1/P1P2SP2/1PSPPP2P/1BK4R1/LN1G1G1NL w - 24");
 	init();
 	draw_init(textureID_shogiboard);
 	while (!glfwWindowShouldClose(window)) {
@@ -119,6 +126,16 @@ void Gui::main() {
 		// いらないかもだけど、リアルタイム更新も不要なので適当にスリーブしとく
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		glfwWaitEvents();
+	}
+}
+
+// マウスコールバックの処理
+void Gui::mouse(const double xpos, const double ypos) {
+	if (xpos < 100) {
+		gui.set_info(u8"xpos<100");
+	}
+	else {
+		gui.set_info(u8"xpos>=100");
 	}
 }
 
