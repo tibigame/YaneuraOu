@@ -6,6 +6,8 @@
 
 [開発者twitter](https://twitter.com/tibigame)
 
+![スクリーンショット](https://github.com/tibigame/YaneuraOu_random-sfen/blob/master/screen_shot.png)
+
 # 開発予定
 
 - 序盤のランダム局面(未定)
