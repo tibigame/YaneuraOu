@@ -3,8 +3,10 @@
 #include "my_rand.h"
 #include "./test/test.h"
 #include "./util/stat.h"
+#include "./GLFW/graphic_main.h"
 
 #include <atltime.h>
+
 
 // USI拡張コマンド"user"が送られてくるとこの関数が呼び出される。実験に使ってください。
 void user_test(Position& pos_, istringstream& is)
@@ -16,7 +18,7 @@ void user_test(Position& pos_, istringstream& is)
 	CFileTime cTimeStart, cTimeEnd;
 	CFileTimeSpan cTimeSpan;
 	cTimeStart = CFileTime::GetCurrentTime();           // 現在時刻
-	const int loop_num = 10000000;
+	const int loop_num = 10;
 	for (auto i = 0; i < loop_num; ++i) {
 		end_game_mate(pos_);
 	}
@@ -28,6 +30,7 @@ void user_test(Position& pos_, istringstream& is)
 	}
 	myrand.cout();
 	view();
+	gui.set_pos(pos_);
 }
 
 #ifdef USER_ENGINE

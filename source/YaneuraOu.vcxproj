@@ -465,25 +465,45 @@
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-mate|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-user|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-2018-Goku|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-2018-Otafuku|Win32'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-2018-OtafukuLearn|Win32'" />
@@ -493,90 +513,155 @@
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-2018-OtafukuLearn|x64'">
     <ClCompile>
       <OpenMPSupport>true</OpenMPSupport>
       <PreprocessorDefinitions>USE_AVX2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-2018-Otafuku-sse2|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-2018-Otafuku-sse41|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-2018-Otafuku-sse42|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-2018Goku|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-mate|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-mate-sse42|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-mate-sse41|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-mate-sse2|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-user|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-user-sse42|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-user-sse41|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-user-sse2|x64'">
     <ClCompile>
       <OpenMPSupport>
       </OpenMPSupport>
+      <AdditionalIncludeDirectories>$(SolutionDir)\source\engine\user-engine\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);curand.lib;cudart_static.lib;SDL2_ttf.lib;SDL2.lib;SDL2main.lib;SDL2test.lib;freeglut.lib;freetype28.lib;glew32.lib;glfw3dll.lib;opengl32.lib;glu32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\source\engine\user-engine\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.15063.0\um\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="bitboard.h" />
@@ -584,6 +669,11 @@
     <ClInclude Include="engine\help-mate-engine\help-mate-search.h" />
     <ClInclude Include="engine\mate-engine\mate-search.h" />
     <ClInclude Include="engine\user-engine\ex_board.h" />
+    <ClInclude Include="engine\user-engine\GLFW\graphic_common.h" />
+    <ClInclude Include="engine\user-engine\GLFW\graphic_main.h" />
+    <ClInclude Include="engine\user-engine\GLFW\graphic_object.h" />
+    <ClInclude Include="engine\user-engine\GLFW\graphic_primitive.h" />
+    <ClInclude Include="engine\user-engine\GLFW\graphic_string.h" />
     <ClInclude Include="engine\user-engine\int_board.h" />
     <ClInclude Include="engine\user-engine\my_rand.h" />
     <ClInclude Include="engine\user-engine\pboard.h" />
@@ -652,6 +742,10 @@
     <ClCompile Include="engine\local-game-server\local-game-server.cpp" />
     <ClCompile Include="engine\mate-engine\mate-search.cpp" />
     <ClCompile Include="engine\user-engine\ex_board.cpp" />
+    <ClCompile Include="engine\user-engine\GLFW\graphic_main.cpp" />
+    <ClCompile Include="engine\user-engine\GLFW\graphic_object.cpp" />
+    <ClCompile Include="engine\user-engine\GLFW\graphic_primitive.cpp" />
+    <ClCompile Include="engine\user-engine\GLFW\graphic_string.cpp" />
     <ClCompile Include="engine\user-engine\int_board.cpp" />
     <ClCompile Include="engine\user-engine\my_rand.cpp" />
     <ClCompile Include="engine\user-engine\pboard.cpp" />
@@ -722,8 +816,28 @@
     <None Include="..\script\engine_invoker1.py" />
     <None Include="..\script\engine_invoker5.py" />
     <None Include="Makefile" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets" Condition="Exists('..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets')" />
+    <Import Project="..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets" Condition="Exists('..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets')" />
+    <Import Project="..\packages\freetype.redist.2.8.0.1\build\native\freetype.redist.targets" Condition="Exists('..\packages\freetype.redist.2.8.0.1\build\native\freetype.redist.targets')" />
+    <Import Project="..\packages\freetype.2.8.0.1\build\native\freetype.targets" Condition="Exists('..\packages\freetype.2.8.0.1\build\native\freetype.targets')" />
+    <Import Project="..\packages\sdl2.v140.redist.2.0.4\build\native\sdl2.v140.redist.targets" Condition="Exists('..\packages\sdl2.v140.redist.2.0.4\build\native\sdl2.v140.redist.targets')" />
+    <Import Project="..\packages\sdl2_ttf.v140.redist.2.0.14\build\native\sdl2_ttf.v140.redist.targets" Condition="Exists('..\packages\sdl2_ttf.v140.redist.2.0.14\build\native\sdl2_ttf.v140.redist.targets')" />
+    <Import Project="..\packages\sdl2_ttf.v140.2.0.14\build\native\sdl2_ttf.v140.targets" Condition="Exists('..\packages\sdl2_ttf.v140.2.0.14\build\native\sdl2_ttf.v140.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>このプロジェクトは、このコンピューター上にない NuGet パッケージを参照しています。それらのパッケージをダウンロードするには、[NuGet パッケージの復元] を使用します。詳細については、http://go.microsoft.com/fwlink/?LinkID=322105 を参照してください。見つからないファイルは {0} です。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets'))" />
+    <Error Condition="!Exists('..\packages\freetype.redist.2.8.0.1\build\native\freetype.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\freetype.redist.2.8.0.1\build\native\freetype.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\freetype.2.8.0.1\build\native\freetype.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\freetype.2.8.0.1\build\native\freetype.targets'))" />
+    <Error Condition="!Exists('..\packages\sdl2.v140.redist.2.0.4\build\native\sdl2.v140.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\sdl2.v140.redist.2.0.4\build\native\sdl2.v140.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\sdl2_ttf.v140.redist.2.0.14\build\native\sdl2_ttf.v140.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\sdl2_ttf.v140.redist.2.0.14\build\native\sdl2_ttf.v140.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\sdl2_ttf.v140.2.0.14\build\native\sdl2_ttf.v140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\sdl2_ttf.v140.2.0.14\build\native\sdl2_ttf.v140.targets'))" />
+  </Target>
 </Project>

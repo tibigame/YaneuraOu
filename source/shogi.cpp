@@ -7,6 +7,8 @@
 #include "thread.h"
 #include "tt.h"
 
+#include "engine/user-engine/GLFW/graphic_main.h"
+
 // ----------------------------------------
 //    const
 // ----------------------------------------
@@ -213,8 +215,10 @@ GlobalOptions_ GlobalOptions;
 //  main()
 // ----------------------------------------
 
+
 int main(int argc, char* argv[])
 {
+
 	// --- 全体的な初期化
 	USI::init(Options);
 	Bitboards::init();
@@ -223,6 +227,8 @@ int main(int argc, char* argv[])
 	Threads.init(Options["Threads"]);
 	TT.resize(Options["Hash"]);
 	Eval::init();
+
+	gui.create_thread();
 
 	// USIコマンドの応答部
 	USI::loop(argc, argv);

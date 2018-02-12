@@ -77,6 +77,9 @@
     <Filter Include="リソース ファイル\engine\user-engine\util">
       <UniqueIdentifier>{da18a0e0-9ba2-4c63-87b2-5d4723bcd0bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="リソース ファイル\engine\user-engine\GLFW">
+      <UniqueIdentifier>{e515cdc8-0cab-4d3b-84a9-31affcf31b84}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="evaluate.h">
@@ -274,6 +277,21 @@
     <ClInclude Include="engine\user-engine\pboard.h">
       <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClInclude>
+    <ClInclude Include="engine\user-engine\GLFW\graphic_main.h">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\GLFW\graphic_primitive.h">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\GLFW\graphic_common.h">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\GLFW\graphic_object.h">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\GLFW\graphic_string.h">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="movegen.cpp">
@@ -453,6 +471,18 @@
     <ClCompile Include="position_sfen_fast.cpp">
       <Filter>リソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="engine\user-engine\GLFW\graphic_main.cpp">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\GLFW\graphic_primitive.cpp">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\GLFW\graphic_object.cpp">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\GLFW\graphic_string.cpp">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\docs\USI拡張コマンド.txt">
@@ -496,5 +526,6 @@
     <None Include="..\docs\README2017.md">
       <Filter>docs</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
