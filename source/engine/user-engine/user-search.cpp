@@ -31,7 +31,7 @@ void user_test(Position& pos_, istringstream& is)
 	myrand.cout();
 	view();
 	gui.set_pos(pos_);
-	gui.set_info(pos_.sfen_fast(true));
+	gui.store.add_action_que(action_update_info(pos_.sfen_fast(true)));
 }
 
 #ifdef USER_ENGINE

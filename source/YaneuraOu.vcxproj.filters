@@ -292,6 +292,9 @@
     <ClInclude Include="engine\user-engine\GLFW\graphic_string.h">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClInclude>
+    <ClInclude Include="engine\user-engine\GLFW\graphic_redux.h">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="movegen.cpp">
@@ -481,6 +484,9 @@
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClCompile>
     <ClCompile Include="engine\user-engine\GLFW\graphic_string.cpp">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\GLFW\graphic_redux.cpp">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClCompile>
   </ItemGroup>

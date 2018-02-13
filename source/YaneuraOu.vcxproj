@@ -673,6 +673,7 @@
     <ClInclude Include="engine\user-engine\GLFW\graphic_main.h" />
     <ClInclude Include="engine\user-engine\GLFW\graphic_object.h" />
     <ClInclude Include="engine\user-engine\GLFW\graphic_primitive.h" />
+    <ClInclude Include="engine\user-engine\GLFW\graphic_redux.h" />
     <ClInclude Include="engine\user-engine\GLFW\graphic_string.h" />
     <ClInclude Include="engine\user-engine\int_board.h" />
     <ClInclude Include="engine\user-engine\my_rand.h" />
@@ -745,6 +746,7 @@
     <ClCompile Include="engine\user-engine\GLFW\graphic_main.cpp" />
     <ClCompile Include="engine\user-engine\GLFW\graphic_object.cpp" />
     <ClCompile Include="engine\user-engine\GLFW\graphic_primitive.cpp" />
+    <ClCompile Include="engine\user-engine\GLFW\graphic_redux.cpp" />
     <ClCompile Include="engine\user-engine\GLFW\graphic_string.cpp" />
     <ClCompile Include="engine\user-engine\int_board.cpp" />
     <ClCompile Include="engine\user-engine\my_rand.cpp" />

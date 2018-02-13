@@ -72,12 +72,19 @@ void Gui::init() {
 // OpenGLのメインループ
 void Gui::main() {
 	init();
+	store.set_glstring(gl_string);
 	draw_init(textureID_shogiboard);
+
+	store.state.info = "STATE: FAIRSTSET";
+	std::vector<Button> aaads;
+	store.add_action_que(action_callback(1.0, 1.0, u8"TEST: add_action_que, ", aaads));
+
+
 	while (!glfwWindowShouldClose(window)) {
 		draw_loop_init();
 		draw_shogiboard(textureID_shogiboard);
 		draw_shogiboard_rank_file_number(gl_string);
-		draw_info(info, gl_string);
+		store.render(store.provider());
 
 		if (is_render_pos) { // pos_が送られてくると盤面が表示される
 			draw_board(pos_, gl_string);
