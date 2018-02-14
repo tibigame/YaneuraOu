@@ -67,11 +67,11 @@ class State {
 // Renderに渡す状態を表現する構造体
 // Stateの部分情報にReducerからの変更が不要な情報を合わせる
 // GUIはシングルスレッドなのでコピーでなくポインタで渡してよい
-struct StateRaender {
+struct StateRender {
 	const State *state;
 	GLuint textureID_shogiboard; // 将棋盤のテクスチャID
 	GlString* gl_string; // 文字のテクスチャIDを管理するクラスへのポインタ
-	StateRaender(const State *s, const GLuint textureID_shogiboard_, GlString* gl_string_);
+	StateRender(const State *s, const GLuint textureID_shogiboard_, GlString* gl_string_);
 };
 
 // Stateを管理するクラス
@@ -93,7 +93,7 @@ public:
 	void add_action_que(Action ac); // キューにactionを追加する
 	void exe_action_que(); // キューのアクションを実行する
 
-	StateRaender provider() const; // 現在のstateから描写に必要な情報を取り出す
+	StateRender provider() const; // 現在のstateから描写に必要な情報を取り出す
 };
 
 // Actionを発行する
@@ -104,8 +104,8 @@ const Action action_update_pos(const Position &new_pos_);
 // Actionを受けて新しいStateを作成する (Stateは直接変更しない)
 const State reducer(const Action &action, const State &state);
 
-
-void render(const StateRaender &state_render); // providerを呼び出して描写を行う
+// providerから受け取ったStateを用いて描写を行う
+void render(const StateRender &state_render);
 
 #endif
 

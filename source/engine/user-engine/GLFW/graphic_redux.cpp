@@ -69,7 +69,7 @@ State &State::operator=(const State &a)
 	return t;
 }
 
-StateRaender::StateRaender(const State *s, const GLuint textureID_shogiboard_, GlString* gl_string_) {
+StateRender::StateRender(const State *s, const GLuint textureID_shogiboard_, GlString* gl_string_) {
 	state = s;
 	textureID_shogiboard = textureID_shogiboard_;
 	gl_string = gl_string_;
@@ -173,8 +173,7 @@ const State reducer(const Action &action, const State &state) {
 			Position *source = static_cast<Position*>(action.p);
 			copy(*source, nextState.pos_);
 			nextState.is_render_pos = true;
-			// ここで落ちる
-			// free(static_cast<Position*>(action.p)); // Actionで確保したメモリを解放する
+			_aligned_free(static_cast<Position*>(action.p)); // Actionで確保したメモリを解放する
 		}
 		default: {
 			break;
@@ -207,13 +206,13 @@ void Store::update_store(const State &nextState) {
 }
 
 // 現在のstateから描写に必要な情報を取り出す
-StateRaender Store::provider() const {
+StateRender Store::provider() const {
 	// 最新のstateを取り出し加工してrender()に渡す
-	return StateRaender(&state, textureID_shogiboard, gl_string);
+	return StateRender(&state, textureID_shogiboard, gl_string);
 }
 
-// providerを呼び出して描写を行う
-void render(const StateRaender &state_render) {
+// providerから受け取ったStateを用いて描写を行う
+void render(const StateRender &state_render) {
 	draw_shogiboard(const_cast<GLuint&>(state_render.textureID_shogiboard));
 	draw_shogiboard_rank_file_number(state_render.gl_string);
 	draw_info(state_render.state->info, state_render.gl_string);
