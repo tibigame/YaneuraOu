@@ -162,6 +162,9 @@ struct Position
 	Position(const Position&) = delete;
 	Position& operator=(const Position&) = delete;
 
+	// 必要な情報だけコピーする
+	friend void copy(const Position &source, Position &Dest);
+
 	// Positionで用いるZobristテーブルの初期化
 	static void init();
 
