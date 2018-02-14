@@ -3,7 +3,6 @@
 // GLFW3を使ってOpenGLでの描写を行います
 // Shogi系の処理とOpenGLとを繋ぐクラスです
 #include "graphic_common.h"
-#include "graphic_string.h"
 #include "graphic_redux.h"
 #include <thread>
 
@@ -12,7 +11,6 @@ private:
 #ifdef GLFW3
 	std::thread gui_thread; // OpenGLのメインループを回すスレッド
 	GLFWwindow* window; // 描写ウィンドウを表すポインタ
-	GlString* gl_string; // 文字列を管理する
 
 	void init(); // グラフィック系の初期化を行う
 	void main(); // いわゆる描写系のメインループ

@@ -87,7 +87,7 @@ public:
 	Store();
 	~Store();
 
-	void init(GlString* gl_string);
+	void init();
 
 	void callback(const double posx, const double posy, const std::string &str);
 	void add_action_que(Action ac); // キューにactionを追加する
@@ -106,6 +106,7 @@ const State reducer(const Action &action, const State &state);
 
 // providerから受け取ったStateを用いて描写を行う
 void render(const StateRender &state_render);
+void render_loop_init();
 
 #endif
 

@@ -75,13 +75,15 @@ StateRender::StateRender(const State *s, const GLuint textureID_shogiboard_, GlS
 
 // コンストラクタとデストラクタ
 Store::Store() {
+	gl_string = new GlString;
 }
 
 Store::~Store() {
+	delete gl_string;
 }
 
-void Store::init(GlString* gl_string_) {
-	gl_string = gl_string_;
+void Store::init() {
+	gl_string->font_init(); // フォントの読み込みと駒文字などのフォントキャッシュの生成
 	draw_init(textureID_shogiboard);
 }
 
@@ -229,6 +231,10 @@ void render(const StateRender &state_render) {
 		draw_hand(state_render.state->pos_, state_render.gl_string);
 		draw_teban(state_render.state->pos_, state_render.gl_string);
 	}
+}
+
+void render_loop_init() {
+	draw_loop_init();
 }
 
 #endif

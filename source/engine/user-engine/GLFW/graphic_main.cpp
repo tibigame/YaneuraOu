@@ -1,5 +1,4 @@
 ﻿#include "graphic_main.h"
-#include "graphic_primitive.h"
 
 constexpr char *window_title(u8"将棋のランダム局面生成 with やねうら王");
 
@@ -8,14 +7,10 @@ Gui gui;
 
 // コンストラクタとデストラクタ
 Gui::Gui() {
-#ifdef GLFW3
-	gl_string = new GlString;
-#endif
 }
 
 Gui::~Gui() {
 #ifdef GLFW3
-	delete gl_string;
 	glfwDestroyWindow(window);
 	glfwTerminate();
 #endif
@@ -64,20 +59,19 @@ void Gui::init() {
 	glfwMakeContextCurrent(window);
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetMouseButtonCallback(window, mouse_callback);
-	gl_string->font_init(); // フォントの読み込みと駒文字などのフォントキャッシュの生成
 }
 
 // OpenGLのメインループ
 void Gui::main() {
 	init();
-	store.init(gl_string);
+	store.init();
 	
 	// デバッグ用の局面を出力しておく
 	store.state.pos_.set_fast_sfenonly("l4+R1n1/1pgk5/5+P3/4Sp1+P1/1N7/1Kp1P4/4SP1+p1/9/4+p1+sL1 w BGSNPrb2gn2l8p 1240");
 	store.state.is_render_pos = true;
 
 	while (!glfwWindowShouldClose(window)) {
-		draw_loop_init();
+		render_loop_init();
 		store.exe_action_que();
 		render(store.provider());
 
