@@ -175,6 +175,7 @@ struct Position
 	// 内部的にmemset(si,0,sizeof(StateInfo))として、この渡されたインスタンスをクリアしている。
 	void set(std::string sfen , StateInfo* si , Thread* th);
 	void set_fast(std::string sfen, StateInfo* si, Thread* th);
+	void set_fast_sfenonly(std::string sfen);
 
 	// 局面のsfen文字列を取得する
 	// ※ USIプロトコルにおいては不要な機能ではあるが、デバッグのために局面を標準出力に出力して

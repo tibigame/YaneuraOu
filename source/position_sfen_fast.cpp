@@ -29,6 +29,110 @@ inline Piece char_to_piece(char c) {
 	return NO_PIECE;
 }
 
+void Position::set_fast_sfenonly(std::string sfen) {
+	std::memset(this, 0, sizeof(Position));
+	kingSquare[BLACK] = kingSquare[WHITE] = SQ_NB;
+	constexpr Square board_index[81] = { // Squareテーブル
+		SQ_91, SQ_81, SQ_71, SQ_61, SQ_51, SQ_41, SQ_31, SQ_21, SQ_11,
+		SQ_92, SQ_82, SQ_72, SQ_62, SQ_52, SQ_42, SQ_32, SQ_22, SQ_12,
+		SQ_93, SQ_83, SQ_73, SQ_63, SQ_53, SQ_43, SQ_33, SQ_23, SQ_13,
+		SQ_94, SQ_84, SQ_74, SQ_64, SQ_54, SQ_44, SQ_34, SQ_24, SQ_14,
+		SQ_95, SQ_85, SQ_75, SQ_65, SQ_55, SQ_45, SQ_35, SQ_25, SQ_15,
+		SQ_96, SQ_86, SQ_76, SQ_66, SQ_56, SQ_46, SQ_36, SQ_26, SQ_16,
+		SQ_97, SQ_87, SQ_77, SQ_67, SQ_57, SQ_47, SQ_37, SQ_27, SQ_17,
+		SQ_98, SQ_88, SQ_78, SQ_68, SQ_58, SQ_48, SQ_38, SQ_28, SQ_18,
+		SQ_99, SQ_89, SQ_79, SQ_69, SQ_59, SQ_49, SQ_39, SQ_29, SQ_19
+	};
+	char *token = const_cast<char *>(sfen.c_str()); // stringを1文字ずつスキャンするポインタ
+	bool promote = false; // 成り駒のフラグ
+	Piece pi;
+	int sq_count = 0; // 読んだ升のカウント
+	while (sq_count < 81) { // 正規のsfen文字列でないとパースに失敗する
+		if (*token == '\0') { // せめてもの安全装置
+			return; // ここに来ることはない
+		}
+		if (*token >= 'A') { // 駒文字を想定
+			pi = char_to_piece(*token); // Pieceの導出
+			if (promote) {
+				pi += PIECE_PROMOTE; // 成り駒にする
+				promote = false; // フラグを戻しておく
+			}
+			put_piece(board_index[sq_count], pi);
+			sq_count++; // 駒文字を読んだので升をカウントする
+		}
+		else if (*token >= '0') { // 48-57の数字を想定
+			sq_count += (*token - CHAR0); // 升目の数だけカウントする
+		}
+		else if (*token == '+') { // 43
+			promote = true; // '+'は次の駒が成駒であることを意味する
+		}
+		// 他の文字「/」などは意味をなさないのでスキップして次の文字を読む
+		++token;
+	}
+
+	// put_piece()を使ったので更新しておく。
+	// set_state()で駒種別のbitboardを参照するのでそれまでにこの関数を呼び出す必要がある。
+	update_bitboards();
+
+	// kingSquare[]の更新
+	update_kingSquare();
+
+	// --- 手番
+
+	// 正規のsfen文字列ならこの直後に「スペース, 手番, スペース」が続くはずである
+	++token;
+	sideToMove = (*token == 'w' ? WHITE : BLACK);
+	token += 2;
+
+	// --- 手駒
+
+	hand[BLACK] = hand[WHITE] = (Hand)0;
+
+	// 手駒なし
+	if (*token == '-') {
+		token += 2; // "- "を飛ばす
+	}
+	else {
+		int ct = 0; // 駒数のカウント
+		bool under_ten = true;
+		// 歩が20枚以上などは考慮されていない
+		while (*token != ' ') { // スペースなら手駒終端に達したということ
+			if (*token == '1' && under_ten) { // 1が現れるのは歩が10枚以上のときのみ (ここは十の位で通過する)
+				under_ten = false;
+			}
+			else if (*token <= '9') { // ここは一の位で通過する
+				ct = *token - '0';
+				if (!under_ten) { // 十の位のフローを通過していれば
+					ct += 10;
+					under_ten = true; // フラグを元に戻す
+				}
+			}
+			else { // 駒文字の想定
+				if (ct == 0) { // 1は省略されていると考える
+					ct = 1;
+				}
+				pi = char_to_piece(*token);
+				add_hand(hand[color_of(pi)], type_of(pi), ct); // 手駒を加える
+				ct = 0; // 駒数カウントを元に戻す
+			}
+			++token;
+		}
+		++token;
+	}
+
+	// --- 手数(平手の初期局面からの手数)
+
+	gamePly = 0;
+	while (*token >= '0' && *token <= '9') { // 数字以外が出るまで読む
+		if (gamePly > 1000000) { // 手数が発散してきたら適当な所でループを抜けておく
+			break;
+		}
+		gamePly *= 10;
+		gamePly += (*token - '0');
+		++token;
+	}
+}
+
 void Position::set_fast(std::string sfen, StateInfo* si, Thread* th) {
 	std::memset(this, 0, sizeof(Position));
 

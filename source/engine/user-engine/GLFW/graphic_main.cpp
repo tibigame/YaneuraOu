@@ -72,38 +72,15 @@ void Gui::init() {
 void Gui::main() {
 	init();
 	store.init(gl_string);
+	
+	// デバッグ用の局面を出力しておく
+	store.state.pos_.set_fast_sfenonly("l4+R1n1/1pgk5/5+P3/4Sp1+P1/1N7/1Kp1P4/4SP1+p1/9/4+p1+sL1 w BGSNPrb2gn2l8p 1240");
+	store.state.is_render_pos = true;
 
 	while (!glfwWindowShouldClose(window)) {
 		draw_loop_init();
 		store.exe_action_que();
 		render(store.provider());
-		/*
-		if (is_render_pos) { // pos_が送られてくると盤面が表示される
-			draw_board(pos_, gl_string);
-			draw_hand(pos_, gl_string);
-			draw_teban(pos_, gl_string);
-			
-		}
-		else { // デバッグ用に適当に駒を出力しておく
-			board_piece_string(B_KNIGHT, SQ_89, gl_string, BLACK);
-			board_piece_string(B_KNIGHT, SQ_29, gl_string, BLACK);
-			board_piece_string(B_LANCE, SQ_19, gl_string, BLACK);
-			board_piece_string(W_KNIGHT, SQ_81, gl_string, WHITE);
-			board_piece_string(W_KNIGHT, SQ_21, gl_string, WHITE);
-			board_piece_string(B_GOLD, SQ_49, gl_string, BLACK);
-			board_piece_string(B_SILVER, SQ_38, gl_string, BLACK);
-			board_piece_string(B_ROOK, SQ_55, gl_string, BLACK);
-			board_piece_string(W_HORSE, SQ_73, gl_string, WHITE);
-			board_piece_string(W_DRAGON, SQ_88, gl_string, WHITE);
-			board_piece_string(W_PRO_PAWN, SQ_99, gl_string, WHITE);
-			board_piece_string(B_PRO_KNIGHT, SQ_12, gl_string, BLACK);
-			board_piece_string(B_PRO_LANCE, SQ_42, gl_string, BLACK);
-			board_piece_string(W_PRO_SILVER, SQ_27, gl_string, WHITE);
-			board_piece_string(W_PRO_PAWN, SQ_26, gl_string, WHITE);
-			board_piece_string(B_PAWN, SQ_54, gl_string, BLACK);
-		}
-		*/
-		
 
 		glFlush();
 		glfwSwapBuffers(window);
