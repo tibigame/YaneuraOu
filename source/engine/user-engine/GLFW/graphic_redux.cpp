@@ -94,9 +94,22 @@ void Store::add_action_que(Action ac) {
 	action_que.push(ac);
 }
 
+#include <stdlib.h>
+
 // actionを発行する
 void Store::callback(const double posx, const double posy, const std::string &str) {
 	std::vector<Button> temp;
+
+	char a[100];
+	_itoa_s((int)posx, a, 10);
+	std::string test = "posx = ";
+	test += a;
+	test += ", poy = ";
+	_itoa_s((int)posy, a, 10);
+	test += a;
+	add_action_que(action_update_info(test));
+	return;
+
 	std::copy(state.buttons.begin(), state.buttons.end(), back_inserter(temp));
 
 	Action ac = action_callback(posx, posy, str, temp);
@@ -143,9 +156,7 @@ const Action action_update_info(const std::string new_info) {
 const State reducer(const Action &action, const State &state) {
 	// stateをnextStateにコピーする
 	// std::vector<Button>
-	State nextState;
-	nextState.info = state.info;
-	std::copy(state.buttons.begin(), state.buttons.end(), back_inserter(nextState.buttons));
+	State nextState = state;
 
 	// cmdのミューテックスを獲得する
 	std::lock_guard<std::mutex> lock(cmd_mtx);

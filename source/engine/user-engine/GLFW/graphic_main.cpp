@@ -46,7 +46,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void mouse_callback(GLFWwindow* window, int button, int action, int mods) {
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
-	gui.mouse(xpos, ypos);
+	std::string mouse_test = xpos < 100 ? u8"xpos<100" : u8"xpos>=100";
+	gui.store.callback(xpos, ypos, mouse_test);
 }
 
 // 初期化処理
@@ -88,37 +89,6 @@ void Gui::main() {
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		glfwWaitEvents();
 	}
-}
-
-// マウスコールバックの処理
-void Gui::mouse(const double xpos, const double ypos) {
-	if (xpos < 100) {
-		gui.set_info(u8"xpos<100");
-	}
-	else {
-		gui.set_info(u8"xpos>=100");
-	}
-}
-
-// 新しいPositionをコピーしてセットする
-void Gui::set_pos(const Position &p) {
-	// コピーコンストラクタがなかったので必要な分だけ無理矢理コピー
-	// GUI側ではせいぜいsfen変換ぐらいしかしないので問題ないだろう
-	for (auto i = 0; i < 82; ++i) {
-		pos_.board[i] = p.board[i];
-	}
-	pos_.hand[BLACK] = p.hand[BLACK];
-	pos_.hand[WHITE] = p.hand[WHITE];
-	pos_.sideToMove = p.sideToMove;
-	pos_.gamePly = p.gamePly;
-	pos_.kingSquare[BLACK] = p.kingSquare[BLACK];
-	pos_.kingSquare[WHITE] = p.kingSquare[WHITE];
-	is_render_pos = true;
-}
-
-// 新しいstringをコピーしてセットする
-void Gui::set_info(const std::string &str) {
-	info = str;
 }
 
 #endif
