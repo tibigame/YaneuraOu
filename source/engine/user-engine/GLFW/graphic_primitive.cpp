@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string>
 #include "graphic_primitive.h"
-#include "graphic_object.h"
 
 // OpenGLをラッパーして基礎的なグラフィック描写を行う関数群です
 

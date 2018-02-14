@@ -1,8 +1,6 @@
 ﻿#include "graphic_primitive.h"
 #include "graphic_object.h"
-#include "graphic_string.h"
 #include "graphic_redux.h"
-
 
 #ifdef GLFW3
 
@@ -210,7 +208,6 @@ void Store::exe_action_que() {
 // stateを変更できる唯一のメソッドとすること
 void Store::update_store(const State &nextState) {
 	state.info = nextState.info;
-
 	state.is_render_pos = nextState.is_render_pos;
 	std::copy(nextState.buttons.begin(), nextState.buttons.end(), back_inserter(state.buttons));
 	copy(nextState.pos_, state.pos_);

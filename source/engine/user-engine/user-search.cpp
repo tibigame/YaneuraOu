@@ -2,7 +2,6 @@
 #include "random_board.h"
 #include "my_rand.h"
 #include "./test/test.h"
-#include "./util/stat.h"
 #include "./GLFW/graphic_main.h"
 #include "./GLFW/graphic_redux.h"
 
@@ -15,7 +14,6 @@ void user_test(Position& pos_, istringstream& is)
 	uint64_t loop_max = 100000000; // 1000万回
 	is >> loop_max;
 	cout << "Random Player test , loop_max = " << loop_max << endl;
-	// sq_test();
 	CFileTime cTimeStart, cTimeEnd;
 	CFileTimeSpan cTimeSpan;
 	cTimeStart = CFileTime::GetCurrentTime();           // 現在時刻
@@ -31,8 +29,10 @@ void user_test(Position& pos_, istringstream& is)
 	}
 	myrand.cout();
 	view();
+
 	gui.store.add_action_que(action_update_info(pos_.sfen_fast(true)));
 	gui.store.add_action_que(action_update_pos(pos_));
+
 }
 
 #ifdef USER_ENGINE

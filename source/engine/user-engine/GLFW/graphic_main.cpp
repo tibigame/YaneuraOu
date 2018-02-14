@@ -1,7 +1,5 @@
 ﻿#include "graphic_main.h"
 #include "graphic_primitive.h"
-#include "graphic_object.h"
-#include "graphic_string.h"
 
 constexpr char *window_title(u8"将棋のランダム局面生成 with やねうら王");
 
