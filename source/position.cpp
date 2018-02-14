@@ -84,6 +84,20 @@ void Position::set_check_info(StateInfo* si) const {
 	si->checkSquares[DRAGON]     = si->checkSquares[ROOK]   | kingEffect(ksq);
 }
 
+void copy(const Position &Source, Position &Dest) {
+
+	for (auto i = 0; i < 82; ++i) {
+		Dest.board[i] = Source.board[i];
+	}
+	Dest.hand[BLACK] = Source.hand[BLACK];
+	Dest.hand[WHITE] = Source.hand[WHITE];
+	Dest.sideToMove = Source.sideToMove;
+	Dest.gamePly = Source.gamePly;
+	Dest.kingSquare[BLACK] = Source.kingSquare[BLACK];
+	Dest.kingSquare[WHITE] = Source.kingSquare[WHITE];
+}
+
+
 // ----------------------------------
 //       Zorbrist keyの初期化
 // ----------------------------------

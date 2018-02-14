@@ -4,6 +4,7 @@
 #include "./test/test.h"
 #include "./util/stat.h"
 #include "./GLFW/graphic_main.h"
+#include "./GLFW/graphic_redux.h"
 
 #include <atltime.h>
 
@@ -30,8 +31,8 @@ void user_test(Position& pos_, istringstream& is)
 	}
 	myrand.cout();
 	view();
-	gui.set_pos(pos_);
 	gui.store.add_action_que(action_update_info(pos_.sfen_fast(true)));
+	gui.store.add_action_que(action_update_pos(pos_));
 }
 
 #ifdef USER_ENGINE

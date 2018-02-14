@@ -1,5 +1,6 @@
 ﻿#include "graphic_primitive.h"
 #include "graphic_object.h"
+#include "graphic_string.h"
 #include "graphic_redux.h"
 
 
@@ -14,6 +15,7 @@ Action::Action(const FunctionType ft_, const std::string &str_) {
 	ft = ft_;
 	str = str_;
 	index = 0;
+	p = nullptr;
 }
 
 // 初期化を行う
@@ -45,7 +47,6 @@ const Action Button::get_action(const std::string &str_) const {
 	return Action(ft, str_);
 }
 
-
 State::State() {
 }
 
@@ -55,15 +56,7 @@ State::State(const State &a) {
 	is_render_pos = a.is_render_pos;
 	info = a.info;
 	std::copy(a.buttons.begin(), a.buttons.end(), back_inserter(buttons));
-	for (auto i = 0; i < 82; ++i) {
-		pos_.board[i] = a.pos_.board[i];
-	}
-	pos_.hand[BLACK] = a.pos_.hand[BLACK];
-	pos_.hand[WHITE] = a.pos_.hand[WHITE];
-	pos_.sideToMove = a.pos_.sideToMove;
-	pos_.gamePly = a.pos_.gamePly;
-	pos_.kingSquare[BLACK] = a.pos_.kingSquare[BLACK];
-	pos_.kingSquare[WHITE] = a.pos_.kingSquare[WHITE];
+	copy(a.pos_, pos_);
 }
 // 代入演算子
 State &State::operator=(const State &a)
@@ -72,17 +65,14 @@ State &State::operator=(const State &a)
 	t.info = a.info;
 	t.is_render_pos = a.is_render_pos;
 	std::copy(a.buttons.begin(), a.buttons.end(), back_inserter(t.buttons));
-	for (auto i = 0; i < 82; ++i) {
-		t.pos_.board[i] = a.pos_.board[i];
-	}
-	t.pos_.hand[BLACK] = a.pos_.hand[BLACK];
-	t.pos_.hand[WHITE] = a.pos_.hand[WHITE];
-	t.pos_.sideToMove = a.pos_.sideToMove;
-	t.pos_.gamePly = a.pos_.gamePly;
-	t.pos_.kingSquare[BLACK] = a.pos_.kingSquare[BLACK];
-	t.pos_.kingSquare[WHITE] = a.pos_.kingSquare[WHITE];
-
+	copy(a.pos_, t.pos_);
 	return t;
+}
+
+StateRaender::StateRaender(const State *s, const GLuint textureID_shogiboard_, GlString* gl_string_) {
+	state = s;
+	textureID_shogiboard = textureID_shogiboard_;
+	gl_string = gl_string_;
 }
 
 // コンストラクタとデストラクタ
@@ -92,8 +82,9 @@ Store::Store() {
 Store::~Store() {
 }
 
-void Store::set_glstring(GlString* gl_string_) {
+void Store::init(GlString* gl_string_) {
 	gl_string = gl_string_;
+	draw_init(textureID_shogiboard);
 }
 
 // キューにactionを追加する
@@ -115,12 +106,8 @@ void Store::callback(const double posx, const double posy, const std::string &st
 	add_action_que(ac); // キューにactionを追加する
 }
 
-
 // Actionを発行する
 const Action action_callback(const double posx, const double posy, const std::string str, const std::vector<Button> buttons) {
-	Action ac2(FunctionType::TEST, str);
-	return ac2;
-
 	Action ac(FunctionType::NONE, "");
 	for (auto i = 0; i < buttons.size(); ++i) {
 		if (
@@ -137,6 +124,16 @@ const Action action_callback(const double posx, const double posy, const std::st
 	return ac; // Action発行対象となるボタンが存在しなかった
 }
 
+const Action action_update_pos(const Position &new_pos_) {
+	Action ac;
+	ac.ft = FunctionType::POS_UPDATE;
+
+	Position *p = static_cast<Position*>(_aligned_malloc(sizeof(Position), 32)); // ここで確保したメモリはreducerで解放すること
+	copy(new_pos_, *p);
+	ac.p = static_cast<void*>(p);
+	return ac;
+}
+
 const Action action_update_info(const std::string new_info) {
 	Action ac(FunctionType::INFO_UPDATE, new_info);
 	return ac;
@@ -149,7 +146,6 @@ const State reducer(const Action &action, const State &state) {
 	State nextState;
 	nextState.info = state.info;
 	std::copy(state.buttons.begin(), state.buttons.end(), back_inserter(nextState.buttons));
-
 
 	// cmdのミューテックスを獲得する
 	std::lock_guard<std::mutex> lock(cmd_mtx);
@@ -173,11 +169,32 @@ const State reducer(const Action &action, const State &state) {
 			nextState.info = action.str;
 			break;
 		}
+		case FunctionType::POS_UPDATE: {
+			Position *source = static_cast<Position*>(action.p);
+			copy(*source, nextState.pos_);
+			nextState.is_render_pos = true;
+			// ここで落ちる
+			// free(static_cast<Position*>(action.p)); // Actionで確保したメモリを解放する
+		}
 		default: {
 			break;
 		}
 	}
 	return nextState; // 新しいstateを返す (guiのミューテックスも解放される)
+}
+
+// Actionを実行する
+void Store::exe_action_que() {
+	if (action_que.empty()) { // キューが空なら何もしない
+		return;
+	}
+	// キューが空でなければ1つActionを実行する
+	store_mtx.lock(); // storeのミューテックスを取得する
+	Action ac = action_que.front();
+	action_que.pop();
+	store_mtx.unlock(); // ミューテックスを解放する
+	State nextState = reducer(ac, state); // reducerにdispatchする
+	update_store(nextState); // stateを更新する
 }
 
 // stateを変更できる唯一のメソッドとすること
@@ -186,36 +203,25 @@ void Store::update_store(const State &nextState) {
 
 	state.is_render_pos = nextState.is_render_pos;
 	std::copy(nextState.buttons.begin(), nextState.buttons.end(), back_inserter(state.buttons));
-	for (auto i = 0; i < 82; ++i) {
-		state.pos_.board[i] = nextState.pos_.board[i];
-	}
-	state.pos_.hand[BLACK] = nextState.pos_.hand[BLACK];
-	state.pos_.hand[WHITE] = nextState.pos_.hand[WHITE];
-	state.pos_.sideToMove = nextState.pos_.sideToMove;
-	state.pos_.gamePly = nextState.pos_.gamePly;
-	state.pos_.kingSquare[BLACK] = nextState.pos_.kingSquare[BLACK];
-	state.pos_.kingSquare[WHITE] = nextState.pos_.kingSquare[WHITE];
+	copy(nextState.pos_, state.pos_);
 }
 
 // 現在のstateから描写に必要な情報を取り出す
-State Store::provider() {
-	if (!action_que.empty()) { // キューが空でなければ1つActionを実行する
-		store_mtx.lock(); // storeのミューテックスを取得する
-		Action ac = action_que.front();
-		action_que.pop();
-		store_mtx.unlock(); // ミューテックスを解放する
-		State nextState = reducer(ac, state); // reducerにdispatchする
-		update_store(nextState); // stateを更新する
-	}
-	// 最新のstateを取り出す
-
-	//　加工してrender()に渡す
-	return state;
+StateRaender Store::provider() const {
+	// 最新のstateを取り出し加工してrender()に渡す
+	return StateRaender(&state, textureID_shogiboard, gl_string);
 }
 
 // providerを呼び出して描写を行う
-void Store::render(const State &state) const {
-	draw_info(state.info, gl_string);
+void render(const StateRaender &state_render) {
+	draw_shogiboard(const_cast<GLuint&>(state_render.textureID_shogiboard));
+	draw_shogiboard_rank_file_number(state_render.gl_string);
+	draw_info(state_render.state->info, state_render.gl_string);
+	if (state_render.state->is_render_pos) {
+		draw_board(state_render.state->pos_, state_render.gl_string);
+		draw_hand(state_render.state->pos_, state_render.gl_string);
+		draw_teban(state_render.state->pos_, state_render.gl_string);
+	}
 }
 
 #endif

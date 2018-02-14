@@ -7,7 +7,7 @@
 
 #ifdef GLFW3
 // 将棋盤を描写します
-void draw_shogiboard(GLuint &textureID) {
+void draw_shogiboard(const GLuint &textureID) {
 	// 将棋盤のワールド座標は １一の位置が(-1, -1)と(0, 0)で囲まれる正方形でそこから左下に伸びている。
 	// ９九の位置は(-9, -9)と(-8, -8)で囲まれる正方形である。
 	// こうすることでa, bの符号の座標が-a, -bから+1ずつの領域となる。 (Shogi Notebookからのアイデア)

@@ -31,7 +31,7 @@ constexpr float shogiboard_line_heap = 0.09; // 将棋盤の線を盛り上げ�
 constexpr int window_width = 1000; // ウィンドウの横幅
 constexpr int window_height = static_cast<int>(window_width * total_height / total_width); // ウィンドウの縦幅
 
-void draw_shogiboard(GLuint &textureID); // 将棋盤を描写します				 
+void draw_shogiboard(const GLuint &textureID); // 将棋盤を描写します				 
 void draw_shogiboard_rank_file_number(GlString* gl_string); // 段、筋数字の描写
 void int_string(const int num, NumberType num_type,
 	const GLfloat f_size, GLfloat display_x, GLfloat display_y, GLfloat offset, GlString* gl_string);

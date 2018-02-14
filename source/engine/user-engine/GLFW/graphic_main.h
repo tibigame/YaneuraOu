@@ -19,8 +19,6 @@ private:
 	bool is_render_pos = false; // pos_を描写するかのフラグ
 	std::string info = u8" "; // 汎用の情報出力用の文字列を格納します
 
-	GLuint textureID_shogiboard; // 将棋盤のテクスチャIDを格納する
-
 	void init(); // グラフィック系の初期化を行う
 	void main(); // いわゆる描写系のメインループ
 #endif

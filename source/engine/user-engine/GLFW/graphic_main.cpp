@@ -65,27 +65,19 @@ void Gui::init() {
 	glfwMakeContextCurrent(window);
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetMouseButtonCallback(window, mouse_callback);
-
 	gl_string->font_init(); // フォントの読み込みと駒文字などのフォントキャッシュの生成
 }
 
 // OpenGLのメインループ
 void Gui::main() {
 	init();
-	store.set_glstring(gl_string);
-	draw_init(textureID_shogiboard);
-
-	store.state.info = "STATE: FAIRSTSET";
-	std::vector<Button> aaads;
-	store.add_action_que(action_callback(1.0, 1.0, u8"TEST: add_action_que, ", aaads));
-
+	store.init(gl_string);
 
 	while (!glfwWindowShouldClose(window)) {
 		draw_loop_init();
-		draw_shogiboard(textureID_shogiboard);
-		draw_shogiboard_rank_file_number(gl_string);
-		store.render(store.provider());
-
+		store.exe_action_que();
+		render(store.provider());
+		/*
 		if (is_render_pos) { // pos_が送られてくると盤面が表示される
 			draw_board(pos_, gl_string);
 			draw_hand(pos_, gl_string);
@@ -110,21 +102,6 @@ void Gui::main() {
 			board_piece_string(W_PRO_PAWN, SQ_26, gl_string, WHITE);
 			board_piece_string(B_PAWN, SQ_54, gl_string, BLACK);
 		}
-
-		
-
-		/*
-		draw_pentagon_ex(0.f, 0.f, 0.5f, 0.5f,
-		conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.6f,
-		0.f, 0.f, 0.0, 1.f, 0.12f);
-		GLfloat f_size = 0.6f;
-		int num = -1;
-		GLfloat display_x = board_border + hand_inner_margin - 0.13f;
-		GLfloat display_y = -0.229f;
-
-		draw_pentagon_ex(0.f, 0.f, f_size, f_size,
-			conv_GL_color(0, 0, 0, 255), conv_GL_color(0, 0, 0, 255), conv_GL_color(0, 0, 0, 255), 0.6f,
-			display_x, display_y, 0.0, 1.f, 0.12f);
 		*/
 		
 
