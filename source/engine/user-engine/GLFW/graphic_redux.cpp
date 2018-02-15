@@ -48,13 +48,15 @@ const Action Button::get_action(const std::string &str_) const {
 State::State() {
 }
 
-// TODO: この辺がうまく動いてない
+State::~State() {
+}
+
 // コピーコンストラクタ
 State::State(const State &a) {
 	is_render_pos = a.is_render_pos;
 	info = a.info;
 	std::copy(a.buttons.begin(), a.buttons.end(), back_inserter(buttons));
-	copy(a.pos_, pos_);
+	pos_p = a.pos_p;
 }
 // 代入演算子
 State &State::operator=(const State &a)
@@ -63,7 +65,7 @@ State &State::operator=(const State &a)
 	t.info = a.info;
 	t.is_render_pos = a.is_render_pos;
 	std::copy(a.buttons.begin(), a.buttons.end(), back_inserter(t.buttons));
-	copy(a.pos_, t.pos_);
+	t.pos_p = a.pos_p;
 	return t;
 }
 
@@ -76,10 +78,12 @@ StateRender::StateRender(const State *s, const GLuint textureID_shogiboard_, GlS
 // コンストラクタとデストラクタ
 Store::Store() {
 	gl_string = new GlString;
+	state.pos_p = static_cast<Position*>(_aligned_malloc(sizeof(Position), 32)); // ここのポインタはmoveで変わっていく
 }
 
 Store::~Store() {
 	delete gl_string;
+	_aligned_free(static_cast<Position*>(state.pos_p));
 }
 
 void Store::init() {
@@ -141,7 +145,7 @@ const Action action_update_pos(const Position &new_pos_) {
 	Action ac;
 	ac.ft = FunctionType::POS_UPDATE;
 
-	Position *p = static_cast<Position*>(_aligned_malloc(sizeof(Position), 32)); // ここで確保したメモリはreducerで解放すること
+	Position *p = static_cast<Position*>(_aligned_malloc(sizeof(Position), 32)); // ここで確保したメモリはreducerで所有権が移される
 	copy(new_pos_, *p);
 	ac.p = static_cast<void*>(p);
 	return ac;
@@ -181,10 +185,9 @@ const State reducer(const Action &action, const State &state) {
 			break;
 		}
 		case FunctionType::POS_UPDATE: {
-			Position *source = static_cast<Position*>(action.p);
-			copy(*source, nextState.pos_);
+			nextState.pos_p = static_cast<Position*>(action.p); // ポインタの付け替えでmoveする
 			nextState.is_render_pos = true;
-			_aligned_free(static_cast<Position*>(action.p)); // Actionで確保したメモリを解放する
+			_aligned_free(static_cast<Position*>(state.pos_p)); // 以前確保したメモリを解放する
 		}
 		default: {
 			break;
@@ -212,7 +215,7 @@ void Store::update_store(const State &nextState) {
 	state.info = nextState.info;
 	state.is_render_pos = nextState.is_render_pos;
 	std::copy(nextState.buttons.begin(), nextState.buttons.end(), back_inserter(state.buttons));
-	copy(nextState.pos_, state.pos_);
+	state.pos_p = nextState.pos_p;
 }
 
 // 現在のstateから描写に必要な情報を取り出す
@@ -227,9 +230,9 @@ void render(const StateRender &state_render) {
 	draw_shogiboard_rank_file_number(state_render.gl_string);
 	draw_info(state_render.state->info, state_render.gl_string);
 	if (state_render.state->is_render_pos) {
-		draw_board(state_render.state->pos_, state_render.gl_string);
-		draw_hand(state_render.state->pos_, state_render.gl_string);
-		draw_teban(state_render.state->pos_, state_render.gl_string);
+		draw_board(*state_render.state->pos_p, state_render.gl_string);
+		draw_hand(*state_render.state->pos_p, state_render.gl_string);
+		draw_teban(*state_render.state->pos_p, state_render.gl_string);
 	}
 }
 

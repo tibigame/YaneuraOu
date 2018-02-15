@@ -54,12 +54,12 @@ public:
 class State {
 	public:
 	std::vector<Button> buttons;
-	Position pos_; // Position構造体を受け取る
-	Position pos_temp; // Actionでキューに入れるときのtemp用
+	Position *pos_p; // Position構造体を受け取る
 	bool is_render_pos = false; // pos_を描写するかのフラグ
 	std::string info = u8" "; // 汎用の情報出力用の文字列を格納します
 
 	State();
+	~State();
 	State(const State &a); // コピーコンストラクタ
 	State &operator=(const State &a);
 };

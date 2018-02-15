@@ -67,7 +67,7 @@ void Gui::main() {
 	store.init();
 	
 	// デバッグ用の局面を出力しておく
-	store.state.pos_.set_fast_sfenonly("l4+R1n1/1pgk5/5+P3/4Sp1+P1/1N7/1Kp1P4/4SP1+p1/9/4+p1+sL1 w BGSNPrb2gn2l8p 1240");
+	store.state.pos_p->set_fast_sfenonly("l4+R1n1/1pgk5/5+P3/4Sp1+P1/1N7/1Kp1P4/4SP1+p1/9/4+p1+sL1 w BGSNPrb2gn2l8p 1240");
 	store.state.is_render_pos = true;
 
 	while (!glfwWindowShouldClose(window)) {
