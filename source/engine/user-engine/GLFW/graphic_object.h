@@ -17,7 +17,6 @@ void hand_piece_string(const Piece pc, const int num, const Color c, GlString* g
 void draw_hand(const Position &pos_, GlString* gl_string); // 手駒の駒文字を描写します
 void draw_teban(const Position &pos_, GlString* gl_string); // 手番と手数を描写します
 void draw_info(const std::string &info_, GlString* gl_string); // info情報を出力します
-void draw_info_ex(const std::string &info_, GlString* gl_string);
 void draw_string(std::string str, GlString* gl_string,
 	GLfloat line_height, GLfloat MAX_LINE_WIDTH, GLint MAX_LINE,
 	GLfloat *mat_ambient, GLfloat *mat_diffuse, GLfloat *mat_specular, GLfloat z,

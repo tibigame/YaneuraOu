@@ -185,7 +185,7 @@ StateRender Store::provider() const {
 void render(const StateRender &state_render) {
 	draw_shogiboard(const_cast<GLuint&>(state_render.textureID_shogiboard));
 	draw_shogiboard_rank_file_number(state_render.gl_string);
-	draw_info_ex(state_render.state->info, state_render.gl_string);
+	draw_info(state_render.state->info, state_render.gl_string);
 	if (state_render.state->is_render_pos) {
 		draw_board(*state_render.state->pos_p, state_render.gl_string);
 		draw_hand(*state_render.state->pos_p, state_render.gl_string);

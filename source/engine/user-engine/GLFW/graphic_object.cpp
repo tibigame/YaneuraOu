@@ -2,6 +2,7 @@
 #include "graphic_object.h"
 #include "../../../position.h"
 #include "../ex_board.h"
+#include <stdlib.h>
 
 // graphic_primitive.cppやgraphic_string.cppを利用して複雑な構造物を描写する関数群です
 
@@ -306,44 +307,16 @@ void draw_hand(const Position &pos_, GlString* gl_string) {
 // 手番と手数を描写します
 void draw_teban(const Position &pos_, GlString* gl_string) {
 	constexpr GLfloat f_size = 0.7f;
-	constexpr GLfloat str_length1 = f_size * 4.5f;
-	constexpr GLfloat str_length2 = f_size * 4.5f;
 	const GLfloat display_x = -board_size + f_size;
 	const GLfloat display_y = -board_size - board_border - 0.2f;
-	GLuint textureID;
-	if (gl_string->get_texture_id(pos_.sideToMove, textureID)) {
-		draw_rect_ex(0.f, -f_size, str_length1, 0.f,
-			conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.49f,
-			display_x, display_y, 0.0, 1.f, 0.f, true, textureID);
-	}
-	if (gl_string->get_texture_id(pos_.gamePly, textureID)) {
-		draw_rect_ex(0.f, -f_size, str_length2, 0.f,
-			conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.49f,
-			display_x + str_length1 + 0.5f, display_y, 0.0, 1.f, 0.f, true, textureID);
-	}
-	int_string(pos_.gamePly, NumberType::HalfAlabic, 0.8f,
-		display_x + str_length1 + str_length2 + 0.2f, display_y - 1.2f * 0.7f, 0.0, gl_string);
-}
-
-// info情報を出力します (u8で改行なしの文字列ならアスペクト比は変だが出る)
-void draw_info(const std::string &info_, GlString* gl_string) {
-	std::string std_str = info_;
-	StringLength a(std_str);
-	auto len = a.render_length; // 文字列のサイズとする
-	auto f_size = 0.6f;
-	char *char_str = new char[std_str.size() + 1];
-	std::char_traits<char>::copy(char_str, std_str.c_str(), std_str.size() + 1);
-
-	const GLfloat display_x = -board_size - board_border - hand_inner_margin - hand_size - hand_outer_margin + 0.2f;
-	const GLfloat display_y = -board_size - board_border - 1.2f;
-
-	GLuint textureID = gl_string->create_and_get_texture_id(char_str);
-	if (textureID) {
-		draw_rect_ex(0.f, -f_size, len * f_size * 0.5f, 0.f,
-			conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.49f,
-			display_x, display_y, 0.0, 1.f, 0.f, true, textureID);
-	}
-	delete[] char_str;
+	
+	std::string teban = pos_.sideToMove == WHITE ? u8"手番: 後手" : u8"手番: 先手";
+	char gamePly[100];
+	_itoa_s(pos_.gamePly, gamePly, 10);
+	std::string tesuu = u8", 手数: ";
+	tesuu += +gamePly;
+	draw_string(teban + tesuu, gl_string, 1.f, 9.f, 1, conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255),
+		0.5f, display_x, display_y, 0.0, f_size);
 }
 
 void draw_string(std::string str, GlString* gl_string,
@@ -403,7 +376,7 @@ void draw_string(std::string str, GlString* gl_string,
 }
 
 // info情報を出力します
-void draw_info_ex(const std::string &info_, GlString* gl_string) {
+void draw_info(const std::string &info_, GlString* gl_string) {
 	const GLfloat display_x = -board_size - board_border - hand_inner_margin - hand_size - hand_outer_margin + 0.2f;
 	const GLfloat display_y = -board_size - board_border - 1.2f;
 	draw_string(info_, gl_string, 1.f, 13.4f, 6,
