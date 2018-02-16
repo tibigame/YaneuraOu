@@ -78,7 +78,10 @@
       <UniqueIdentifier>{da18a0e0-9ba2-4c63-87b2-5d4723bcd0bd}</UniqueIdentifier>
     </Filter>
     <Filter Include="リソース ファイル\engine\user-engine\GLFW">
-      <UniqueIdentifier>{e515cdc8-0cab-4d3b-84a9-31affcf31b84}</UniqueIdentifier>
+      <UniqueIdentifier>{afa2bb04-497e-495b-b026-e998efe4c853}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\engine\user-engine\GLFW\lib">
+      <UniqueIdentifier>{4c09e963-3c75-4e14-b92d-62c1aec57071}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -277,25 +280,31 @@
     <ClInclude Include="engine\user-engine\pboard.h">
       <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\graphic_main.h">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\graphic_primitive.h">
+    <ClInclude Include="engine\user-engine\GLFW\graphic_button.h">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClInclude>
     <ClInclude Include="engine\user-engine\GLFW\graphic_common.h">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClInclude>
+    <ClInclude Include="engine\user-engine\GLFW\graphic_main.h">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClInclude>
     <ClInclude Include="engine\user-engine\GLFW\graphic_object.h">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\graphic_string.h">
+    <ClInclude Include="engine\user-engine\GLFW\graphic_primitive.h">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClInclude>
     <ClInclude Include="engine\user-engine\GLFW\graphic_redux.h">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\graphic_button.h">
+    <ClInclude Include="engine\user-engine\GLFW\graphic_string.h">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\GLFW\lib\picojson.h">
+      <Filter>リソース ファイル\engine\user-engine\GLFW\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\user-engine\GLFW\json_schema.h">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClInclude>
   </ItemGroup>
@@ -477,22 +486,22 @@
     <ClCompile Include="position_sfen_fast.cpp">
       <Filter>リソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="engine\user-engine\GLFW\graphic_main.cpp">
+    <ClCompile Include="engine\user-engine\GLFW\graphic_button.cpp">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClCompile>
-    <ClCompile Include="engine\user-engine\GLFW\graphic_primitive.cpp">
+    <ClCompile Include="engine\user-engine\GLFW\graphic_main.cpp">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClCompile>
     <ClCompile Include="engine\user-engine\GLFW\graphic_object.cpp">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClCompile>
-    <ClCompile Include="engine\user-engine\GLFW\graphic_string.cpp">
+    <ClCompile Include="engine\user-engine\GLFW\graphic_primitive.cpp">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClCompile>
     <ClCompile Include="engine\user-engine\GLFW\graphic_redux.cpp">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClCompile>
-    <ClCompile Include="engine\user-engine\GLFW\graphic_button.cpp">
+    <ClCompile Include="engine\user-engine\GLFW\graphic_string.cpp">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClCompile>
   </ItemGroup>

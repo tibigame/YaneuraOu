@@ -1,11 +1,11 @@
 ﻿#include "graphic_primitive.h"
 #include "graphic_string.h"
+#include "json_schema.h"
 
 // OpenGLで文字列を扱うためのクラスです
 
 #ifdef GLFW3
 
-constexpr char* font_filename = "resource/XANO-mincho-U32.ttf";
 constexpr int fontcash_pt_size = 48;
 constexpr SDL_Color font_color_black = { 6, 6, 6, 255 }; // 黒文字色
 constexpr SDL_Color font_color_piece = { 13, 38, 38, 255 }; // 駒色
@@ -33,7 +33,8 @@ GlString::~GlString() {
 // フォントを初期化します
 void GlString::font_init() {
 	TTF_Init(); // 初期化
-	font_ = TTF_OpenFont(font_filename, fontcash_pt_size); // フォントを読み込む
+	std::string font_name = read_file().path; // フォントを読み込む (setting.jsonに日本語の入らないpathを入れること)
+	font_ = TTF_OpenFont(font_name.c_str(), fontcash_pt_size);
 	create_texture_cash(u8"王", font_color_piece);
 	create_texture_cash(u8"玉", font_color_piece);
 	create_texture_cash(u8"飛", font_color_piece);
