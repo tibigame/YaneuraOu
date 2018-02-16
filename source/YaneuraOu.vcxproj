@@ -669,6 +669,7 @@
     <ClInclude Include="engine\help-mate-engine\help-mate-search.h" />
     <ClInclude Include="engine\mate-engine\mate-search.h" />
     <ClInclude Include="engine\user-engine\ex_board.h" />
+    <ClInclude Include="engine\user-engine\GLFW\graphic_button.h" />
     <ClInclude Include="engine\user-engine\GLFW\graphic_common.h" />
     <ClInclude Include="engine\user-engine\GLFW\graphic_main.h" />
     <ClInclude Include="engine\user-engine\GLFW\graphic_object.h" />
@@ -743,6 +744,7 @@
     <ClCompile Include="engine\local-game-server\local-game-server.cpp" />
     <ClCompile Include="engine\mate-engine\mate-search.cpp" />
     <ClCompile Include="engine\user-engine\ex_board.cpp" />
+    <ClCompile Include="engine\user-engine\GLFW\graphic_button.cpp" />
     <ClCompile Include="engine\user-engine\GLFW\graphic_main.cpp" />
     <ClCompile Include="engine\user-engine\GLFW\graphic_object.cpp" />
     <ClCompile Include="engine\user-engine\GLFW\graphic_primitive.cpp" />

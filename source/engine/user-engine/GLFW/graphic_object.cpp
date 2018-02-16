@@ -12,14 +12,14 @@ void draw_shogiboard(const GLuint &textureID) {
 	// ９九の位置は(-9, -9)と(-8, -8)で囲まれる正方形である。
 	// こうすることでa, bの符号の座標が-a, -bから+1ずつの領域となる。 (Shogi Notebookからのアイデア)
 
-	// ベースとなる最下層のポリゴン
-	draw_rect(board_border - shogiboard_size, board_border - shogiboard_size, board_border, board_border,
-		conv_GL_color(80, 80, 48), conv_GL_color(254, 214, 91, 255), conv_GL_color(38, 38, 38), -0.001f
-	);
 	// 最下層のBorder
 	GLfloat Border = 0.05f;
 	draw_rect(board_border - shogiboard_size - Border, board_border - shogiboard_size - Border, board_border + Border, board_border + Border,
 		conv_GL_color(10, 10, 2), conv_GL_color(118, 72, 23, 96), conv_GL_color(7, 7, 7), -0.002f
+	);
+	// ベースとなる最下層のポリゴン
+	draw_rect(board_border - shogiboard_size, board_border - shogiboard_size, board_border, board_border,
+		conv_GL_color(80, 80, 48), conv_GL_color(254, 214, 91, 255), conv_GL_color(38, 38, 38), -0.001f
 	);
 	// 将棋盤テクスチャのポリゴン
 	draw_rect(
@@ -52,8 +52,6 @@ void draw_shogiboard_rank_file_number(GlString* gl_string) {
 		int_string(i, NumberType::Alabic, 0.4f, 0.3f - i, 0.f, 0.f, gl_string);
 	}
 }
-
-
 
 // 数字を描写します
 void int_string(const int num, NumberType num_type,
@@ -346,6 +344,81 @@ void draw_info(const std::string &info_, GlString* gl_string) {
 			display_x, display_y, 0.0, 1.f, 0.f, true, textureID);
 	}
 	delete[] char_str;
+}
+
+void draw_string(std::string str, GlString* gl_string,
+	GLfloat line_height, GLfloat MAX_LINE_WIDTH, GLint MAX_LINE,
+	GLfloat *mat_ambient, GLfloat *mat_diffuse, GLfloat *mat_specular, GLfloat z = 0.f,
+	GLfloat display_x = 0.f, GLfloat display_y = 0.f, double degree = 0.0, GLfloat font_size = 1.f) {
+
+	const GLfloat height_margin = font_size * (line_height - 1.f) / 2.f; // 文字の上下に付くマージン
+	GLuint textureID;
+	GLint line = 0; // いまレンダリングされている文字の行数
+	GLfloat pos_x = 0.f, pos_y = height_margin; // いまレンダリングされている文字の位置
+	GLfloat size_x, size_y; // いまレンダリングされている文字のサイズ
+	GLfloat font_half_width = font_size * 0.5f;
+	
+	std::tuple<std::string, int> t;
+	auto str_size = str.size();
+
+	int pos = 0;
+	std::string buf;
+	int buf_size = 0;
+
+	for (int pos = 0; pos < str_size; pos += buf_size) { // u8文字列を1文字ずつスキャンしていく
+		t = utf8_next_char(str, str_size, pos);
+		buf = std::get<0>(t);
+		buf_size = std::get<1>(t);
+		if (buf[0] == u8'\n' &&buf_size== 1) { // 改行文字のとき
+			goto GotoNewLine; // レンダリングは不要なので改行処理のif文内部に直接ジャンプする
+		}
+
+		if (buf_size == 1) {
+			size_x = font_half_width * 0.8f;
+		} else {
+			size_x = font_size * 0.8f;
+		}
+		size_y = font_size;
+
+		// 1文字ずつレンダリングする
+		textureID = gl_string->create_and_get_texture_id(buf.c_str());
+		if (textureID) {
+			draw_rect_ex(0.f, -size_y, size_x, 0.f,
+				conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.49f,
+				display_x + pos_x, display_y + pos_y, 0.0, font_size, 0.f, true, textureID);
+		}
+		pos_x += size_x * 0.8f; // 次の文字のためにレンダリング位置をずらす
+
+		// 改行の処理
+		if (pos_x + font_size > MAX_LINE_WIDTH) { // 最大文字幅を超えそうなら強制改行する
+		GotoNewLine:
+			pos_x = 0;
+			pos_y -= line_height;
+			++line;
+			if (line >= MAX_LINE) { // 最大行数を越えたら抜ける
+				return;
+			}
+		}
+	}
+}
+
+// info情報を出力します
+void draw_info_ex(const std::string &info_, GlString* gl_string) {
+	const GLfloat display_x = -board_size - board_border - hand_inner_margin - hand_size - hand_outer_margin + 0.2f;
+	const GLfloat display_y = -board_size - board_border - 1.2f;
+	draw_string(info_, gl_string, 1.f, 13.4f, 6,
+		conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.49f,
+		display_x, display_y, 0.0, 0.6f);
+}
+
+// ボタンを描写します
+void draw_button(GLfloat left, GLfloat bottom, GLfloat right, GLfloat top,
+	GLfloat *mat_ambient, GLfloat *mat_diffuse, GLfloat *mat_specular, GLfloat z,
+	GLfloat display_x, GLfloat display_y, double degree, GLfloat scale, GLfloat string_offset,
+	bool is_texture, GLuint textureID) {
+	draw_rect_ex(left, bottom, right, top,
+		conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), z,
+		0.f, 0.f, 0.0, 1.f, 0.f);
 }
 
 #endif

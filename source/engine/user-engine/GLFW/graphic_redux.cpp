@@ -7,44 +7,6 @@
 std::mutex cmd_mtx; // cmdとの通信のためのミューテックス
 std::mutex store_mtx; // Storeのキューにアクセスするためのミューテックス
 
-Action::Action() {}
-
-Action::Action(const FunctionType ft_, const std::string &str_) {
-	ft = ft_;
-	str = str_;
-	index = 0;
-	p = nullptr;
-}
-
-// 初期化を行う
-void Button::init(double left_, double bottom_, double right_, double top_, FunctionType ft_) {
-	left = left_;
-	bottom = bottom_;
-	right = right_;
-	top = top_;
-	ft = ft_;
-}
-
-// 渡されたposが自身の範囲内か
-const bool Button::is_range(double posx, double posy) const {
-	if (left < posx && posx < right && bottom < posy && posy < top) {
-		return true;
-	}
-	return false;
-}
-
-
-Button::Button() {
-}
-
-Button::~Button() {
-}
-
-// アクションを発行する
-const Action Button::get_action(const std::string &str_) const {
-	return Action(ft, str_);
-}
-
 State::State() {
 }
 
@@ -106,11 +68,12 @@ void Store::callback(const double posx, const double posy, const std::string &st
 
 	char a[100];
 	_itoa_s((int)posx, a, 10);
-	std::string test = "posx = ";
+	std::string test = u8"posx = ";
 	test += a;
-	test += ", poy = ";
+	test += u8", poy = ";
 	_itoa_s((int)posy, a, 10);
 	test += a;
+	test += u8"\n日本語テスト！aあ☆＠";
 	add_action_que(action_update_info(test));
 	return;
 
@@ -126,17 +89,11 @@ void Store::callback(const double posx, const double posy, const std::string &st
 // Actionを発行する
 const Action action_callback(const double posx, const double posy, const std::string str, const std::vector<Button> buttons) {
 	Action ac(FunctionType::NONE, "");
-	for (auto i = 0; i < buttons.size(); ++i) {
-		if (
-			buttons[i].is_range(posx, posy) && // ボタンがposxとposyの座標を含んでいるか
-			buttons[i].is_visible && // ボタンが可視状態か
-			buttons[i].is_enable // // ボタンが有効化状態か
-			) {
-			// Actionを発行する
-			ac = (buttons[i].get_action(str));
-			ac.index = i;
-			return ac;
-		}
+	for (auto i = 0; i < buttons.size(); ++i) { // 全てのボタンに対してアクションの発行を試みる
+		ac = (buttons[i].get_action(posx, posy, str));
+		if (ac.ft == FunctionType::NONE) { continue; } // posが範囲外がボタンが無効だったということ
+		ac.index = i;
+		return ac; // 最初に見つかったボタンのアクションを発行する
 	}
 	return ac; // Action発行対象となるボタンが存在しなかった
 }
@@ -228,7 +185,7 @@ StateRender Store::provider() const {
 void render(const StateRender &state_render) {
 	draw_shogiboard(const_cast<GLuint&>(state_render.textureID_shogiboard));
 	draw_shogiboard_rank_file_number(state_render.gl_string);
-	draw_info(state_render.state->info, state_render.gl_string);
+	draw_info_ex(state_render.state->info, state_render.gl_string);
 	if (state_render.state->is_render_pos) {
 		draw_board(*state_render.state->pos_p, state_render.gl_string);
 		draw_hand(*state_render.state->pos_p, state_render.gl_string);

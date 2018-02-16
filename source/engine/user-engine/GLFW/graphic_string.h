@@ -45,6 +45,8 @@ public:
 	int lenUtf8(std::string &str);
 };
 
+std::tuple<std::string, int> utf8_next_char(std::string str, size_t str_size, int pos);
+
 #endif
 
 #endif _GRAPHIC_STRING_H_

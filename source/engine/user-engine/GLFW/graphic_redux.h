@@ -4,6 +4,7 @@
 
 #include "graphic_common.h"
 #include "graphic_string.h"
+#include "graphic_button.h"
 #include "../../../position.h"
 #include <thread>
 #include <vector>
@@ -13,42 +14,6 @@
 
 extern std::mutex cmd_mtx; // cmdとの通信のためのミューテックス
 extern std::mutex store_mtx; // Storeのキューにアクセスするためのミューテックス
-
-// 実行する関数のタイプ
-enum class FunctionType
-{
-	IS_READY, // isready
-	EXIT, // 終了
-	USER, // USER
-	INFO_UPDATE, // infoの更新
-	POS_UPDATE, // pos_の更新
-	TEST, // テスト関数
-	NONE
-};
-
-// Actionの定義 (Actionは関数のタイプとstringからなる)
-struct Action {
-	FunctionType ft;
-	std::string str;
-	int index;
-	void* p;
-	Action::Action();
-	Action(const FunctionType ft_, const std::string &str);
-};
-
-class Button {
-private:
-	double left, bottom, right, top;
-	FunctionType ft; // 実行する関数のタイプ
-public:
-	bool is_visible = false; // 可視状態か
-	bool is_enable = false; // 有効化状態か
-	Button();
-	~Button();
-	void init(double left_, double bottom_, double right_, double top_, FunctionType ft_); // 初期化を行う
-	const bool is_range(double posx, double posy) const; // 渡されたposが自身の範囲内か
-	const Action get_action(const std::string &str_) const; // アクションを発行する
-};
 
 // 状態を表現する構造体
 class State {

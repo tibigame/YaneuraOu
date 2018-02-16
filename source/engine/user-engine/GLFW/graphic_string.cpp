@@ -339,4 +339,37 @@ int StringLength::lenUtf8(std::string &str) {
 	return len;
 }
 
+// UTF8文字列を1文字ずつ取り出すルーチン
+std::tuple<std::string, int> utf8_next_char(std::string str, size_t str_size, int pos)
+{
+	using namespace std;
+	unsigned char c;
+
+	string buf;
+	int buf_size;
+
+	if (pos >= str_size) {
+		return make_tuple(u8"?", pos);
+	}
+
+	c = str[pos];
+
+	if (c < 0x80) {
+		buf_size = 1;
+	}
+	else if (c < 0xE0) {
+		buf_size = 2;
+	}
+	else if (c < 0xF0) {
+		buf_size = 3;
+	}
+	else {
+		buf_size = 4;
+	}
+
+	buf = str.substr(pos, buf_size);
+
+	return  make_tuple(buf, buf_size);
+}
+
 #endif

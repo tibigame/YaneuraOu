@@ -13,20 +13,6 @@ struct Float4x4 {
 	float v[16];
 };
 
-// RGBをGLの色情報に変換します
-GLfloat *conv_GL_color(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha) {
-	GLfloat c[] = { red / 255.f , green / 255.f , blue / 255.f , alpha / 255.f };
-	return c;
-}
-
-void set_glColor(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha) {
-	glColor4f(red / 255.f, green / 255.f, blue / 255.f, alpha / 255.f);
-}
-
-void set_glColor(GLfloat *GL_c) {
-	glColor4f(GL_c[0], GL_c[1], GL_c[2], GL_c[3]);
-}
-
 // テクスチャをメモリに読み込みます
 // TODO: リソース解放や読み込みエラーなどは考慮されていません
 constexpr int TEXWIDTH = 960; // テクスチャの幅
@@ -73,7 +59,7 @@ void setupTexture(GLuint &textureID, const char *file)
 void draw_init(GLuint &textureID) {
 	glMatrixMode(GL_PROJECTION); // プロジェクションモードに設定
 	glLoadIdentity(); // スクリーン座標を初期化
-	glEnable(GL_DEPTH_TEST);// デプスバッファの有効化
+	//glEnable(GL_DEPTH_TEST);// デプスバッファの有効化
 	glEnable(GL_CULL_FACE);// カリングの有効化
 	glCullFace(GL_BACK); // カリングで表面のみを描写するようにする
 	glEnable(GL_LIGHTING);// ライティングの有効化
