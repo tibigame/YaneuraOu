@@ -32,6 +32,8 @@ void user_test(Position& pos_, istringstream& is)
 
 	gui.store.add_action_que(action_update_info(pos_.sfen_fast(true)));
 	gui.store.add_action_que(action_update_pos(pos_));
+	std::string str = "STR";
+	gui.store.add_button(ButtonInitializer(-10.f, 0.6f, -7.f, 1.2f, FunctionType::UPDATE_INFO, str, true, true));
 
 }
 

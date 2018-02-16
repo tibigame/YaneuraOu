@@ -342,7 +342,7 @@ void draw_string(std::string str, GlString* gl_string,
 		t = utf8_next_char(str, str_size, pos);
 		buf = std::get<0>(t);
 		buf_size = std::get<1>(t);
-		if (buf[0] == u8'\n' &&buf_size== 1) { // 改行文字のとき
+		if (buf[0] == u8'\n' && buf_size== 1) { // 改行文字のとき
 			goto GotoNewLine; // レンダリングは不要なので改行処理のif文内部に直接ジャンプする
 		}
 

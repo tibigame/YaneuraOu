@@ -20,7 +20,6 @@ FontSetting read_file() {
 	if (!err.empty()) {
 		exit(EXIT_FAILURE);
 	}
-	std::string zz = "YYY";
 	FontSetting result;
 	if (v.is<picojson::array>()) {
 		picojson::array& a = v.get<picojson::array>();

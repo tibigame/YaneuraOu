@@ -31,6 +31,10 @@ State &State::operator=(const State &a)
 	return t;
 }
 
+void State::add_button(ButtonInitializer button_initializer) {
+	buttons.push_back(Button(button_initializer)); // 末尾に追加していく
+}
+
 StateRender::StateRender(const State *s, const GLuint textureID_shogiboard_, GlString* gl_string_) {
 	state = s;
 	textureID_shogiboard = textureID_shogiboard_;
@@ -51,6 +55,10 @@ Store::~Store() {
 void Store::init() {
 	gl_string->font_init(); // フォントの読み込みと駒文字などのフォントキャッシュの生成
 	draw_init(textureID_shogiboard);
+}
+
+void Store::add_button(ButtonInitializer button_initializer) {
+	state.add_button(button_initializer);
 }
 
 // キューにactionを追加する
@@ -90,7 +98,7 @@ void Store::callback(const double posx, const double posy, const std::string &st
 const Action action_callback(const double posx, const double posy, const std::string str, const std::vector<Button> buttons) {
 	Action ac(FunctionType::NONE, "");
 	for (auto i = 0; i < buttons.size(); ++i) { // 全てのボタンに対してアクションの発行を試みる
-		ac = (buttons[i].get_action(posx, posy, str));
+		ac = (buttons[i].get_action(posx, posy));
 		if (ac.ft == FunctionType::NONE) { continue; } // posが範囲外がボタンが無効だったということ
 		ac.index = i;
 		return ac; // 最初に見つかったボタンのアクションを発行する
@@ -100,7 +108,7 @@ const Action action_callback(const double posx, const double posy, const std::st
 
 const Action action_update_pos(const Position &new_pos_) {
 	Action ac;
-	ac.ft = FunctionType::POS_UPDATE;
+	ac.ft = FunctionType::UPDATE_POS;
 
 	Position *p = static_cast<Position*>(_aligned_malloc(sizeof(Position), 32)); // ここで確保したメモリはreducerで所有権が移される
 	copy(new_pos_, *p);
@@ -109,7 +117,7 @@ const Action action_update_pos(const Position &new_pos_) {
 }
 
 const Action action_update_info(const std::string new_info) {
-	Action ac(FunctionType::INFO_UPDATE, new_info);
+	Action ac(FunctionType::UPDATE_INFO, new_info);
 	return ac;
 }
 
@@ -137,11 +145,15 @@ const State reducer(const Action &action, const State &state) {
 			nextState.info = action.str;
 			break;
 		}
-		case FunctionType::INFO_UPDATE: {
+		case FunctionType::ADD_BUTTON: {
+			
+			break;
+		}
+		case FunctionType::UPDATE_INFO: {
 			nextState.info = action.str;
 			break;
 		}
-		case FunctionType::POS_UPDATE: {
+		case FunctionType::UPDATE_POS: {
 			nextState.pos_p = static_cast<Position*>(action.p); // ポインタの付け替えでmoveする
 			nextState.is_render_pos = true;
 			_aligned_free(static_cast<Position*>(state.pos_p)); // 以前確保したメモリを解放する
@@ -190,6 +202,9 @@ void render(const StateRender &state_render) {
 		draw_board(*state_render.state->pos_p, state_render.gl_string);
 		draw_hand(*state_render.state->pos_p, state_render.gl_string);
 		draw_teban(*state_render.state->pos_p, state_render.gl_string);
+	}
+	for (auto button : state_render.state->buttons) {
+		button.draw();
 	}
 }
 

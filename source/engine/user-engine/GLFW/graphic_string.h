@@ -31,18 +31,6 @@ public:
 	bool get_texture_id(const char* u8_char, GLuint &textureID); // 文字に対応するテクスチャIDを取得します。なければfalseを返します
 	bool get_texture_id(const Piece pc, GLuint &textureID); // Pieceに対応するテクスチャIDを取得します。なければfalseを返します
 	bool get_texture_id(const int num, NumberType num_type, GLuint &textureID); // 数字に対応するテクスチャIDを取得します。なければfalseを返します
-	bool get_texture_id(const Color c, GLuint &textureID); // 手番文字列に対応するテクスチャIDを取得します。なければfalseを返します
-	bool get_texture_id(const int gameply, GLuint &textureID); // 手数文字列に対応するテクスチャIDを取得します。なければfalseを返します
-};
-
-class StringLength {
-public:
-	StringLength(std::string &str);
-	~StringLength();
-	int length=0;
-	int render_length = 0;
-
-	int lenUtf8(std::string &str);
 };
 
 std::tuple<std::string, int> utf8_next_char(std::string str, size_t str_size, int pos);

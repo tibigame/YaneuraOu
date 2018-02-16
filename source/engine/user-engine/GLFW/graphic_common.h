@@ -42,8 +42,8 @@ enum class FunctionType
 	EXIT, // 終了
 	USER, // USER
 	ADD_BUTTON, // ボタンの追加
-	INFO_UPDATE, // infoの更新
-	POS_UPDATE, // pos_の更新
+	UPDATE_INFO, // infoの更新
+	UPDATE_POS, // pos_の更新
 	TEST, // テスト関数
 	NONE
 };

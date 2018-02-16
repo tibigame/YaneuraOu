@@ -27,6 +27,8 @@ class State {
 	~State();
 	State(const State &a); // コピーコンストラクタ
 	State &operator=(const State &a);
+
+	void add_button(ButtonInitializer button_initializer);
 };
 
 // Renderに渡す状態を表現する構造体
@@ -53,6 +55,8 @@ public:
 	~Store();
 
 	void init();
+
+	void add_button(ButtonInitializer button_initializer);
 
 	void callback(const double posx, const double posy, const std::string &str);
 	void add_action_que(Action ac); // キューにactionを追加する
