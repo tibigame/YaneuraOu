@@ -22,9 +22,7 @@ void draw_string(std::string str, GlString* gl_string,
 	GLfloat *mat_ambient, GLfloat *mat_diffuse, GLfloat *mat_specular, GLfloat z,
 	GLfloat display_x, GLfloat display_y, double degree, GLfloat font_size);
 void draw_button(GLfloat left, GLfloat bottom, GLfloat right, GLfloat top,
-	GLfloat *mat_ambient, GLfloat *mat_diffuse, GLfloat *mat_specular, GLfloat z = 0.f,
-	GLfloat display_x = 0.f, GLfloat display_y = 0.f, double degree = 0.0, GLfloat scale = 1.f, GLfloat string_offset = 0.f,
-	bool is_texture = false, GLuint textureID = 0);
+	GLfloat *mat_ambient, GLfloat *mat_diffuse, GLfloat *mat_specular, GLfloat z, std::string str);
 #endif
 
 #endif _GRAPHIC_OBJECT_H_

@@ -33,6 +33,7 @@ struct ButtonInitializer {
 class Button {
 private:
 	double left, bottom, right, top;
+	double window_left, window_bottom, window_right, window_top;
 	FunctionType ft; // 実行する関数のタイプ
 	std::string str;
 	GLfloat *mat_ambient;

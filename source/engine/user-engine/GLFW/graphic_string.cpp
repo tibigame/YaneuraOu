@@ -6,6 +6,9 @@
 
 #ifdef GLFW3
 
+// 文字テクスチャへのグローバルなアクセス
+GlString* gl_string;
+
 constexpr int fontcash_pt_size = 48;
 constexpr SDL_Color font_color_black = { 6, 6, 6, 255 }; // 黒文字色
 constexpr SDL_Color font_color_piece = { 13, 38, 38, 255 }; // 駒色

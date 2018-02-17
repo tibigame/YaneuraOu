@@ -109,6 +109,7 @@ inline void set_glColor(GLfloat *GL_c) {
 extern GLfloat GL_COLOR_ZERO[];
 extern GLfloat GL_COLOR_MAX[];
 extern GLfloat GL_COLOR_BUTTON[];
+extern GLfloat GL_COLOR_BUTTON_ALPHA_WHITE[];
 
 #endif
 

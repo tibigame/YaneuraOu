@@ -35,10 +35,9 @@ void State::add_button(const ButtonInitializer &button_initializer) {
 	buttons->push_back(Button(button_initializer)); // 末尾に追加していく
 }
 
-StateRender::StateRender(const State *s, const GLuint textureID_shogiboard_, GlString* gl_string_) {
+StateRender::StateRender(const State *s, const GLuint textureID_shogiboard_) {
 	state = s;
 	textureID_shogiboard = textureID_shogiboard_;
-	gl_string = gl_string_;
 }
 
 // コンストラクタとデストラクタ
@@ -57,10 +56,9 @@ Store::~Store() {
 void Store::init() {
 	gl_string->font_init(); // フォントの読み込みと駒文字などのフォントキャッシュの生成
 	draw_init(textureID_shogiboard);
-
-	add_button(ButtonInitializer(-10.f, 0.6f, -7.f, 1.2f, FunctionType::UPDATE_INFO,
-		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, " ", true, true));
-
+	// ボタン類の初期化
+	add_button(ButtonInitializer(-0.5f, 0.6f, 1.5f, 1.2f, FunctionType::EXIT,
+		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"EXIT", true, true));
 }
 
 void Store::add_button(const ButtonInitializer &button_initializer) {
@@ -78,6 +76,12 @@ void Store::add_action_que(Action ac) {
 
 // actionを発行する
 void Store::callback(const double posx, const double posy, const std::string &str) {
+	Action ac = action_callback(posx, posy, str, *state.buttons);
+	if (ac.ft == FunctionType::NONE) {
+		return;
+	}
+	add_action_que(ac); // キューにactionを追加する
+	return;
 
 	char a[100];
 	_itoa_s((int)posx, a, 10);
@@ -89,14 +93,6 @@ void Store::callback(const double posx, const double posy, const std::string &st
 	test += u8"\n日本語テスト！aあ☆＠";
 	add_action_que(action_update_info(test));
 	return;
-
-	/*
-	Action ac = action_callback(posx, posy, str, temp);
-	if (ac.ft == FunctionType::NONE) {
-		return;
-	}
-	add_action_que(ac); // キューにactionを追加する
-	*/
 }
 
 // Actionを発行する
@@ -151,6 +147,7 @@ const State reducer(const Action &action, const State &state) {
 			break;
 		}
 		case FunctionType::EXIT: {
+			exit(0);
 			break;
 		}
 		case FunctionType::USER: {
@@ -206,18 +203,18 @@ void Store::update_store(const State &nextState) {
 // 現在のstateから描写に必要な情報を取り出す
 StateRender Store::provider() const {
 	// 最新のstateを取り出し加工してrender()に渡す
-	return StateRender(&state, textureID_shogiboard, gl_string);
+	return StateRender(&state, textureID_shogiboard);
 }
 
 // providerから受け取ったStateを用いて描写を行う
 void render(const StateRender &state_render) {
 	draw_shogiboard(const_cast<GLuint&>(state_render.textureID_shogiboard));
-	draw_shogiboard_rank_file_number(state_render.gl_string);
-	draw_info(state_render.state->info, state_render.gl_string);
+	draw_shogiboard_rank_file_number(gl_string);
+	draw_info(state_render.state->info, gl_string);
 	if (state_render.state->is_render_pos) {
-		draw_board(*state_render.state->pos_p, state_render.gl_string);
-		draw_hand(*state_render.state->pos_p, state_render.gl_string);
-		draw_teban(*state_render.state->pos_p, state_render.gl_string);
+		draw_board(*state_render.state->pos_p, gl_string);
+		draw_hand(*state_render.state->pos_p, gl_string);
+		draw_teban(*state_render.state->pos_p, gl_string);
 	}
 	for (auto button : *state_render.state->buttons) {
 		button.draw();

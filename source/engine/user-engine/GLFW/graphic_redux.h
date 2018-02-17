@@ -12,6 +12,7 @@
 
 #ifdef GLFW3
 
+
 extern std::mutex cmd_mtx; // cmdとの通信のためのミューテックス
 extern std::mutex store_mtx; // Storeのキューにアクセスするためのミューテックス
 
@@ -37,8 +38,8 @@ class State {
 struct StateRender {
 	const State *state;
 	GLuint textureID_shogiboard; // 将棋盤のテクスチャID
-	GlString* gl_string; // 文字のテクスチャIDを管理するクラスへのポインタ
-	StateRender(const State *s, const GLuint textureID_shogiboard_, GlString* gl_string_);
+//	GlString* gl_string; // 文字のテクスチャIDを管理するクラスへのポインタ
+	StateRender(const State *s, const GLuint textureID_shogiboard_);
 };
 
 // Stateを管理するクラス
@@ -46,7 +47,7 @@ class Store {
 private:
 	std::queue<Action> action_que; // Actionを格納するキュー
 	GLuint textureID_shogiboard;
-	GlString* gl_string;
+//	GlString* gl_string;
 public:
 	void update_store(const State &nextState); // stateを更新する
 	State state;
