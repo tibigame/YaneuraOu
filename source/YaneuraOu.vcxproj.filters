@@ -504,6 +504,9 @@
     <ClCompile Include="engine\user-engine\GLFW\graphic_string.cpp">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClCompile>
+    <ClCompile Include="engine\user-engine\GLFW\graphic_common.cpp">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\docs\USI拡張コマンド.txt">

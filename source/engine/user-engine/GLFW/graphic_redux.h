@@ -18,7 +18,7 @@ extern std::mutex store_mtx; // Storeのキューにアクセスするための�
 // 状態を表現する構造体
 class State {
 	public:
-	std::vector<Button> buttons;
+	std::vector<Button> *buttons;
 	Position *pos_p; // Position構造体を受け取る
 	bool is_render_pos = false; // pos_を描写するかのフラグ
 	std::string info = u8" "; // 汎用の情報出力用の文字列を格納します
@@ -28,7 +28,7 @@ class State {
 	State(const State &a); // コピーコンストラクタ
 	State &operator=(const State &a);
 
-	void add_button(ButtonInitializer button_initializer);
+	void add_button(const ButtonInitializer &button_initializer);
 };
 
 // Renderに渡す状態を表現する構造体
@@ -56,7 +56,7 @@ public:
 
 	void init();
 
-	void add_button(ButtonInitializer button_initializer);
+	void add_button(const ButtonInitializer &button_initializer);
 
 	void callback(const double posx, const double posy, const std::string &str);
 	void add_action_que(Action ac); // キューにactionを追加する
@@ -66,7 +66,8 @@ public:
 };
 
 // Actionを発行する
-const Action action_callback(const double posx, const double posy, const std::string str, const std::vector<Button> buttons);
+const Action action_callback(const double posx, const double posy, const std::string str, const std::vector<Button> &buttons);
+const Action action_add_button(const ButtonInitializer &button_initializer);
 const Action action_update_info(const std::string new_info);
 const Action action_update_pos(const Position &new_pos_);
 

@@ -70,6 +70,13 @@ void Gui::main() {
 	store.state.pos_p->set_fast_sfenonly("l4+R1n1/1pgk5/5+P3/4Sp1+P1/1N7/1Kp1P4/4SP1+p1/9/4+p1+sL1 w BGSNPrb2gn2l8p 1240");
 	store.state.is_render_pos = true;
 
+	std::string str = "STR";
+	/*store.add_action_que(action_add_button(
+		ButtonInitializer(-10.f, 0.6f, -7.f, 1.2f, FunctionType::UPDATE_INFO,
+			conv_GL_color(0, 0, 0, 200), conv_GL_color(128, 255, 0, 200), conv_GL_color(0, 0, 0, 200), str, true, true
+		)));*/
+	
+
 	while (!glfwWindowShouldClose(window)) {
 		render_loop_init();
 		store.exe_action_que();

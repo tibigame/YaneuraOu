@@ -747,6 +747,7 @@
     <ClCompile Include="engine\mate-engine\mate-search.cpp" />
     <ClCompile Include="engine\user-engine\ex_board.cpp" />
     <ClCompile Include="engine\user-engine\GLFW\graphic_button.cpp" />
+    <ClCompile Include="engine\user-engine\GLFW\graphic_common.cpp" />
     <ClCompile Include="engine\user-engine\GLFW\graphic_main.cpp" />
     <ClCompile Include="engine\user-engine\GLFW\graphic_object.cpp" />
     <ClCompile Include="engine\user-engine\GLFW\graphic_primitive.cpp" />

@@ -70,6 +70,27 @@ inline Action::Action(const FunctionType ft_, const std::string &str_) {
 
 const Action ActionNone = Action(FunctionType::NONE, "");
 
+struct GlColor {
+	union {
+		GLfloat c[4];
+		GLfloat red;
+		GLfloat green;
+		GLfloat blue;
+		GLfloat alpha;
+	};
+	inline GlColor() {};
+	inline const GLfloat* operator()()
+	{
+		return c;
+	}
+	inline GlColor(unsigned char red_, unsigned char green_, unsigned char blue_, unsigned char alpha_) {
+		red = red_ / 255.f;
+		green = green_ / 255.f;
+		blue = blue_ / 255.f;
+		alpha = alpha_ / 255.f;
+	}
+};
+
 // RGBをGLの色情報に変換します
 inline GLfloat *conv_GL_color(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha) {
 	GLfloat c[] = { red / 255.f , green / 255.f , blue / 255.f , alpha / 255.f };
@@ -83,6 +104,11 @@ inline void set_glColor(unsigned char red, unsigned char green, unsigned char bl
 inline void set_glColor(GLfloat *GL_c) {
 	glColor4f(GL_c[0], GL_c[1], GL_c[2], GL_c[3]);
 }
+
+// 色の定義
+extern GLfloat GL_COLOR_ZERO[];
+extern GLfloat GL_COLOR_MAX[];
+extern GLfloat GL_COLOR_BUTTON[];
 
 #endif
 

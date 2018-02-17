@@ -11,8 +11,9 @@ ButtonInitializer::ButtonInitializer() {
 ButtonInitializer::~ButtonInitializer() {
 }
 
-ButtonInitializer::ButtonInitializer(double left_, double bottom_, double right_, double top_, FunctionType ft_=FunctionType::NONE, std::string str_="",
-	bool is_visible_=false, bool is_enable_=false) {
+ButtonInitializer::ButtonInitializer(double left_, double bottom_, double right_, double top_, FunctionType ft_,
+	GLfloat *mat_ambient_, GLfloat *mat_diffuse_, GLfloat *mat_specular_,
+	std::string str_, bool is_visible_, bool is_enable_) {
 	left = left_;
 	bottom = bottom_;
 	right = right_;
@@ -21,6 +22,9 @@ ButtonInitializer::ButtonInitializer(double left_, double bottom_, double right_
 	str = str_;
 	is_visible = is_visible_;
 	is_enable = is_enable_;
+	mat_ambient = mat_ambient_;
+	mat_diffuse = mat_diffuse_;
+	mat_specular = mat_specular_;
 }
 
 Button::Button() {
@@ -39,6 +43,9 @@ Button::Button(ButtonInitializer button_initializer) {
 	str = button_initializer.str;
 	is_visible = button_initializer.is_visible;
 	is_enable = button_initializer.is_enable;
+	mat_ambient = button_initializer.mat_ambient;
+	mat_diffuse = button_initializer.mat_diffuse;
+	mat_specular = button_initializer.mat_specular;
 }
 
 double Button::get_width() { // 幅を求めます
@@ -63,10 +70,9 @@ const Action Button::get_action(double posx, double posy) const {
 	}
 	return ActionNone; // 対象外のコールバックなのでNONEアクションを返す
 }
-
+float greenDiffuse[] = { 0.0, 1.0, 0.8, 1.0 };
 void Button::draw() {
-	draw_button(left, bottom, right, top,
-		conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255));
+	draw_button(left, bottom, right, top, mat_ambient, mat_diffuse, mat_specular);
 }
 
 #endif

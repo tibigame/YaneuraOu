@@ -62,7 +62,7 @@ void int_string(const int num, NumberType num_type,
 	if (num < 0) { // 負の数ならハイフンを出力しておく
 		if (gl_string->get_texture_id(u8"-", textureID)) {
 			draw_rect_ex(0.f, 0.f, f_size2, f_size,
-				conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.5f,
+				GL_COLOR_ZERO, GL_COLOR_MAX, GL_COLOR_ZERO, 0.5f,
 				display_x - 5.5f * f_size2, display_y, 0.0, f_size, offset, true, textureID);
 		}
 		int_string(-num, num_type, f_size, display_x, display_y, offset, gl_string);
@@ -72,7 +72,7 @@ void int_string(const int num, NumberType num_type,
 		div_t d = div(num, 10);
 		if (gl_string->get_texture_id(d.rem, num_type, textureID)) {
 			draw_rect_ex(0.f, 0.f, f_size2, f_size,
-				conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.5f,
+				GL_COLOR_ZERO, GL_COLOR_MAX, GL_COLOR_ZERO, 0.5f,
 				display_x, display_y, 0.0, f_size, offset, true, textureID);
 		}
 		int_string(d.quot, num_type, f_size, display_x - f_size2, display_y, offset, gl_string);
@@ -80,7 +80,7 @@ void int_string(const int num, NumberType num_type,
 	}
 	if (gl_string->get_texture_id(num, num_type, textureID)) {
 		draw_rect_ex(0.f, 0.f, f_size2, f_size,
-			conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.5f,
+			GL_COLOR_ZERO, GL_COLOR_MAX, GL_COLOR_ZERO, 0.5f,
 			display_x, display_y, 0.0, f_size, offset, true, textureID);
 	}
 }
@@ -96,7 +96,7 @@ void board_piece_string(const Piece pc, const Square sq, GlString* gl_string, co
 	GLuint textureID;
 	if (gl_string->get_texture_id(pc, textureID)) {
 		draw_rect_ex(-0.5f, -0.5f, 0.5f, 0.5f,
-			conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.5f,
+			GL_COLOR_ZERO, GL_COLOR_MAX, GL_COLOR_ZERO, 0.5f,
 			display_x, display_y, degree, 1.1f, 0.12f, true, textureID);
 	}
 }
@@ -121,7 +121,7 @@ void hand_piece_mark(const Color c, const GLfloat f_size = 0.6f, const GLfloat f
 		display_x = board_border + hand_inner_margin - 0.13f;
 		display_y = -0.229f;
 		draw_pentagon_ex(0.f, 0.f, f_size, f_size,
-			conv_GL_color(0, 0, 0, 255), conv_GL_color(0, 0, 0, 255), conv_GL_color(0, 0, 0, 255), 0.50f,
+			GL_COLOR_ZERO, GL_COLOR_ZERO, GL_COLOR_ZERO, 0.50f,
 			display_x, display_y, 0.0, 1.f, 0.12f);
 	}
 	else {
@@ -129,10 +129,10 @@ void hand_piece_mark(const Color c, const GLfloat f_size = 0.6f, const GLfloat f
 		display_y = -shogiboard_size + 0.229f + f_size + 0.5f;
 		GLfloat boarder = 0.05f;
 		draw_pentagon_ex(0.f, 0.f, f_size, f_size,
-			conv_GL_color(0, 0, 0, 255), conv_GL_color(0, 0, 0, 255), conv_GL_color(0, 0, 0, 255), 0.499f,
+			GL_COLOR_ZERO, GL_COLOR_ZERO, GL_COLOR_ZERO, 0.499f,
 			display_x, display_y, 180.0, 1.f, 0.12f);
 		draw_pentagon_ex(0.f + boarder, 0.f + boarder, f_size - boarder, f_size - boarder,
-			conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.5f,
+			GL_COLOR_ZERO, GL_COLOR_MAX, GL_COLOR_ZERO, 0.5f,
 			display_x, display_y, 180.0, 1.f, 0.12f);
 	}
 
@@ -155,7 +155,7 @@ void hand_piece_string(const Piece pc, const int num, const Color c, GlString* g
 	GLuint textureID;
 	if (gl_string->get_texture_id(pc, textureID)) {
 		draw_rect_ex(0.f, -f_size, f_size, 0.f,
-			conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.5f,
+			GL_COLOR_ZERO, GL_COLOR_MAX, GL_COLOR_ZERO, 0.5f,
 			display_x, display_y, degree, 1.f, 0.f, true, textureID);
 	}
 }
@@ -176,7 +176,7 @@ void hand_piece_int(const int pc_num, const int num, const Color c, GlString* gl
 	GLuint textureID;
 	if (gl_string->get_texture_id(pc_num, NumberType::Chinese, textureID)) {
 		draw_rect_ex(0.f, -f_size, f_size, 0.f,
-			conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.5f,
+			GL_COLOR_ZERO, GL_COLOR_MAX, GL_COLOR_ZERO, 0.5f,
 			display_x, display_y, degree, 1.f, 0.f, true, textureID);
 	}
 }
@@ -315,7 +315,7 @@ void draw_teban(const Position &pos_, GlString* gl_string) {
 	_itoa_s(pos_.gamePly, gamePly, 10);
 	std::string tesuu = u8", 手数: ";
 	tesuu += +gamePly;
-	draw_string(teban + tesuu, gl_string, 1.f, 9.f, 1, conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255),
+	draw_string(teban + tesuu, gl_string, 1.f, 9.f, 1, GL_COLOR_ZERO, GL_COLOR_MAX, GL_COLOR_ZERO,
 		0.5f, display_x, display_y, 0.0, f_size);
 }
 
@@ -357,7 +357,7 @@ void draw_string(std::string str, GlString* gl_string,
 		textureID = gl_string->create_and_get_texture_id(buf.c_str());
 		if (textureID) {
 			draw_rect_ex(0.f, -size_y, size_x, 0.f,
-				conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.49f,
+				GL_COLOR_ZERO, GL_COLOR_MAX, GL_COLOR_ZERO, 0.49f,
 				display_x + pos_x, display_y + pos_y, 0.0, font_size, 0.f, true, textureID);
 		}
 		pos_x += size_x * 0.8f; // 次の文字のためにレンダリング位置をずらす
@@ -380,7 +380,7 @@ void draw_info(const std::string &info_, GlString* gl_string) {
 	const GLfloat display_x = -board_size - board_border - hand_inner_margin - hand_size - hand_outer_margin + 0.2f;
 	const GLfloat display_y = -board_size - board_border - 1.2f;
 	draw_string(info_, gl_string, 1.f, 13.4f, 6,
-		conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), 0.49f,
+		GL_COLOR_ZERO, GL_COLOR_MAX, GL_COLOR_ZERO, 0.49f,
 		display_x, display_y, 0.0, 0.6f);
 }
 
@@ -389,9 +389,9 @@ void draw_button(GLfloat left, GLfloat bottom, GLfloat right, GLfloat top,
 	GLfloat *mat_ambient, GLfloat *mat_diffuse, GLfloat *mat_specular, GLfloat z,
 	GLfloat display_x, GLfloat display_y, double degree, GLfloat scale, GLfloat string_offset,
 	bool is_texture, GLuint textureID) {
-	draw_rect_ex(left, bottom, right, top,
-		conv_GL_color(0, 0, 0, 255), conv_GL_color(255, 255, 255, 255), conv_GL_color(0, 0, 0, 255), z,
+	draw_rect_ex(left, bottom, right, top, mat_ambient, mat_diffuse, mat_specular, z,
 		0.f, 0.f, 0.0, 1.f, 0.f);
 }
+
 
 #endif

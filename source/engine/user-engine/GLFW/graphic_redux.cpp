@@ -17,7 +17,7 @@ State::~State() {
 State::State(const State &a) {
 	is_render_pos = a.is_render_pos;
 	info = a.info;
-	std::copy(a.buttons.begin(), a.buttons.end(), back_inserter(buttons));
+	buttons = a.buttons;
 	pos_p = a.pos_p;
 }
 // 代入演算子
@@ -26,13 +26,13 @@ State &State::operator=(const State &a)
 	State t;
 	t.info = a.info;
 	t.is_render_pos = a.is_render_pos;
-	std::copy(a.buttons.begin(), a.buttons.end(), back_inserter(t.buttons));
+	t.buttons = a.buttons;
 	t.pos_p = a.pos_p;
 	return t;
 }
 
-void State::add_button(ButtonInitializer button_initializer) {
-	buttons.push_back(Button(button_initializer)); // 末尾に追加していく
+void State::add_button(const ButtonInitializer &button_initializer) {
+	buttons->push_back(Button(button_initializer)); // 末尾に追加していく
 }
 
 StateRender::StateRender(const State *s, const GLuint textureID_shogiboard_, GlString* gl_string_) {
@@ -44,20 +44,26 @@ StateRender::StateRender(const State *s, const GLuint textureID_shogiboard_, GlS
 // コンストラクタとデストラクタ
 Store::Store() {
 	gl_string = new GlString;
+	state.buttons = new std::vector<Button>;
 	state.pos_p = static_cast<Position*>(_aligned_malloc(sizeof(Position), 32)); // ここのポインタはmoveで変わっていく
 }
 
 Store::~Store() {
 	delete gl_string;
-	_aligned_free(static_cast<Position*>(state.pos_p));
+	delete state.buttons;
+	_aligned_free(state.pos_p);
 }
 
 void Store::init() {
 	gl_string->font_init(); // フォントの読み込みと駒文字などのフォントキャッシュの生成
 	draw_init(textureID_shogiboard);
+
+	add_button(ButtonInitializer(-10.f, 0.6f, -7.f, 1.2f, FunctionType::UPDATE_INFO,
+		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, " ", true, true));
+
 }
 
-void Store::add_button(ButtonInitializer button_initializer) {
+void Store::add_button(const ButtonInitializer &button_initializer) {
 	state.add_button(button_initializer);
 }
 
@@ -72,7 +78,6 @@ void Store::add_action_que(Action ac) {
 
 // actionを発行する
 void Store::callback(const double posx, const double posy, const std::string &str) {
-	std::vector<Button> temp;
 
 	char a[100];
 	_itoa_s((int)posx, a, 10);
@@ -85,17 +90,17 @@ void Store::callback(const double posx, const double posy, const std::string &st
 	add_action_que(action_update_info(test));
 	return;
 
-	std::copy(state.buttons.begin(), state.buttons.end(), back_inserter(temp));
-
+	/*
 	Action ac = action_callback(posx, posy, str, temp);
 	if (ac.ft == FunctionType::NONE) {
 		return;
 	}
 	add_action_que(ac); // キューにactionを追加する
+	*/
 }
 
 // Actionを発行する
-const Action action_callback(const double posx, const double posy, const std::string str, const std::vector<Button> buttons) {
+const Action action_callback(const double posx, const double posy, const std::string str, const std::vector<Button> &buttons) {
 	Action ac(FunctionType::NONE, "");
 	for (auto i = 0; i < buttons.size(); ++i) { // 全てのボタンに対してアクションの発行を試みる
 		ac = (buttons[i].get_action(posx, posy));
@@ -104,6 +109,16 @@ const Action action_callback(const double posx, const double posy, const std::st
 		return ac; // 最初に見つかったボタンのアクションを発行する
 	}
 	return ac; // Action発行対象となるボタンが存在しなかった
+}
+
+const Action action_add_button(const ButtonInitializer &button_initializer) {
+	Action ac;
+	ac.ft = FunctionType::ADD_BUTTON;
+
+	ButtonInitializer *p = static_cast<ButtonInitializer*>(_aligned_malloc(sizeof(ButtonInitializer), 32)); // ここで確保したメモリはreducerで所有権が移される
+	*p = button_initializer;
+	ac.p = static_cast<void*>(p);
+	return ac;
 }
 
 const Action action_update_pos(const Position &new_pos_) {
@@ -146,7 +161,8 @@ const State reducer(const Action &action, const State &state) {
 			break;
 		}
 		case FunctionType::ADD_BUTTON: {
-			
+			nextState.add_button(*static_cast<ButtonInitializer*>(action.p));
+			_aligned_free(static_cast<ButtonInitializer*>(action.p)); // 渡されたメモリをここで解放する
 			break;
 		}
 		case FunctionType::UPDATE_INFO: {
@@ -183,7 +199,7 @@ void Store::exe_action_que() {
 void Store::update_store(const State &nextState) {
 	state.info = nextState.info;
 	state.is_render_pos = nextState.is_render_pos;
-	std::copy(nextState.buttons.begin(), nextState.buttons.end(), back_inserter(state.buttons));
+	state.buttons = nextState.buttons;
 	state.pos_p = nextState.pos_p;
 }
 
@@ -203,7 +219,7 @@ void render(const StateRender &state_render) {
 		draw_hand(*state_render.state->pos_p, state_render.gl_string);
 		draw_teban(*state_render.state->pos_p, state_render.gl_string);
 	}
-	for (auto button : state_render.state->buttons) {
+	for (auto button : *state_render.state->buttons) {
 		button.draw();
 	}
 }
