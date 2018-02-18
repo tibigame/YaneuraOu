@@ -22,6 +22,7 @@ public:
 	Store store; // 状態を管理する
 #endif
 	void create_thread(); // 新しいスレッドで初期化系を呼ばないといけない
+	void detach_thread();
 };
 
 extern Gui gui;

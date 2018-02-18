@@ -23,6 +23,12 @@ void Gui::create_thread() {
 #endif
 }
 
+void Gui::detach_thread() {
+#ifdef GLFW3
+	gui_thread.detach();
+#endif
+}
+
 // コールバック系の処理
 #ifdef GLFW3
 void error_callback(int error, const char* description)
