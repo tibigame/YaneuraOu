@@ -75,7 +75,7 @@ const Action Button::get_action(double posx, double posy) const {
 		window_left < posx && posx < window_right && window_top < posy && posy < window_bottom) { // posの範囲チェック
 		return Action(ft, str);
 	}
-
+	return ActionNone; // 対象外のコールバックなのでNONEアクションを返す
 
 	char a[100];
 	std::string test = u8"window_left = ";

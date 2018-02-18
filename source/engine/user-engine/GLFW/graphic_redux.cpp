@@ -1,11 +1,10 @@
 ﻿#include "graphic_primitive.h"
 #include "graphic_object.h"
 #include "graphic_redux.h"
+#include "mtx.h"
+#include "../../../shogi.h"
 
 #ifdef GLFW3
-
-std::mutex cmd_mtx; // cmdとの通信のためのミューテックス
-std::mutex store_mtx; // Storeのキューにアクセスするためのミューテックス
 
 State::State() {
 }
@@ -57,6 +56,10 @@ void Store::init() {
 	gl_string->font_init(); // フォントの読み込みと駒文字などのフォントキャッシュの生成
 	draw_init(textureID_shogiboard);
 	// ボタン類の初期化
+	add_button(ButtonInitializer(-8.5f, 0.6f, -5.5f, 1.2f, FunctionType::IS_READY,
+		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"IS READY", true, true));
+	add_button(ButtonInitializer(-3.5f, 0.6f, -1.5f, 1.2f, FunctionType::USER,
+		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"USER", true, true));
 	add_button(ButtonInitializer(-0.5f, 0.6f, 1.5f, 1.2f, FunctionType::EXIT,
 		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"EXIT", true, true));
 }
@@ -94,13 +97,13 @@ void Store::callback(const double posx, const double posy, const std::string &st
 	add_action_que(action_update_info(test));
 	return;
 }
-
+#include "graphic_main.h"
 // Actionを発行する
 const Action action_callback(const double posx, const double posy, const std::string str, const std::vector<Button> &buttons) {
 	Action ac(FunctionType::NONE, "");
 	for (auto i = 0; i < buttons.size(); ++i) { // 全てのボタンに対してアクションの発行を試みる
 		ac = (buttons[i].get_action(posx, posy));
-		if (ac.ft == FunctionType::NONE) { continue; } // posが範囲外がボタンが無効だったということ
+		if (ac.ft == FunctionType::NONE) { continue; } // posが範囲外かボタンが無効だったということ
 		ac.index = i;
 		return ac; // 最初に見つかったボタンのアクションを発行する
 	}
@@ -144,17 +147,22 @@ const State reducer(const Action &action, const State &state) {
 	// メインの処理を行う
 	switch (action.ft) { // ここで個々のdispatcherを呼ぶ
 		case FunctionType::IS_READY: {
+			std::string cmd = "isready";
+			cmds.push(cmd);
 			break;
 		}
-		case FunctionType::EXIT: {
-			exit(0);
+		case FunctionType::EXIT: { // 現状うまく終了できない
+			std::string cmd = "quit";
+			cmds.push(cmd);
+			//exit(0);
 			break;
 		}
 		case FunctionType::USER: {
+			std::string cmd = "user";
+			cmds.push(cmd);
 			break;
 		}
 		case FunctionType::TEST: {
-			nextState.info = action.str;
 			break;
 		}
 		case FunctionType::ADD_BUTTON: {

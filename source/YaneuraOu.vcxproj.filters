@@ -307,6 +307,9 @@
     <ClInclude Include="engine\user-engine\GLFW\json_schema.h">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClInclude>
+    <ClInclude Include="engine\user-engine\GLFW\mtx.h">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="movegen.cpp">
@@ -505,6 +508,9 @@
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClCompile>
     <ClCompile Include="engine\user-engine\GLFW\graphic_common.cpp">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\GLFW\mtx.cpp">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClCompile>
   </ItemGroup>

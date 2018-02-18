@@ -30,17 +30,20 @@ void error_callback(int error, const char* description)
 	fputs(description, stderr);
 }
 
+// キーボードコールバック
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
+// マウスコールバック
 void mouse_callback(GLFWwindow* window, int button, int action, int mods) {
-	double xpos, ypos;
-	glfwGetCursorPos(window, &xpos, &ypos);
-	std::string mouse_test = xpos < 100 ? u8"xpos<100" : u8"xpos>=100";
-	gui.store.callback(xpos, ypos, mouse_test);
+	if (action == GLFW_RELEASE) { // ボタンが離された時
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		gui.store.callback(xpos, ypos, " "); // コールバック関数に座標を渡す
+	}
 }
 
 // 初期化処理

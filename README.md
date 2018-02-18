@@ -42,6 +42,7 @@
 
 - 新規実装コードはほぼ「user-engine」ディレクトリ内に閉じています。
 - shogi.cpp: guiスレッドの起動コードを追加。
+- usi.cpp: cmdsのキューをグローバル化してguiから叩けるように。
 - position.h: 一部privateの項目をpublicに変更。
 - position.cpp: 盤面を空で初期化する関数set_blank()の実装。
 - position_sfen_fast.cpp: Position::set_fast(), Position::sfen_fast()の実装。

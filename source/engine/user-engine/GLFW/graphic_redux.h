@@ -12,10 +12,6 @@
 
 #ifdef GLFW3
 
-
-extern std::mutex cmd_mtx; // cmdとの通信のためのミューテックス
-extern std::mutex store_mtx; // Storeのキューにアクセスするためのミューテックス
-
 // 状態を表現する構造体
 class State {
 	public:

@@ -8,6 +8,8 @@
 #include "tt.h"
 #include "misc.h"
 
+#include "./engine/user-engine/GLFW/mtx.h"
+
 using namespace std;
 
 // ユーザーの実験用に開放している関数。
@@ -756,6 +758,10 @@ void search_cmd(Position& pos, istringstream& is)
 // 　　USI応答部
 // --------------------
 
+// 先行入力されているコマンド
+// コマンドは前から取り出すのでqueueを用いる。
+std::queue<std::string> cmds;
+
 // USI応答部本体
 void USI::loop(int argc, char* argv[])
 {
@@ -767,9 +773,6 @@ void USI::loop(int argc, char* argv[])
 	// 局面を遡るためのStateInfoのlist。
 	StateListPtr states(new StateList(1));
 	
-	// 先行入力されているコマンド
-	// コマンドは前から取り出すのでqueueを用いる。
-	queue<string> cmds;
 
 	// ファイルからコマンドの指定
 	if (argc >= 3 && string(argv[1]) == "file")
@@ -810,8 +813,11 @@ void USI::loop(int argc, char* argv[])
 	{
 		if (cmds.size() == 0)
 		{
-			if (!getline(cin, cmd)) // 入力が来るかEOFがくるまでここで待機する。
-				cmd = "quit";
+			cmd = ""; // 実行したらコマンドは空にしておく
+			
+
+			//if (!getline(cin, cmd)) // 入力が来るかEOFがくるまでここで待機する。
+			//	cmd = "quit";
 		} else {
 			// 積んであるコマンドがあるならそれを実行する。
 			// 尽きれば"quit"だと解釈してdoループを抜ける仕様にすることはできるが、
@@ -819,8 +825,11 @@ void USI::loop(int argc, char* argv[])
 			// ただ、
 			// YaneuraOu-mid.exe bench,quit
 			// のようなことは出来るのでPGOの役には立ちそうである。
+
+			cmd_mtx.lock(); // cmdのミューテックスを取得する
 			cmd = cmds.front();
 			cmds.pop();
+			cmd_mtx.unlock(); // cmdのミューテックスを解放する
 		}
 
 		istringstream is(cmd);

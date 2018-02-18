@@ -379,7 +379,7 @@ void draw_string(std::string str, GlString* gl_string,
 void draw_info(const std::string &info_, GlString* gl_string) {
 	const GLfloat display_x = -board_size - board_border - hand_inner_margin - hand_size - hand_outer_margin + 0.2f;
 	const GLfloat display_y = -board_size - board_border - 1.2f;
-	draw_string(info_, gl_string, 1.f, 13.4f, 6,
+	draw_string(info_, gl_string, 0.6f, 13.4f, 6,
 		GL_COLOR_ZERO, GL_COLOR_MAX, GL_COLOR_ZERO, 0.49f,
 		display_x, display_y, 0.0, 0.6f);
 }
@@ -395,7 +395,7 @@ void draw_button(GLfloat left, GLfloat bottom, GLfloat right, GLfloat top,
 	draw_rect_ex(left + border, bottom + border, right - border, top - border, mat_ambient, GL_COLOR_BUTTON_ALPHA_WHITE, mat_specular, z + 0.01f,
 		0.f, 0.f, 0.0, 1.f, 0.f);
 
-	GLfloat font_size = 0.5f;
+	GLfloat font_size = 0.45f;
 	GLfloat left_margin = font_size;
 	// テキストを載せる
 	draw_string(str, gl_string, 1.0f, 2.f, 1,
