@@ -669,6 +669,7 @@
     <ClInclude Include="engine\help-mate-engine\help-mate-search.h" />
     <ClInclude Include="engine\mate-engine\mate-search.h" />
     <ClInclude Include="engine\user-engine\ex_board.h" />
+    <ClInclude Include="engine\user-engine\GLFW\define.h" />
     <ClInclude Include="engine\user-engine\GLFW\graphic_button.h" />
     <ClInclude Include="engine\user-engine\GLFW\graphic_common.h" />
     <ClInclude Include="engine\user-engine\GLFW\graphic_main.h" />

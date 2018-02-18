@@ -310,6 +310,9 @@
     <ClInclude Include="engine\user-engine\GLFW\mtx.h">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClInclude>
+    <ClInclude Include="engine\user-engine\GLFW\define.h">
+      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="movegen.cpp">

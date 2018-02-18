@@ -8,6 +8,7 @@
 #include "tt.h"
 #include "misc.h"
 
+#include "./engine/user-engine/GLFW/define.h"
 #include "./engine/user-engine/GLFW/mtx.h"
 
 using namespace std;
