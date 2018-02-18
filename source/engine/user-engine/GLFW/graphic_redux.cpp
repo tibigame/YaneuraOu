@@ -159,10 +159,11 @@ const State reducer(const Action &action, const State &state) {
 			cmds.push(cmd);
 			break;
 		}
-		case FunctionType::EXIT: { // 現状うまく終了できない
+		case FunctionType::EXIT: {
 			std::string cmd = "quit";
 			cmds.push(cmd);
-			//exit(0);
+			gui.detach_thread();
+			exit(0);
 			break;
 		}
 		case FunctionType::USER: {
