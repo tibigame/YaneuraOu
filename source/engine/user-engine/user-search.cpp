@@ -50,6 +50,7 @@ void user_test(Position& pos_, istringstream& is)
 		myrand.cout();
 		view();
 	}
+#ifdef GLFW3
 	if (time_output) {
 		char a[100];
 		std::string output;
@@ -72,6 +73,7 @@ void user_test(Position& pos_, istringstream& is)
 		gui.store.add_action_que(action_update_info(pos_.sfen_fast(true)));
 	}
 	gui.store.add_action_que(action_update_pos(pos_));
+#endif
 }
 
 #ifdef USER_ENGINE

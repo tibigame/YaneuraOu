@@ -813,11 +813,13 @@ void USI::loop(int argc, char* argv[])
 	{
 		if (cmds.size() == 0)
 		{
+#ifdef GLFW3
 			cmd = ""; // 実行したらコマンドは空にしておく
-			
 
-			//if (!getline(cin, cmd)) // 入力が来るかEOFがくるまでここで待機する。
-			//	cmd = "quit";
+#else
+		if (!getline(cin, cmd)) // 入力が来るかEOFがくるまでここで待機する。
+				cmd = "quit";
+#endif
 		} else {
 			// 積んであるコマンドがあるならそれを実行する。
 			// 尽きれば"quit"だと解釈してdoループを抜ける仕様にすることはできるが、
