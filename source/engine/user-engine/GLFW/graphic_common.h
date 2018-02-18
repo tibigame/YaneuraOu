@@ -44,6 +44,8 @@ enum class FunctionType
 	ADD_BUTTON, // ボタンの追加
 	UPDATE_INFO, // infoの更新
 	UPDATE_POS, // pos_の更新
+	BENCH, // ベンチマークの実行
+	GEN_RANDOM_SFEN, // ランダム局面を1つ生成する
 	TEST, // テスト関数
 	NONE
 };

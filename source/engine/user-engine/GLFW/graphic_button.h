@@ -19,11 +19,12 @@ struct ButtonInitializer {
 	GLfloat *mat_ambient;
 	GLfloat *mat_diffuse;
 	GLfloat *mat_specular;
+	GLfloat left_offset;
 	ButtonInitializer();
 	~ButtonInitializer();
 	ButtonInitializer(double left_, double bottom_, double right_, double top_, FunctionType ft_, 
 		GLfloat *mat_ambient, GLfloat *mat_diffuse, GLfloat *mat_specular,
-		std::string str_, bool is_visible_, bool is_enable_);
+		std::string str_, bool is_visible_, bool is_enable_, GLfloat left_offset);
 };
 
 // ボタンとはある長方形の領域を持ち、ActionのFunctionTypeと関連付けられ、
@@ -39,6 +40,7 @@ private:
 	GLfloat *mat_ambient;
 	GLfloat *mat_diffuse;
 	GLfloat *mat_specular;
+	GLfloat left_offset;
 public:
 	bool is_visible; // 可視状態か
 	bool is_enable; // 有効化状態か

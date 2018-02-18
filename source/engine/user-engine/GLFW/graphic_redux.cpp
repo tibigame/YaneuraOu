@@ -56,12 +56,20 @@ void Store::init() {
 	gl_string->font_init(); // フォントの読み込みと駒文字などのフォントキャッシュの生成
 	draw_init(textureID_shogiboard);
 	// ボタン類の初期化
-	add_button(ButtonInitializer(-8.5f, 0.6f, -5.5f, 1.2f, FunctionType::IS_READY,
-		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"IS READY", true, true));
-	add_button(ButtonInitializer(-3.5f, 0.6f, -1.5f, 1.2f, FunctionType::USER,
-		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"USER", true, true));
-	add_button(ButtonInitializer(-0.5f, 0.6f, 1.5f, 1.2f, FunctionType::EXIT,
-		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"EXIT", true, true));
+	add_button(ButtonInitializer(-6.f, 0.6f, -4.f, 1.2f, FunctionType::IS_READY,
+		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"IS READY", true, true, -0.1f));
+
+	add_button(ButtonInitializer(-3.5f, 0.6f, -2.5f, 1.2f, FunctionType::USER,
+		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"USER", true, true, -0.15f));
+
+	add_button(ButtonInitializer(-2.3f, 0.6f, -1.2f, 1.2f, FunctionType::BENCH,
+		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"ベンチ", true, true, -0.1f));
+
+	add_button(ButtonInitializer(-1.f, 0.6f, 0.5f, 1.2f, FunctionType::GEN_RANDOM_SFEN,
+		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"局面生成", true, true, 0.1f));
+
+	add_button(ButtonInitializer(0.7f, 0.6f, 1.7f, 1.2f, FunctionType::EXIT,
+		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"EXIT", true, true, 0.3f));
 }
 
 void Store::add_button(const ButtonInitializer &button_initializer) {
@@ -158,7 +166,17 @@ const State reducer(const Action &action, const State &state) {
 			break;
 		}
 		case FunctionType::USER: {
-			std::string cmd = "user";
+			std::string cmd = "user 10";
+			cmds.push(cmd);
+			break;
+		}
+		case FunctionType::GEN_RANDOM_SFEN: {
+			std::string cmd = "user gen";
+			cmds.push(cmd);
+			break;
+		}
+		case FunctionType::BENCH: {
+			std::string cmd = "user bench";
 			cmds.push(cmd);
 			break;
 		}

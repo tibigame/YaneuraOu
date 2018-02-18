@@ -386,7 +386,7 @@ void draw_info(const std::string &info_, GlString* gl_string) {
 
 // ボタンを描写します
 void draw_button(GLfloat left, GLfloat bottom, GLfloat right, GLfloat top,
-	GLfloat *mat_ambient, GLfloat *mat_diffuse, GLfloat *mat_specular, GLfloat z, std::string str) {
+	GLfloat *mat_ambient, GLfloat *mat_diffuse, GLfloat *mat_specular, GLfloat z, std::string str, GLfloat left_offset=0.f) {
 	// ボーダーの色
 	draw_rect_ex(left, bottom, right, top, mat_ambient, mat_diffuse, mat_specular, z,
 		0.f, 0.f, 0.0, 1.f, 0.f);
@@ -395,12 +395,11 @@ void draw_button(GLfloat left, GLfloat bottom, GLfloat right, GLfloat top,
 	draw_rect_ex(left + border, bottom + border, right - border, top - border, mat_ambient, GL_COLOR_BUTTON_ALPHA_WHITE, mat_specular, z + 0.01f,
 		0.f, 0.f, 0.0, 1.f, 0.f);
 
-	GLfloat font_size = 0.45f;
-	GLfloat left_margin = font_size;
+	GLfloat font_size = 0.5f;
 	// テキストを載せる
 	draw_string(str, gl_string, 1.0f, 2.f, 1,
 		GL_COLOR_ZERO, GL_COLOR_MAX, GL_COLOR_ZERO, z + 0.02f,
-		left + left_margin, top, 0.0, font_size);
+		left + left_offset, top, 0.0, font_size);
 }
 
 

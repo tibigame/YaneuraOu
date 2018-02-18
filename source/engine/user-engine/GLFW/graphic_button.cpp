@@ -13,7 +13,7 @@ ButtonInitializer::~ButtonInitializer() {
 
 ButtonInitializer::ButtonInitializer(double left_, double bottom_, double right_, double top_, FunctionType ft_,
 	GLfloat *mat_ambient_, GLfloat *mat_diffuse_, GLfloat *mat_specular_,
-	std::string str_, bool is_visible_, bool is_enable_) {
+	std::string str_, bool is_visible_, bool is_enable_, GLfloat left_offset_) {
 	left = left_;
 	bottom = bottom_;
 	right = right_;
@@ -25,6 +25,7 @@ ButtonInitializer::ButtonInitializer(double left_, double bottom_, double right_
 	mat_ambient = mat_ambient_;
 	mat_diffuse = mat_diffuse_;
 	mat_specular = mat_specular_;
+	left_offset = left_offset_;
 }
 
 Button::Button() {
@@ -46,6 +47,7 @@ Button::Button(ButtonInitializer button_initializer) {
 	mat_ambient = button_initializer.mat_ambient;
 	mat_diffuse = button_initializer.mat_diffuse;
 	mat_specular = button_initializer.mat_specular;
+	left_offset = button_initializer.left_offset;
 	// 座標変換を行いウィンドウの座標を求める
 	window_left = ((left + (board_size + board_border + hand_inner_margin + hand_size + hand_outer_margin)) / total_width) * window_width;
 	window_right = ((right + (board_size + board_border + hand_inner_margin + hand_size + hand_outer_margin)) / total_width) * window_width;
@@ -104,7 +106,7 @@ const Action Button::get_action(double posx, double posy) const {
 }
 
 void Button::draw() {
-	draw_button(left, bottom, right, top, mat_ambient, mat_diffuse, mat_specular, 0.6f, str);
+	draw_button(left, bottom, right, top, mat_ambient, mat_diffuse, mat_specular, 0.6f, str, left_offset);
 }
 
 #endif
