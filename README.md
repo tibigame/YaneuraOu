@@ -2,6 +2,11 @@
 
 このプロジェクトはやねうら王を利用して将棋のランダム局面を生成することを目的とします。
 
+やねうら王からの追加機能として以下があります。
+
+- GUIでやねうら王を操作する
+- 高速なsfenとPositionの相互変換
+
 開発環境はVisual Studio 2017です。
 
 [開発者twitter](https://twitter.com/tibigame)
