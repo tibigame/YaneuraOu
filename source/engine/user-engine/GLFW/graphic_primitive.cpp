@@ -70,6 +70,13 @@ void draw_init(GLuint &textureID) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 画面の初期化
 	setupTexture(textureID, texture1); // テクスチャの初期設定
 }
+void view_move() {
+	glMatrixMode(GL_MODELVIEW); // プロジェクションモードに設定
+	glLoadIdentity();
+	gluLookAt(0.f, 0.f, 0.5f,
+		0.f, 0.f, -1.f,
+		0.f, 1.f, 0.f);
+}
 
 // メインループの最初に必ず実行する処理を書きます
 void draw_loop_init() {

@@ -27,6 +27,9 @@ void draw_pentagon_ex(GLfloat left, GLfloat bottom, GLfloat right, GLfloat top,
 	GLfloat *mat_ambient, GLfloat *mat_diffuse, GLfloat *mat_specular, GLfloat z = 0.f,
 	GLfloat display_x = 0.f, GLfloat display_y = 0.f, double degree = 0.0, GLfloat scale = 1.f, GLfloat string_offset = 0.f,
 	bool is_texture = false, GLuint textureID = 0);
+
+void view_move();
+
 #endif
 
 #endif _GRAPHIC_PRIMITIVE_H_

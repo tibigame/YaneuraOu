@@ -1,6 +1,7 @@
 ﻿#include "graphic_primitive.h"
 #include "graphic_object.h"
 #include "graphic_redux.h"
+#include "graphic_main.h"
 #include "mtx.h"
 #include "../../../shogi.h"
 
@@ -89,8 +90,6 @@ void Store::add_action_que(Action ac) {
 	action_que.push(ac);
 }
 
-#include <stdlib.h>
-
 // actionを発行する
 void Store::callback(const double posx, const double posy, const std::string &str) {
 	Action ac = action_callback(posx, posy, str, *state.buttons);
@@ -99,19 +98,8 @@ void Store::callback(const double posx, const double posy, const std::string &st
 	}
 	add_action_que(ac); // キューにactionを追加する
 	return;
-
-	char a[100];
-	_itoa_s((int)posx, a, 10);
-	std::string test = u8"posx = ";
-	test += a;
-	test += u8", poy = ";
-	_itoa_s((int)posy, a, 10);
-	test += a;
-	test += u8"\n日本語テスト！aあ☆＠";
-	add_action_que(action_update_info(test));
-	return;
 }
-#include "graphic_main.h"
+
 // Actionを発行する
 const Action action_callback(const double posx, const double posy, const std::string str, const std::vector<Button> &buttons) {
 	Action ac(FunctionType::NONE, "");

@@ -313,6 +313,9 @@
     <ClInclude Include="engine\user-engine\GLFW\define.h">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
     </ClInclude>
+    <ClInclude Include="engine\user-engine\util\i_to_u8.h">
+      <Filter>リソース ファイル\engine\user-engine\util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="movegen.cpp">
@@ -515,6 +518,9 @@
     </ClCompile>
     <ClCompile Include="engine\user-engine\GLFW\mtx.cpp">
       <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\util\i_to_u8.cpp">
+      <Filter>リソース ファイル\engine\user-engine\util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

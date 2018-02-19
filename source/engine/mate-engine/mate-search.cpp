@@ -6,6 +6,12 @@
 #include "../../extra/all.h"
 #include "mate-search.h" 
 
+// GUIに出力してみるテスト
+#include "../user-engine/GLFW/graphic_main.h"
+#include "../user-engine/GLFW/graphic_redux.h"
+#include "../user-engine/util/i_to_u8.h"
+
+
 using namespace std;
 using namespace Search;
 
@@ -459,9 +465,13 @@ namespace MateEngine
 
 	// 詰将棋探索のエントリポイント
 	void dfpn(Position& r) {
+		std::string info_result = u8" "; // GUIに出力する結果
+
 		if (r.in_check()) {
 			sync_cout << "info string The king is checked... df-pn is skipped..." << sync_endl;
 			sync_cout << "bestmove None" << sync_endl;
+			info_result = u8"王手になっている";
+			gui.store.add_action_que(action_update_info(info_result));
 			return;
 		}
 
@@ -498,6 +508,8 @@ namespace MateEngine
 			}
 			oss << " score mate + nps " << nps;
 			sync_cout << oss.str() << sync_endl;
+			info_result = u8"mate " + i_to_u8(moves.size());
+			gui.store.add_action_que(action_update_info(info_result));
 		}
 
 		// "stop"が送られてきたらThreads.stop == trueになる。
@@ -511,12 +523,18 @@ namespace MateEngine
 
 		if (moves.empty()) {
 			sync_cout << "bestmove None" << sync_endl;
+			info_result = u8"詰みません";
+			gui.store.add_action_que(action_update_info(info_result));
 		}
 		else if (moves.size() == 1) {
 			sync_cout << "bestmove " << moves[0] << sync_endl;
+			info_result += u8"\nbestmove: 1";
+			gui.store.add_action_que(action_update_info(info_result));
 		}
 		else {
 			sync_cout << "bestmove " << moves[0] << " ponder " << moves[1] << sync_endl;
+			info_result += u8"\nbestmove: 2";
+			gui.store.add_action_que(action_update_info(info_result));
 		}
 
 		Threads.stop = true;

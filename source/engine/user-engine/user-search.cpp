@@ -4,8 +4,8 @@
 #include "./test/test.h"
 #include "./GLFW/graphic_main.h"
 #include "./GLFW/graphic_redux.h"
+#include "./util/i_to_u8.h"
 
-#include <stdlib.h>
 #include <atltime.h>
 
 
@@ -51,28 +51,19 @@ void user_test(Position& pos_, istringstream& is)
 		view();
 	}
 #ifdef GLFW3
+	gui.store.add_action_que(action_update_pos(pos_));
 	if (time_output) {
-		char a[100];
 		std::string output;
-		output = u8"局面数: ";
-		_itoa_s(loop_num, a, 10);
-		output += a;
-		output += u8"\n処理時間: ";
-		_itoa_s(int(cTimeSpan.GetTimeSpan() / 10000), a, 10);
-		output += a;
-		output += u8"[ms]";
+		output = u8"局面数: " + i_to_u8(loop_num);
+		output += u8"\n処理時間: " + i_to_u8(int(cTimeSpan.GetTimeSpan() / 10000)) + u8"[ms]";
 		if (cTimeSpan.GetTimeSpan() * 0.0001 > 0.000000001) {
-			output += u8"\n処理速度: ";
-			_itoa_s(int(loop_num / (cTimeSpan.GetTimeSpan() * 0.0001)), a, 10);
-			output += a;
-			output += u8"[sfen/ms]";
+			output += u8"\n処理速度: " + i_to_u8(int(loop_num / (cTimeSpan.GetTimeSpan() * 0.0001))) + u8"[sfen/ms]";
 		}
 		gui.store.add_action_que(action_update_info(output));
 	}
 	else {
 		gui.store.add_action_que(action_update_info(pos_.sfen_fast(true)));
 	}
-	gui.store.add_action_que(action_update_pos(pos_));
 #endif
 }
 
