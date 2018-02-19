@@ -31,9 +31,9 @@
 
 #if !defined (USE_MAKEFILE)
 
-//#define YANEURAOU_2018_GOKU_ENGINE       // やねうら王2017(GOKU)   (完成2017/12/31) : 極やねうら王
-#define YANEURAOU_2018_OTAFUKU_ENGINE    // やねうら王2018 with お多福Lab。(開発中2018/01/01～)
-//#define MATE_ENGINE                      // 詰め将棋solverとしてリリースする場合。(開発中2017/05/06～)
+//#define YANEURAOU_2017_GOKU_ENGINE       // やねうら王2017(GOKU)   (完成2017/12/31) : 極やねうら王
+//#define YANEURAOU_2018_OTAFUKU_ENGINE    // やねうら王2018 with お多福Lab。(開発中2018/01/01～)
+#define MATE_ENGINE                      // 詰め将棋solverとしてリリースする場合。(開発中2017/05/06～)
 //#define HELP_MATE_ENGINE                 // 協力詰めsolverとしてリリースする場合。協力詰めの最長は49909手。「寿限無3」 cf. http://www.ne.jp/asahi/tetsu/toybox/kato/fbaka4.htm
 //#define LOCAL_GAME_SERVER                // 連続自動対局フレームワーク
 //#define USER_ENGINE                      // ユーザーの思考エンジン
@@ -43,6 +43,8 @@
 // Makefileを使ってビルドをするときは、Makefile側で選択する。
 
 #endif
+
+#include <queue>
 
 // --------------------
 // release configurations
@@ -880,8 +882,12 @@ namespace Eval
 //     USI関連
 // --------------------
 
+extern std::queue<std::string> cmds;
+extern bool cin_flag;
+
 namespace USI
 {
+	
 	struct Option;
 
 	// USIのoption名と、それに対応する設定内容を保持しているclass

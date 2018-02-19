@@ -52,6 +52,11 @@ void mouse_callback(GLFWwindow* window, int button, int action, int mods) {
 	}
 }
 
+// 再描写コールバック
+void refresh(GLFWwindow* window) {
+	glFlush();
+}
+
 // 初期化処理
 // 主にウィンドウの属性指定とコールバックの設定
 void Gui::init() {
@@ -64,6 +69,7 @@ void Gui::init() {
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
+	glfwSetWindowRefreshCallback(window, refresh);
 	glfwSetWindowPos(window, 1280, 280); // 位置を指定
 	glfwMakeContextCurrent(window);
 	glfwSetKeyCallback(window, key_callback);
@@ -87,7 +93,7 @@ void Gui::main() {
 		glFlush();
 		glfwSwapBuffers(window);
 		// いらないかもだけど、リアルタイム更新も不要なので適当にスリーブしとく
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		std::this_thread::sleep_for(std::chrono::milliseconds(60));
 		glfwWaitEvents();
 	}
 }

@@ -762,6 +762,7 @@ void search_cmd(Position& pos, istringstream& is)
 // 先行入力されているコマンド
 // コマンドは前から取り出すのでqueueを用いる。
 std::queue<std::string> cmds;
+bool cin_flag = false;
 
 // USI応答部本体
 void USI::loop(int argc, char* argv[])
@@ -816,6 +817,8 @@ void USI::loop(int argc, char* argv[])
 		{
 #ifdef GLFW3
 			cmd = ""; // 実行したらコマンドは空にしておく
+			if (cin_flag && !getline(cin, cmd)) // 入力が来るかEOFがくるまでここで待機する。
+				cmd = "quit";
 
 #else
 		if (!getline(cin, cmd)) // 入力が来るかEOFがくるまでここで待機する。
@@ -869,7 +872,7 @@ void USI::loop(int argc, char* argv[])
 		else if (token == "go") go_cmd(pos, is , states);
 
 		// (思考などに使うための)開始局面(root)を設定する
-		else if (token == "position") position_cmd(pos, is , states);
+		else if (token == "position") { position_cmd(pos, is, states);  std::cout << pos.sfen_fast() << std::endl; }
 
 		// 起動時いきなりこれが飛んでくるので速攻応答しないとタイムアウトになる。
 		else if (token == "usi")

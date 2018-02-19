@@ -48,11 +48,12 @@ Button::Button(ButtonInitializer button_initializer) {
 	mat_diffuse = button_initializer.mat_diffuse;
 	mat_specular = button_initializer.mat_specular;
 	left_offset = button_initializer.left_offset;
-	// 座標変換を行いウィンドウの座標を求める
-	window_left = ((left + (board_size + board_border + hand_inner_margin + hand_size + hand_outer_margin)) / total_width) * window_width;
-	window_right = ((right + (board_size + board_border + hand_inner_margin + hand_size + hand_outer_margin)) / total_width) * window_width;
-	window_top = ((-top + (board_border + shogiboard_top_margin)) / total_height) * window_height;
-	window_bottom = ((-bottom + (board_border + shogiboard_top_margin)) / total_height) * window_height;
+	// TODO: 座標変換を行いウィンドウの座標を求める
+	// 計算と全然合わないのでそれっぽい位置になるように補正
+	window_left = ((-0.3f + left * 1.08f + (board_size + board_border + hand_inner_margin + hand_size + hand_outer_margin)) / total_width) * window_width * 1.05f;
+	window_right = ((-0.3f + right * 1.08f + (board_size + board_border + hand_inner_margin + hand_size + hand_outer_margin)) / total_width) * window_width * 1.05f;
+	window_top = ((-top * 1.1f + (board_border + shogiboard_top_margin)) / total_height) * window_height * 1.1f;
+	window_bottom = ((-bottom * 1.1f + (board_border + shogiboard_top_margin)) / total_height) * window_height * 1.1f;
 }
 
 double Button::get_width() { // 幅を求めます

@@ -45,6 +45,7 @@ enum class FunctionType
 	UPDATE_POS, // pos_の更新
 	BENCH, // ベンチマークの実行
 	GEN_RANDOM_SFEN, // ランダム局面を1つ生成する
+	CIN,
 	TEST, // テスト関数
 	NONE
 };

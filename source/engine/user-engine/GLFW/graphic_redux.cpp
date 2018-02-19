@@ -56,6 +56,12 @@ void Store::init() {
 	gl_string->font_init(); // フォントの読み込みと駒文字などのフォントキャッシュの生成
 	draw_init(textureID_shogiboard);
 	// ボタン類の初期化
+	add_button(ButtonInitializer(-8.8f, 0.6f, -7.9f, 1.2f, FunctionType::CIN,
+		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"cin", true, true, -0.8f));
+
+	add_button(ButtonInitializer(-7.6f, 0.6f, -6.5f, 1.2f, FunctionType::TEST,
+		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"TEST", true, true, -0.6f));
+
 	add_button(ButtonInitializer(-6.f, 0.6f, -4.f, 1.2f, FunctionType::IS_READY,
 		GL_COLOR_ZERO, GL_COLOR_BUTTON, GL_COLOR_ZERO, u8"IS READY", true, true, -0.1f));
 
@@ -155,11 +161,13 @@ const State reducer(const Action &action, const State &state) {
 	// メインの処理を行う
 	switch (action.ft) { // ここで個々のdispatcherを呼ぶ
 		case FunctionType::IS_READY: {
+			std::cout << "IS_READY: " << std::endl;
 			std::string cmd = "isready";
 			cmds.push(cmd);
 			break;
 		}
 		case FunctionType::EXIT: {
+			std::cout << "EXIT: " << std::endl;
 			std::string cmd = "quit";
 			cmds.push(cmd);
 			gui.detach_thread();
@@ -167,21 +175,38 @@ const State reducer(const Action &action, const State &state) {
 			break;
 		}
 		case FunctionType::USER: {
+			std::cout << "USER: " << std::endl;
 			std::string cmd = "user 10";
 			cmds.push(cmd);
 			break;
 		}
 		case FunctionType::GEN_RANDOM_SFEN: {
+			std::cout << "GEN_RANDOM_SFEN: " << std::endl;
 			std::string cmd = "user gen";
 			cmds.push(cmd);
 			break;
 		}
 		case FunctionType::BENCH: {
+			std::cout << "BENCH: " << std::endl;
 			std::string cmd = "user bench";
 			cmds.push(cmd);
 			break;
 		}
 		case FunctionType::TEST: {
+			std::cout << "TEST: " << std::endl;
+			std::string cmd;
+			cmd = "position ";
+			cmd += state.pos_p->sfen_fast();
+			cmds.push(cmd);
+			cmd = "go mate 5000";
+			// cmd = "go btime 0 wtime 0 byoyomi 2000";
+			cmds.push(cmd);
+			break;
+		}
+		case FunctionType::CIN: {
+			std::cout << "CIN: " << std::endl;
+			cin_flag = !cin_flag;
+			std::cout << "cin: " << cin_flag << std::endl;
 			break;
 		}
 		case FunctionType::ADD_BUTTON: {
