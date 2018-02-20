@@ -530,7 +530,7 @@ void set_knight_core(
 	pb.ninp(exclude_knight | occupied | (GoldEffectBB[e_king][e_c] & confirm_promote));
 	Square sq = sq_table[pb.accumu_rand()]; // 桂の位置を確定させる
 	set_piece_core(pos_, sq, occupied, set_piece, set_piece_promote, promoto_p,
-		!(e_king_bit & KnightEffectBB[sq][e_c]), !(e_king_bit & GoldEffectBB[sq][my_c]), true);
+		!(KnightEffectBB[e_king][e_c] & sq), !(e_king_bit & GoldEffectBB[sq][my_c]), true);
 	/*
 	occupied |= sq; // occupiedにorしていく
 	bool is_promote = is_promoted_rand(sq, promoto_p) // 成り判定
@@ -739,13 +739,13 @@ void set_silver_core(
 void set_silver(Position& pos_, const Square &b_king, const Square &w_king,
 	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied) {
 	PieceExistence b_silver_l_pos = BitRight & b_king_bit ?
-		piece_existence_rand(40, 100, 200, 450) : piece_existence_rand(450, 50, 100, 100); // 先手の左銀だった駒を収束
+		piece_existence_rand(140, 200, 200, 250) : piece_existence_rand(450, 50, 100, 100); // 先手の左銀だった駒を収束
 	PieceExistence b_silver_r_pos = BitRight & b_king_bit ?
-		piece_existence_rand(450, 50, 100, 100) : piece_existence_rand(50, 50, 200, 450); // 先手の右銀だった駒を収束
+		piece_existence_rand(450, 50, 100, 100) : piece_existence_rand(100, 100, 200, 250); // 先手の右銀だった駒を収束
 	PieceExistence w_silver_l_pos = BitLeft & w_king_bit ?
-		piece_existence_rand(100, 40, 450, 200) : piece_existence_rand(50, 450, 100, 100); // 後手の左銀だった駒を収束
+		piece_existence_rand(200, 140, 250, 200) : piece_existence_rand(50, 450, 100, 100); // 後手の左銀だった駒を収束
 	PieceExistence w_silver_r_pos = BitLeft & w_king_bit ?
-		piece_existence_rand(50, 450, 100, 100) : piece_existence_rand(50, 50, 450, 200); // 後手の右銀だった駒を収束
+		piece_existence_rand(50, 450, 100, 100) : piece_existence_rand(100, 100, 250, 100); // 後手の右銀だった駒を収束
 	PBoard pb; // set_silver_coreに渡すのはconstではないので作業用の変数
 	// 先手の左銀だった駒を配置する
 	switch (b_silver_l_pos) {
@@ -1292,19 +1292,19 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 				return false;
 			}
 		}
-		if (checklist.check_item_lance[1].commit) { // ここは後手の香の利き固定
-			Bitboard must_occupy = checklist.check_item_lance[1].commit;
-			if (checklist.check_item_lance[1].commit & occupied) { // クリア
-			}
-			else {
-				PBoard temp_p = w_pawn_p;
-				temp_p.and(must_occupy);
-				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
-				if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
-					// エラー
-					++cnt;
-					return false;
-				}
+	}
+	if (checklist.check_item_lance[1].commit) { // ここは後手の香の利き固定
+		Bitboard must_occupy = checklist.check_item_lance[1].commit;
+		if (checklist.check_item_lance[1].commit & occupied) { // クリア
+		}
+		else {
+			PBoard temp_p = w_pawn_p;
+			temp_p. and (must_occupy);
+			Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
+			if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
+				// エラー
+				++cnt;
+				return false;
 			}
 		}
 	}
@@ -1423,6 +1423,8 @@ void view() {
 	std::cout << "再チェック: " << cnt << std::endl;
 };
 
+constexpr int cyclic[6] = { 1, 2, 4, 5, 7, 8 }; // 位数9で巡回的になる元
+
 // 歩を配置します
 bool set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
 	const Bitboard &b_king_bit, const Bitboard &w_king_bit, Bitboard &occupied, CheckList &checklist) {
@@ -1445,14 +1447,15 @@ bool set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
 	bool not_promote;
 	bool not_double_pawn;
 	int file;
+	int cycle; // 
 	// TODO: 駒柱ができたときに配置できるか
 	// 先手の歩を配置します
+	file = myrand.rand_m(9); // 開始筋を確定させる
+	cycle = cyclic[myrand.rand_m(6)]; // 巡回パターンを定める
 	for (auto i = 0; i < b_board; ++i) {
-	START_SET_BLACK_PAWN:
-		file = myrand.rand_m(9); // 筋を確定させる
 		not_double_pawn = b_enable_set_pawn & (1 << file);
 		if (!not_double_pawn && myrand.rand_b(0.6)) { // 二歩のときは一定確率で再生成させる
-			goto START_SET_BLACK_PAWN;
+			goto NEXT_SET_BLACK_PAWN;
 		}
 		if (not_double_pawn) { // 二歩でない
 			pb = b_pawn_p;
@@ -1486,14 +1489,18 @@ bool set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
 				}
 			}
 		}
+		// 次の筋に移る
+	NEXT_SET_BLACK_PAWN:
+		file += cycle;
+		if (file >= 9) { file -= 9; }
 	}
 	// 後手の歩を配置します
+	file = myrand.rand_m(9); // 開始筋を確定させる
+	cycle = cyclic[myrand.rand_m(6)]; // 巡回パターンを定める
 	for (auto i = 0; i < w_board; ++i) {
-	START_SET_WHITE_PAWN:
-		file = myrand.rand_m(9); // 筋を確定させる
 		not_double_pawn = w_enable_set_pawn & (1 << file);
 		if (!not_double_pawn && myrand.rand_b(0.6)) { // 二歩のときは一定確率で再生成させる
-			goto START_SET_WHITE_PAWN;
+			goto NEXT_SET_WHITE_PAWN;
 		}
 		if (not_double_pawn) { // 二歩でない
 			pb = w_pawn_p;
@@ -1527,6 +1534,10 @@ bool set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
 				}
 			}
 		}
+		// 次の筋に移る
+	NEXT_SET_WHITE_PAWN:
+		file += cycle;
+		if (file >= 9) { file -= 9; }
 	}
 	return true;
 }
@@ -1550,6 +1561,12 @@ START_CREATE_BOARD:
 		goto START_CREATE_BOARD; // 王手回避ができなかったので局面生成をやり直す
 	};
 	pos_.update_bitboards();
+	// pos_.set_hirate(pos_.state(), pos_.this_thread());
+
+	//std::cout << pos_ << std::endl;
+	//std::string result = pos_.sfen();
+	//std::cout << result << std::endl;
+	
 };
 
 // -----------------------------------------------------------------
