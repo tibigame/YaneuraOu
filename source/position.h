@@ -10,6 +10,18 @@
 class Thread;
 
 // --------------------
+//     世界線
+// --------------------
+
+// 打ち歩詰めが合法かどうか
+enum class Worldline
+{
+	Alpha, // 打ち歩詰めが違法
+	Beta // 打ち歩詰めが合法
+};
+
+
+// --------------------
 //     局面の定数
 // --------------------
 
@@ -162,7 +174,7 @@ struct Position
 	Position(const Position&) = delete;
 	Position& operator=(const Position&) = delete;
 
-	// 必要な情報だけコピーする
+	// 必要な情報だけコピーする (コピーコンストラクタの代替)
 	friend void copy(const Position &source, Position &Dest);
 
 	// Positionで用いるZobristテーブルの初期化
@@ -728,6 +740,10 @@ private:
 
 	// 評価関数で用いる駒のリスト
 	Eval::EvalList evalList;
+
+public:
+	// 打ち歩詰めの世界線
+	Worldline worldline;
 };
 
 inline void Position::xor_piece(Piece pc, Square sq)

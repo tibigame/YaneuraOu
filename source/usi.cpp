@@ -562,7 +562,7 @@ void position_cmd(Position& pos, istringstream& is , StateListPtr& states)
 
 	// 新しく渡す局面なので古いものは捨てて新しいものを作る。
 	states = StateListPtr(new StateList(1));
-	pos.set(sfen , &states->back() , Threads.main());
+	pos.set_fast(sfen , &states->back() , Threads.main());
 
 	// 指し手のリストをパースする(あるなら)
 	while (is >> token && (m = move_from_usi(pos, token)) != MOVE_NONE)

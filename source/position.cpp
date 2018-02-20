@@ -97,7 +97,6 @@ void copy(const Position &Source, Position &Dest) {
 	Dest.kingSquare[WHITE] = Source.kingSquare[WHITE];
 }
 
-
 // ----------------------------------
 //       Zorbrist keyの初期化
 // ----------------------------------
@@ -759,6 +758,11 @@ bool Position::is_mated() const
 
 bool Position::legal_drop(const Square to) const
 {
+	// 打ち歩詰めが合法の世界線ならtrue
+	if (worldline == Worldline::Beta) {
+		return true;
+	}
+
   const auto us = sideToMove;
 
   // 打とうとする歩の利きに相手玉がいることは前提条件としてクリアしているはず。
