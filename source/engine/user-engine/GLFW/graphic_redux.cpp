@@ -4,6 +4,7 @@
 #include "graphic_main.h"
 #include "mtx.h"
 #include "../../../shogi.h"
+#include "../util/clipboard.h"
 
 #ifdef GLFW3
 
@@ -150,7 +151,9 @@ const State reducer(const Action &action, const State &state) {
 	switch (action.ft) { // ここで個々のdispatcherを呼ぶ
 		case FunctionType::IS_READY: {
 			std::cout << "IS_READY: " << std::endl;
-			std::string cmd = "isready";
+			std::string cmd = "setoption name Threads value 12";
+			cmds.push(cmd);
+			cmd = "isready";
 			cmds.push(cmd);
 			break;
 		}
@@ -181,10 +184,11 @@ const State reducer(const Action &action, const State &state) {
 			break;
 		}
 		case FunctionType::TEST: {
+			SetClipboardText(state.pos_p->sfen_fast(true).c_str());
 			std::cout << "TEST: " << std::endl;
 			std::string cmd;
 			cmd = "position ";
-			cmd += state.pos_p->sfen_fast();
+			cmd += state.pos_p->sfen_fast(false);
 			cmds.push(cmd);
 			cmd = "go mate 5000";
 			// cmd = "go btime 0 wtime 0 byoyomi 2000";
