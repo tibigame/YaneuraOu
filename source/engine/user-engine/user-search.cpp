@@ -1,10 +1,11 @@
-﻿#include "../../extra/all.h"
+#include "../../extra/all.h"
 #include "random_board.h"
 #include "my_rand.h"
 #include "./test/test.h"
 #include "./GLFW/graphic_main.h"
 #include "./GLFW/graphic_redux.h"
 #include "./util/i_to_u8.h"
+#include "./io.h"
 
 #include <atltime.h>
 
@@ -19,7 +20,7 @@ void user_test(Position& pos_, istringstream& is)
 	std::string cmd;
 	is >> cmd;
 	if (cmd == "bench") {
-		loop_num = 10000000;
+		loop_num = 5000000;
 		time_output = true;
 		cout << "ベンチマークの実行: " << loop_num << "局面を生成します。" << endl;
 	} else if (cmd == "gen") {
@@ -34,9 +35,13 @@ void user_test(Position& pos_, istringstream& is)
 	CFileTime cTimeStart, cTimeEnd;
 	CFileTimeSpan cTimeSpan;
 	cTimeStart = CFileTime::GetCurrentTime(); // 現在時刻
+	io.file_open();
 	for (auto i = 0; i < loop_num; ++i) {
 		end_game_mate(pos_);
+		io.add_que(pos_.sfen_fast());
 	}
+	io.file_flash();
+	io.file_close();
 	cTimeEnd = CFileTime::GetCurrentTime(); // 現在時刻
 	cTimeSpan = cTimeEnd - cTimeStart;
 
