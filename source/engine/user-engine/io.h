@@ -1,4 +1,4 @@
-#ifndef _USERIO_H_
+﻿#ifndef _USERIO_H_
 #define _USERIO_H_
 
 #include <fstream> 

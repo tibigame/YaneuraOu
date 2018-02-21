@@ -1,4 +1,4 @@
-#include "../../extra/all.h"
+﻿#include "../../extra/all.h"
 #include "random_board.h"
 #include "my_rand.h"
 #include "./test/test.h"

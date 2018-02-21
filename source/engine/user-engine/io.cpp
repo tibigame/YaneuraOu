@@ -1,6 +1,4 @@
-#include "io.h"
-#include <iostream> 
-#include <stdio.h>
+﻿#include "io.h"
 
 constexpr char* filename = "result.txt"; // 出力ファイル名
 constexpr size_t buffer = 10000; // キューに何個以上溜まっていたら書き込み処理を行うか
