@@ -72,7 +72,7 @@ void IO::file_flash() {
 	of << temp.c_str();
 }
 
-void IO::add_que(std::string str) {
+void IO::add_que(std::string &&str) {
 	std::lock_guard<std::mutex> lock(io_mtx); // ioのミューテックスを取得する
-	string_que[write_que_num].push(str); // 現在のキュー番号のところに追加する
+	string_que[write_que_num].push(std::move(str)); // 現在のキュー番号のところに追加する
 }

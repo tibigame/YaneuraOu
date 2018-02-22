@@ -193,7 +193,7 @@ struct Position
 	// ※ USIプロトコルにおいては不要な機能ではあるが、デバッグのために局面を標準出力に出力して
 	// 　その局面から開始させたりしたいときに、sfenで現在の局面を出力出来ないと困るので用意してある。
 	const std::string sfen() const;
-	const std::string sfen_fast(bool is_prefix=false) const;
+	std::string sfen_fast(bool is_prefix=false) const;
 
 	// 平手の初期盤面を設定する。
 	// siについては、上記のset()にある説明を読むこと。

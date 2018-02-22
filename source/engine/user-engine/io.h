@@ -30,7 +30,7 @@ public:
 	void file_close();
 	void file_flash();
 
-	void add_que(std::string str);
+	void add_que(std::string &&str);
 };
 
 extern IO io;

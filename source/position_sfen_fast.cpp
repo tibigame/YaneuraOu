@@ -433,7 +433,7 @@ inline int hand_gsnlp_write(char* Dest, const Hand hand, const uint32_t mask, co
 }
 
 // is_prefixがtrueのときは先頭に「sfen 」の接頭辞を付けます
-const std::string Position::sfen_fast(bool is_prefix) const
+std::string Position::sfen_fast(bool is_prefix) const
 {
 	char *str = static_cast<char*>(_aligned_malloc(MAX_SFEN_SIZE, 64));
 	char *p = str; // 文字列操作用のポインタ

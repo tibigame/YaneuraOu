@@ -38,7 +38,7 @@ void user_test(Position& pos_, istringstream& is)
 	io.file_open();
 	for (auto i = 0; i < loop_num; ++i) {
 		end_game_mate(pos_);
-		io.add_que(pos_.sfen_fast());
+		io.add_que(std::move(pos_.sfen_fast()));
 	}
 	io.file_flash();
 	io.file_close();
