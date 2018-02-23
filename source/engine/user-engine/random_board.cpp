@@ -1542,8 +1542,9 @@ bool set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
 	return true;
 }
 
-void end_game_mate(Position& pos_) {
+std::string end_game_mate() {
 START_CREATE_BOARD:
+	Position pos_;
 	pos_.set_blank(); // 空の盤面で初期化する
 	Square sq_b_king = set_b_king(pos_); // 先手玉の配置
 	Square sq_w_king = set_w_king(pos_, sq_b_king); // 後手玉の配置
@@ -1561,6 +1562,8 @@ START_CREATE_BOARD:
 		goto START_CREATE_BOARD; // 王手回避ができなかったので局面生成をやり直す
 	};
 	pos_.update_bitboards();
+	return pos_.sfen_fast();
+
 	// pos_.set_hirate(pos_.state(), pos_.this_thread());
 
 	//std::cout << pos_ << std::endl;

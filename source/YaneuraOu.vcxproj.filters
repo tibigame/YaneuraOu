@@ -319,6 +319,12 @@
     <ClInclude Include="engine\user-engine\util\clipboard.h">
       <Filter>リソース ファイル\engine\user-engine\util</Filter>
     </ClInclude>
+    <ClInclude Include="engine\user-engine\io.h">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\mate-engine\mate-search-func.h">
+      <Filter>リソース ファイル\engine\mate-engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="movegen.cpp">
@@ -527,6 +533,12 @@
     </ClCompile>
     <ClCompile Include="engine\user-engine\util\clipboard.cpp">
       <Filter>リソース ファイル\engine\user-engine\util</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\io.cpp">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\mate-engine\mate-search-func.cpp">
+      <Filter>リソース ファイル\engine\mate-engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

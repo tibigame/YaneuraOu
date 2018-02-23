@@ -1,15 +1,21 @@
 ﻿#include "../../shogi.h"
 #ifdef MATE_ENGINE
 
+// meta-searchを関数化する
+// そもそもシングルスレッドで非同期にしても意味がないので
+// char型で返り値を持つようにする
+
 #include <unordered_set>
 
 #include "../../extra/all.h"
-#include "mate-search.h" 
+#include "mate-search-func.h" 
 
 // GUIに出力してみるテスト
 #include "../user-engine/GLFW/graphic_main.h"
 #include "../user-engine/GLFW/graphic_redux.h"
 #include "../user-engine/util/i_to_u8.h"
+
+#include "../util/i_to_u8.h"
 
 
 using namespace std;
@@ -63,8 +69,10 @@ using namespace Search;
 // http://d.hatena.ne.jp/GMA0BN/20090521/1242911867
 //
 
-namespace MateEngine
-{
+namespace MateSearchFunc {
+
+	constexpr u64 NODE_LIMIT = 10000000;
+
 	// 詰将棋エンジン用のMovePicker
 	struct MovePicker
 	{
@@ -227,19 +235,19 @@ namespace MateEngine
 	static const constexpr int kInfinitePnDn = 100000000;
 	static const constexpr int kMaxDepth = MAX_PLY;
 
-	TranspositionTable transposition_table;
+	class MateEngineClass {
+	private:
+		u64 nodes = 0;
+		TranspositionTable transposition_table;
+	public:
+		void DFPNwithTCA(Position& n, int thpn, int thdn, bool inc_flag, bool or_node, int depth);
+		bool dfs(bool or_node, Position& pos, std::vector<Move>& moves, std::unordered_set<Key>& visited);
+		std::string dfpn(Position& r);
+	};
+
 
 	// TODO(tanuki-): ネガマックス法的な書き方に変更する
-	void DFPNwithTCA(Position& n, int thpn, int thdn, bool inc_flag, bool or_node, int depth) {
-		if (Threads.stop.load(std::memory_order_relaxed)) {
-			return;
-		}
-
-		auto nodes_searched = n.this_thread()->nodes.load(memory_order_relaxed);
-		if (nodes_searched && nodes_searched % 10000000 == 0) {
-			sync_cout << "info string nodes_searched=" << nodes_searched << sync_endl;
-		}
-
+	void MateEngineClass::DFPNwithTCA(Position& n, int thpn, int thdn, bool inc_flag, bool or_node, int depth) {
 		auto& entry = transposition_table.LookUp(n);
 
 		if (depth > kMaxDepth) {
@@ -283,7 +291,7 @@ namespace MateEngine
 		entry.minimum_distance = std::min(entry.minimum_distance, depth);
 
 		bool first_time = true;
-		while (!Threads.stop.load(std::memory_order_relaxed)) {
+		while (nodes <= NODE_LIMIT) {
 			++entry.num_searched;
 
 			// determine whether thpn and thdn are increased.
@@ -409,6 +417,7 @@ namespace MateEngine
 
 			StateInfo state_info;
 			n.do_move(best_move, state_info);
+			++nodes;
 			DFPNwithTCA(n, thpn_child, thdn_child, inc_flag, !or_node, depth + 1);
 			n.undo_move(best_move);
 		}
@@ -416,7 +425,7 @@ namespace MateEngine
 
 	// 詰み手順を1つ返す
 	// 最短の詰み手順である保証はない
-	bool dfs(bool or_node, Position& pos, std::vector<Move>& moves, std::unordered_set<Key>& visited) {
+	bool MateEngineClass::dfs(bool or_node, Position& pos, std::vector<Move>& moves, std::unordered_set<Key>& visited) {
 		// 一度探索したノードを探索しない
 		if (visited.find(pos.key()) != visited.end()) {
 			return false;
@@ -464,94 +473,46 @@ namespace MateEngine
 	}
 
 	// 詰将棋探索のエントリポイント
-	void dfpn(Position& r) {
-		std::string info_result = u8" "; // GUIに出力する結果
-
+	std::string MateEngineClass::dfpn(Position& r) {
 		if (r.in_check()) {
-			sync_cout << "info string The king is checked... df-pn is skipped..." << sync_endl;
-			sync_cout << "bestmove None" << sync_endl;
-			info_result = u8"王手になっている";
-			gui.store.add_action_que(action_update_info(info_result));
-			return;
+			//info_result = u8"王手になっている";
+			return u8"e,-1";
 		}
 
 		transposition_table.Resize();
 		// キャッシュの世代を進める
 		transposition_table.NewSearch();
 
-		auto start = std::chrono::system_clock::now();
 
 		DFPNwithTCA(r, kInfinitePnDn, kInfinitePnDn, false, true, 0);
 		const auto& entry = transposition_table.LookUp(r);
 
-		auto nodes_searched = r.this_thread()->nodes.load(memory_order_relaxed);
-		sync_cout << "info string" <<
-			" pn " << entry.pn <<
-			" dn " << entry.dn <<
-			" nodes_searched " << nodes_searched << sync_endl;
-
 		std::vector<Move> moves;
 		std::unordered_set<Key> visited;
 		dfs(true, r, moves, visited);
-
-		auto end = std::chrono::system_clock::now();
-		if (!moves.empty()) {
-			// millisecondsは、最低でも45bitを持つ符号付き整数型であることしか保証されていないので、
-			// VC++だとlong long、clangだとlongであったりする。そこでmax()などを呼ぶとき、注意が必要である。
-			auto time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-			time_ms = std::max(time_ms, decltype(time_ms)(1));
-			int64_t nps = nodes_searched * 1000LL / time_ms;
-			std::ostringstream oss;
-			oss << "info depth " << moves.size() << " time " << time_ms << " nodes " << nodes_searched << " pv";
-			for (const auto& move : moves) {
-				oss << " " << move;
-			}
-			oss << " score mate + nps " << nps;
-			sync_cout << oss.str() << sync_endl;
-			info_result = u8"mate " + i_to_u8(moves.size());
-			gui.store.add_action_que(action_update_info(info_result));
+		if (nodes >= NODE_LIMIT) {
+			return u8"k," + i_to_u8(nodes);
 		}
-
-		// "stop"が送られてきたらThreads.stop == trueになる。
-		// "ponderhit"が送られてきたらThreads.ponder == 0になるので、それを待つ。(stopOnPonderhitは用いない)
-		//    また、このときThreads.stop == trueにはならない。(この点、Stockfishとは異なる。)
-		// "go infinite"に対してはstopが送られてくるまで待つ。
-		while (!Threads.stop && (Threads.ponder || Limits.infinite))
-			sleep(1);
-		//	こちらの思考は終わっているわけだから、ある程度細かく待っても問題ない。
-		// (思考のためには計算資源を使っていないので。)
 
 		if (moves.empty()) {
-			sync_cout << "bestmove None" << sync_endl;
-			info_result = u8"詰みません";
-			gui.store.add_action_que(action_update_info(info_result));
+			//info_result = u8"詰みません";
+			return u8"n," + i_to_u8(nodes);
 		}
-		else if (moves.size() == 1) {
-			sync_cout << "bestmove " << moves[0] << sync_endl;
-			info_result += u8"\nbestmove: 1";
-			gui.store.add_action_que(action_update_info(info_result));
-		}
-		else {
-			sync_cout << "bestmove " << moves[0] << " ponder " << moves[1] << sync_endl;
-			info_result += u8"\nbestmove: 2";
-			gui.store.add_action_que(action_update_info(info_result));
-		}
+		return u8"m," + i_to_u8(nodes);
 
-		Threads.stop = true;
 	}
 }
 
-void USI::extra_option(USI::OptionsMap & o) {}
-
-// --- Search
-
-void Search::init() {}
-void Search::clear() { }
-void MainThread::think() {
-	Thread::search();
+std::string mate_search_func(const std::string &sfen) {
+	Position pos_;
+	pos_.set_fast_sfenonly(sfen);
+	MateSearchFunc::MateEngineClass me;
+	return me.dfpn(pos_);
 }
-void Thread::search() {
-	MateEngine::dfpn(rootPos);
+
+std::string mate_search_func2(Position &pos_) {
+	MateSearchFunc::MateEngineClass me;
+	return me.dfpn(pos_);
 }
 
 #endif

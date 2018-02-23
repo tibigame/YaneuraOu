@@ -6,6 +6,7 @@
 #include "./GLFW/graphic_redux.h"
 #include "./util/i_to_u8.h"
 #include "./io.h"
+#include "../mate-engine/mate-search-func.h" 
 
 #include <atltime.h>
 
@@ -28,7 +29,7 @@ void user_test(Position& pos_, istringstream& is)
 		time_cout = false;
 	} else {
 		test_cout = true;
-		loop_num = 10;
+		loop_num = 1000;
 		cout << "Random sfen test , loop_num = " << loop_num << endl;
 	}
 
@@ -37,8 +38,15 @@ void user_test(Position& pos_, istringstream& is)
 	cTimeStart = CFileTime::GetCurrentTime(); // 現在時刻
 	io.file_open();
 	for (auto i = 0; i < loop_num; ++i) {
-		end_game_mate(pos_);
-		io.add_que(std::move(pos_.sfen_fast()));
+		std::string sfen = end_game_mate();
+		pos_.set_fast(sfen, pos_.state(), Threads[0]);
+		std::string mate = mate_search_func2(pos_);
+		sfen += u8",";
+		sfen += mate;
+		io.add_que(std::move(sfen));
+		if (i % 100 == 0) {
+			std::cout << i << std::endl;
+		}
 	}
 	io.file_flash();
 	io.file_close();

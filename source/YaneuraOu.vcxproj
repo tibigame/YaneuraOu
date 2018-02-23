@@ -667,6 +667,7 @@
     <ClInclude Include="bitboard.h" />
     <ClInclude Include="engine\2018-otafuku-engine\2018-otafuku-param.h" />
     <ClInclude Include="engine\help-mate-engine\help-mate-search.h" />
+    <ClInclude Include="engine\mate-engine\mate-search-func.h" />
     <ClInclude Include="engine\mate-engine\mate-search.h" />
     <ClInclude Include="engine\user-engine\ex_board.h" />
     <ClInclude Include="engine\user-engine\GLFW\define.h" />
@@ -681,6 +682,7 @@
     <ClInclude Include="engine\user-engine\GLFW\lib\picojson.h" />
     <ClInclude Include="engine\user-engine\GLFW\mtx.h" />
     <ClInclude Include="engine\user-engine\int_board.h" />
+    <ClInclude Include="engine\user-engine\io.h" />
     <ClInclude Include="engine\user-engine\my_rand.h" />
     <ClInclude Include="engine\user-engine\pboard.h" />
     <ClInclude Include="engine\user-engine\random_board.h" />
@@ -748,6 +750,7 @@
     <ClCompile Include="engine\2018-otafuku-engine\2018-otafuku-search.cpp" />
     <ClCompile Include="engine\help-mate-engine\help-mate-search.cpp" />
     <ClCompile Include="engine\local-game-server\local-game-server.cpp" />
+    <ClCompile Include="engine\mate-engine\mate-search-func.cpp" />
     <ClCompile Include="engine\mate-engine\mate-search.cpp" />
     <ClCompile Include="engine\user-engine\ex_board.cpp" />
     <ClCompile Include="engine\user-engine\GLFW\graphic_button.cpp" />
@@ -759,6 +762,7 @@
     <ClCompile Include="engine\user-engine\GLFW\graphic_string.cpp" />
     <ClCompile Include="engine\user-engine\GLFW\mtx.cpp" />
     <ClCompile Include="engine\user-engine\int_board.cpp" />
+    <ClCompile Include="engine\user-engine\io.cpp" />
     <ClCompile Include="engine\user-engine\my_rand.cpp" />
     <ClCompile Include="engine\user-engine\pboard.cpp" />
     <ClCompile Include="engine\user-engine\random_board.cpp" />
