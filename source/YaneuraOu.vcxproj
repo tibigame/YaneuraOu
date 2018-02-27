@@ -683,6 +683,7 @@
     <ClInclude Include="engine\user-engine\GLFW\mtx.h" />
     <ClInclude Include="engine\user-engine\int_board.h" />
     <ClInclude Include="engine\user-engine\io.h" />
+    <ClInclude Include="engine\user-engine\mate_vector.h" />
     <ClInclude Include="engine\user-engine\my_rand.h" />
     <ClInclude Include="engine\user-engine\pboard.h" />
     <ClInclude Include="engine\user-engine\random_board.h" />
@@ -763,6 +764,7 @@
     <ClCompile Include="engine\user-engine\GLFW\mtx.cpp" />
     <ClCompile Include="engine\user-engine\int_board.cpp" />
     <ClCompile Include="engine\user-engine\io.cpp" />
+    <ClCompile Include="engine\user-engine\mate_vector.cpp" />
     <ClCompile Include="engine\user-engine\my_rand.cpp" />
     <ClCompile Include="engine\user-engine\pboard.cpp" />
     <ClCompile Include="engine\user-engine\random_board.cpp" />

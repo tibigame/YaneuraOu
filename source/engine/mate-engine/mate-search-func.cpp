@@ -71,7 +71,7 @@ using namespace Search;
 
 namespace MateSearchFunc {
 
-	constexpr u64 NODE_LIMIT = 10000000;
+	constexpr u64 NODE_LIMIT = 500000;
 
 	// 詰将棋エンジン用のMovePicker
 	struct MovePicker
@@ -491,15 +491,15 @@ namespace MateSearchFunc {
 		std::unordered_set<Key> visited;
 		dfs(true, r, moves, visited);
 		if (nodes >= NODE_LIMIT) {
-			return u8"k," + i_to_u8(nodes);
+			return u8"u," + i_to_u8(nodes);
 		}
 
 		if (moves.empty()) {
 			//info_result = u8"詰みません";
 			return u8"n," + i_to_u8(nodes);
 		}
-		return u8"m," + i_to_u8(nodes);
 
+		return u8"m," + i_to_u8(nodes);
 	}
 }
 

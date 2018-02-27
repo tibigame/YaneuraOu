@@ -325,6 +325,9 @@
     <ClInclude Include="engine\mate-engine\mate-search-func.h">
       <Filter>リソース ファイル\engine\mate-engine</Filter>
     </ClInclude>
+    <ClInclude Include="engine\user-engine\mate_vector.h">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="movegen.cpp">
@@ -539,6 +542,9 @@
     </ClCompile>
     <ClCompile Include="engine\mate-engine\mate-search-func.cpp">
       <Filter>リソース ファイル\engine\mate-engine</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\user-engine\mate_vector.cpp">
+      <Filter>リソース ファイル\engine\user-engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1295,7 +1295,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 	}
 	if (checklist.check_item_lance[1].commit) { // ここは後手の香の利き固定
 		Bitboard must_occupy = checklist.check_item_lance[1].commit;
-		if (checklist.check_item_lance[1].commit & occupied) { // クリア
+		if (must_occupy & occupied) { // クリア
 		}
 		else {
 			PBoard temp_p = w_pawn_p;

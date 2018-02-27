@@ -7,6 +7,7 @@
 #include "./util/i_to_u8.h"
 #include "./io.h"
 #include "../mate-engine/mate-search-func.h" 
+#include "./mate_vector.h"
 
 #include <atltime.h>
 
@@ -29,7 +30,7 @@ void user_test(Position& pos_, istringstream& is)
 		time_cout = false;
 	} else {
 		test_cout = true;
-		loop_num = 1000;
+		loop_num = 2000;
 		cout << "Random sfen test , loop_num = " << loop_num << endl;
 	}
 
@@ -37,14 +38,124 @@ void user_test(Position& pos_, istringstream& is)
 	CFileTimeSpan cTimeSpan;
 	cTimeStart = CFileTime::GetCurrentTime(); // 現在時刻
 	io.file_open();
+	MateVector mv;
 	for (auto i = 0; i < loop_num; ++i) {
 		std::string sfen = end_game_mate();
+		char mate_char;
+
 		pos_.set_fast(sfen, pos_.state(), Threads[0]);
 		std::string mate = mate_search_func2(pos_);
+		mate_char = mate[0];
+		if (mate_char == 'e') { // 合法局面でなかった
+			continue;
+		}
+		if (mate_char == 'm') { // 詰み
+			mv.set_origin(pos_.sideToMove, MATE_VECTOR_MATE);
+		}
+		else {
+			if (mate_char == 'n') { // 不詰み
+				mv.set_origin(pos_.sideToMove, MATE_VECTOR_NMATE);
+			}
+			// 不詰みのときはβ世界線の探索も行う
+			pos_.worldline = Worldline::Beta;
+			// 一応初期化しておく (どうせ探索の方がはるかに遅いのでここがボトルネックにはならない)
+			pos_.set_fast(sfen, pos_.state(), Threads[0]);
+			std::string mate = mate_search_func2(pos_);
+			if (mate[0] == 'm') { // 詰み
+				mv.set_beta(pos_.sideToMove, MATE_VECTOR_MATE);
+			}
+			else if (mate[0] == 'n') { // 不詰み
+				mv.set_beta(pos_.sideToMove, MATE_VECTOR_NMATE);
+			}
+			else { // 不明
+				mv.set_beta(pos_.sideToMove, MATE_VECTOR_UNKOWN);
+			}
+			pos_.worldline = Worldline::Alpha;
+		}
+		const std::vector<Piece> PieceList = { ROOK, BISHOP, GOLD, SILVER, KNIGHT, LANCE, PAWN };
+		const std::vector<int> PieceMaxList = { 2, 2, 4, 4, 4, 4, 18 };
+
+		if (mate_char != 'n') { // 詰み or 不明
+			for (auto i = 0; i < 7; ++i) { // 自分の駒を減らして詰むかどうかを考える
+				if (!hand_exists(pos_.hand[pos_.sideToMove], PieceList[i])) { // 駒を持っていない
+					mv.set_minus(pos_.sideToMove, pos_.sideToMove, PieceList[i], mv.get_origin(pos_.sideToMove)); // originの値をコピーしておく
+					continue;
+				}
+				pos_.set_fast(sfen, pos_.state(), Threads[0]);
+				add_hand(pos_.hand[pos_.sideToMove], PieceList[i], -1);
+				std::string mate = mate_search_func2(pos_);
+				if (mate[0] == 'm') { // 詰み
+					mv.set_minus(pos_.sideToMove, pos_.sideToMove, PieceList[i], MATE_VECTOR_MATE);
+				}
+				else if (mate[0] == 'n') { // 不詰み
+					mv.set_minus(pos_.sideToMove, pos_.sideToMove, PieceList[i], MATE_VECTOR_NMATE);
+				}
+				else { // 不明
+					mv.set_minus(pos_.sideToMove, pos_.sideToMove, PieceList[i], MATE_VECTOR_UNKOWN);
+				}
+			}
+			for (auto i = 0; i < 7; ++i) { // 相手の駒を増やして詰むかどうかを考える
+				if (hand_exists(pos_.hand[~pos_.sideToMove], PieceList[i])) { // 駒を持っている
+					mv.set_plus(pos_.sideToMove, ~pos_.sideToMove, PieceList[i], mv.get_origin(pos_.sideToMove)); // originの値をコピーしておく
+					continue;
+				}
+				pos_.set_fast(sfen, pos_.state(), Threads[0]);
+				add_hand(pos_.hand[~pos_.sideToMove], PieceList[i], 1);
+				std::string mate = mate_search_func2(pos_);
+				if (mate[0] == 'm') { // 詰み
+					mv.set_plus(pos_.sideToMove, ~pos_.sideToMove, PieceList[i], MATE_VECTOR_MATE);
+				}
+				else if (mate[0] == 'n') { // 不詰み
+					mv.set_plus(pos_.sideToMove, ~pos_.sideToMove, PieceList[i], MATE_VECTOR_NMATE);
+				}
+				else { // 不明
+					mv.set_plus(pos_.sideToMove, ~pos_.sideToMove, PieceList[i], MATE_VECTOR_UNKOWN);
+				}
+			}
+		}
+		if (mate_char != 'm') { // 不詰み or 不明
+			for (auto i = 0; i < 7; ++i) { // 自分の駒を増やして詰むかどうかを考える
+				if (hand_count(pos_.hand[pos_.sideToMove], PieceList[i]) >= PieceMaxList[i]) { // 駒をMAXまで持っている
+					mv.set_plus(pos_.sideToMove, pos_.sideToMove, PieceList[i], mv.get_origin(pos_.sideToMove)); // originの値をコピーしておく
+					continue;
+				}
+				pos_.set_fast(sfen, pos_.state(), Threads[0]);
+				add_hand(pos_.hand[pos_.sideToMove], PieceList[i], 1);
+				std::string mate = mate_search_func2(pos_);
+				if (mate[0] == 'm') { // 詰み
+					mv.set_plus(pos_.sideToMove, pos_.sideToMove, PieceList[i], MATE_VECTOR_MATE);
+				}
+				else if (mate[0] == 'n') { // 不詰み
+					mv.set_plus(pos_.sideToMove, pos_.sideToMove, PieceList[i], MATE_VECTOR_NMATE);
+				}
+				else { // 不明
+					mv.set_plus(pos_.sideToMove, pos_.sideToMove, PieceList[i], MATE_VECTOR_UNKOWN);
+				}
+			}
+			for (auto i = 0; i < 7; ++i) { // 相手の駒を減らして詰むかどうかを考える
+				if (!hand_exists(pos_.hand[~pos_.sideToMove], PieceList[i])) { // 駒を持っていない
+					mv.set_minus(pos_.sideToMove, ~pos_.sideToMove, PieceList[i], mv.get_origin(pos_.sideToMove)); // originの値をコピーしておく
+					continue;
+				}
+				pos_.set_fast(sfen, pos_.state(), Threads[0]);
+				add_hand(pos_.hand[~pos_.sideToMove], PieceList[i], -1);
+				std::string mate = mate_search_func2(pos_);
+				if (mate[0] == 'm') { // 詰み
+					mv.set_minus(pos_.sideToMove, ~pos_.sideToMove, PieceList[i], MATE_VECTOR_MATE);
+				}
+				else if (mate[0] == 'n') { // 不詰み
+					mv.set_minus(pos_.sideToMove, ~pos_.sideToMove, PieceList[i], MATE_VECTOR_NMATE);
+				}
+				else { // 不明
+					mv.set_minus(pos_.sideToMove, ~pos_.sideToMove, PieceList[i], MATE_VECTOR_UNKOWN);
+				}
+			}
+		}
+
 		sfen += u8",";
 		sfen += mate;
-		io.add_que(std::move(sfen));
-		if (i % 100 == 0) {
+		// io.add_que(std::move(sfen));
+		if (i % 50 == 0) {
 			std::cout << i << std::endl;
 		}
 	}
@@ -75,7 +186,7 @@ void user_test(Position& pos_, istringstream& is)
 		gui.store.add_action_que(action_update_info(output));
 	}
 	else {
-		gui.store.add_action_que(action_update_info(pos_.sfen_fast(true)));
+		gui.store.add_action_que(action_update_info(mv.out()));
 	}
 #endif
 }
