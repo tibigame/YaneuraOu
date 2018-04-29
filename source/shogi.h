@@ -8,7 +8,7 @@
 
 // 思考エンジンのバージョンとしてUSIプロトコルの"usi"コマンドに応答するときの文字列。
 // ただし、この値を数値として使用することがあるので数値化できる文字列にしておく必要がある。
-#define ENGINE_VERSION "4.80"
+#define ENGINE_VERSION "4.81"
 
 // --------------------
 // コンパイル時の設定
@@ -455,6 +455,7 @@ enum Piece : uint32_t
 	// --- 特殊な定数
 
 	PIECE_PROMOTE = 8, // 成り駒と非成り駒との差(この定数を足すと成り駒になる)
+	PIECE_TYPE_NB = 16,// 駒種の数。(成りを含める)
 	PIECE_WHITE = 16,  // これを先手の駒に加算すると後手の駒になる。
 	PIECE_RAW_NB = 8,  // 非成駒の終端
 
@@ -635,7 +636,7 @@ struct ExtMove {
 	// 望まない暗黙のMoveへの変換を禁止するために
 	// 曖昧な変換でコンパイルエラーになるようにしておく。
 	// cf. Fix involuntary conversions of ExtMove to Move : https://github.com/official-stockfish/Stockfish/commit/d482e3a8905ee194bda3f67a21dda5132c21f30b
-	operator float() const;
+	operator float() const = delete;
 };
 
 // ExtMoveの並べ替えを行なうので比較オペレーターを定義しておく。

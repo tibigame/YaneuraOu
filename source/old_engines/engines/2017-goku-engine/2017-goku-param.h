@@ -1,5 +1,5 @@
-﻿#ifndef _2018_OTAFUKU_PARAMETERS_
-#define _2018_OTAFUKU_PARAMETERS_
+﻿#ifndef _2017_GOKU_PARAMETERS_
+#define _2017_GOKU_PARAMETERS_
 
 // パラメーターの説明に "fixed"と書いてあるパラメーターはランダムパラメーター化するときでも変化しない。
 // 「前提depth」は、これ以上ならその枝刈りを適用する(かも)の意味。
@@ -153,9 +153,9 @@ PARAM_DEFINE PARAM_REDUCTION_BY_HISTORY = 4000;
 // 
 
 // 置換表に指し手が登録されていないときに浅い探索をするときの深さに関する係数
-// 元の値 = 128
-// [PARAM] min:64,max:256,step:5,interval:1,time_rate:1,fixed
-PARAM_DEFINE PARAM_IID_MARGIN_ALPHA = 128;
+// 元の値 = 256
+// [PARAM] min:128,max:384,step:5,interval:1,time_rate:1,fixed
+PARAM_DEFINE PARAM_IID_MARGIN_ALPHA = 251;
 
 
 //
@@ -165,16 +165,20 @@ PARAM_DEFINE PARAM_IID_MARGIN_ALPHA = 128;
 // この値は、未使用。razoringはdepth < ONE_PLYでは行わないため。
 // 元の値 = 0
 // [PARAM] min:0,max:0,step:1,interval:2,time_rate:1,fixed
-PARAM_DEFINE PARAM_RAZORING_MARGIN1 = 0;
+PARAM_DEFINE PARAM_RAZORING_MARGIN1 = 483;
 
 // 以下、変更しても計測できるほどの差ではないようなので元の値にしておく。
-// 元の値 = 590
+// 元の値 = 570
 // [PARAM] min:400,max:700,step:10,interval:1,time_rate:1,fixed
-PARAM_DEFINE PARAM_RAZORING_MARGIN2 = 590;
+PARAM_DEFINE PARAM_RAZORING_MARGIN2 = 570;
 
-// 元の値 = 604
+// 元の値 = 603
 // [PARAM] min:400,max:700,step:5,interval:1,time_rate:1,fixed
-PARAM_DEFINE PARAM_RAZORING_MARGIN3 = 604;
+PARAM_DEFINE PARAM_RAZORING_MARGIN3 = 603;
+
+// 元の値 = 554
+// [PARAM] min:400,max:700,step:5,interval:1,time_rate:1,fixed
+PARAM_DEFINE PARAM_RAZORING_MARGIN4 = 554;
 
 
 //
