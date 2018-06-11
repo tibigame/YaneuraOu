@@ -159,7 +159,9 @@ namespace YaneuraOu2018GOKU
 	int RazorMargin[3];
 	
 	// depth(残り探索深さ)に応じたfutility margin。
-	Value futility_margin(Depth d) { return Value( PARAM_FUTILITY_MARGIN_ALPHA * d / ONE_PLY); }
+	Value futility_margin(Depth d , bool improving) {
+		return Value( (PARAM_FUTILITY_MARGIN_ALPHA1 - PARAM_FUTILITY_MARGIN_ALPHA2 * improving) * d / ONE_PLY);
+	}
 
 	// 残り探索depthが少なくて、王手がかかっていなくて、王手にもならないような指し手を
 	// 枝刈りしてしまうためのmoveCountベースのfutilityで用いるテーブル
@@ -647,7 +649,9 @@ namespace YaneuraOu2018GOKU
 			if ((!inCheck || evasionPrunable)
 				// 【計測資料 5.】!is_promote()と!pawn_promotion()との比較。
 #if 0
-				// Stockfish8相当のコード
+				// Stockfish 8相当のコード
+				// Stockfish 9では、see_ge()でpromoteならすぐにreturnするからこの判定は不要だということで、このコードは消された。
+				// Simplify away redundant SEE pruning condition : cf. https://github.com/official-stockfish/Stockfish/commit/b61759e907e508d436b7c0b7ff8ab866454f7ca6
 				&& !is_promote(move)
 #else
 				// 成る手ではなく、歩が成る手のみを除外
@@ -825,6 +829,9 @@ namespace YaneuraOu2018GOKU
 		// inCheck				: このnodeで王手がかかっているのか
 		// givesCheck			: moveによって王手になるのか
 		// improving			: 直前のnodeから評価値が上がってきているのか
+		//   このフラグを各種枝刈りのmarginの決定に用いる
+		//   cf. Tweak probcut margin with 'improving' flag : https://github.com/official-stockfish/Stockfish/commit/c5f6bd517c68e16c3ead7892e1d83a6b1bb89b69
+		//   cf. Use evaluation trend to adjust futility margin : https://github.com/official-stockfish/Stockfish/commit/65c3bb8586eba11277f8297ef0f55c121772d82c
 		bool ttHit, inCheck, givesCheck, improving;
 
 		// captureOrPawnPromotion : moveが駒を捕獲する指し手もしくは歩を成る手であるか
@@ -946,7 +953,12 @@ namespace YaneuraOu2018GOKU
 		excludedMove = ss->excludedMove;
 
 		// excludedMoveがある(singular extension時)は、異なるentryにアクセスするように。
-		posKey = pos.key() ^ Key(excludedMove << 16);
+		// posKey = pos.key() ^ Key(excludedMove << 16);
+
+		// →　やねうら王の指し手生成の場合、動かす駒がexcludedMoveのbit16..に
+		// 格納されているのでこれも込みでposKeyを生成したほうが良い性質のhash keyになる気はする。
+		posKey = pos.key() ^ Key(uint64_t(excludedMove) << 16);
+
 
 		tte = TT.probe(posKey, ttHit
 #if defined(USE_GLOBAL_OPTIONS)
@@ -956,6 +968,9 @@ namespace YaneuraOu2018GOKU
 
 		// 置換表上のスコア
 		// 置換表にhitしなければVALUE_NONE
+
+		// singular searchとIIDとのスレッド競合を考慮して、ttValue , ttMoveの順で取り出さないといけないらしい。
+		// cf. More robust interaction of singular search and iid : https://github.com/official-stockfish/Stockfish/commit/16b31bb249ccb9f4f625001f9772799d286e2f04
 
 		ttValue = ttHit ? value_from_tt(tte->value(), ss->ply) : VALUE_NONE;
 
@@ -1242,7 +1257,7 @@ namespace YaneuraOu2018GOKU
 
 		if (   !rootNode
 			&&  depth < PARAM_FUTILITY_RETURN_DEPTH * ONE_PLY
-			&&  eval - futility_margin(depth) >= beta
+			&&  eval - futility_margin(depth , improving) >= beta
 			&&  eval < VALUE_KNOWN_WIN) // 詰み絡み等だとmate distance pruningで枝刈りされるはずで、ここでは枝刈りしない。
 			return eval;
 		// 次のようにするより、単にevalを返したほうが良いらしい。
@@ -1259,6 +1274,8 @@ namespace YaneuraOu2018GOKU
 		if (   !PvNode
 			&&  eval >= beta
 			&& (ss->staticEval >= beta - PARAM_NULL_MOVE_MARGIN * (depth / ONE_PLY - 6) || depth >= 13 * ONE_PLY)
+			// TODO : このへん調整すべき , improving導入すべき
+			// TODO : thisThread->nmp_plyとnmp_oddは検証に時間かかるので時間あるときに。
 			)
 		{
 			ASSERT_LV3(eval - beta >= 0);
@@ -1272,9 +1289,8 @@ namespace YaneuraOu2018GOKU
 
 			pos.do_null_move(st);
 
-			//  王手がかかっているときはここに来ていないのでqsearchはinCheck == falseのほうを呼ぶ。
-			Value nullValue = depth - R < ONE_PLY ? -qsearch<NonPV>(pos, ss + 1, -beta, -beta + 1)
-												  : - search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, !cutNode,true);
+			Value nullValue = -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, !cutNode,true);
+
 			pos.undo_null_move();
 
 			if (nullValue >= beta)
@@ -1286,12 +1302,11 @@ namespace YaneuraOu2018GOKU
 				if (nullValue >= VALUE_MATE_IN_MAX_PLY)
 					nullValue = beta;
 
-				if (depth < PARAM_NULL_MOVE_RETURN_DEPTH * ONE_PLY && abs(beta) < VALUE_KNOWN_WIN)
+				if (abs(beta) < VALUE_KNOWN_WIN && depth < PARAM_NULL_MOVE_RETURN_DEPTH * ONE_PLY)
 					return nullValue;
 
 				// nullMoveせずに(現在のnodeと同じ手番で)同じ深さで探索しなおして本当にbetaを超えるか検証する。cutNodeにしない。
-				Value v = depth - R < ONE_PLY ? qsearch<NonPV>(pos, ss, beta - 1, beta)
-											  :  search<NonPV>(pos, ss, beta - 1, beta, depth - R, false , true);
+				Value v = search<NonPV>(pos, ss, beta - 1, beta, depth - R, false , true);
 
 				if (v >= beta)
 					return nullValue;
@@ -1311,28 +1326,36 @@ namespace YaneuraOu2018GOKU
 			&&  depth >= PARAM_PROBCUT_DEPTH * ONE_PLY
 			&&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
 		{
-			Value rbeta = std::min(beta + PARAM_PROBCUT_MARGIN, VALUE_INFINITE);
-
-			// 大胆に探索depthを減らす
-			Depth rdepth = depth - (PARAM_PROBCUT_DEPTH - 1) * ONE_PLY;
-
-			ASSERT_LV3(rdepth >= ONE_PLY);
 			ASSERT_LV3(is_ok((ss - 1)->currentMove));
+
+			Value rbeta = std::min(beta + PARAM_PROBCUT_MARGIN1 - PARAM_PROBCUT_MARGIN2 * improving , VALUE_INFINITE);
+			// TODO : ここ improving導入するのが良いかどうかも含め、パラメーターの調整をすべき。
 
 			// rbeta - ss->staticEvalを上回るcaptureの指し手のみを生成。
 			MovePicker mp(pos, ttMove, rbeta - ss->staticEval , &thisThread->captureHistory);
+			int probCutCount = 0;
 
-			while ((move = mp.next_move()) != MOVE_NONE)
+			// 試行回数は3回までとする。(よさげな指し手を3つ試して駄目なら駄目という扱い)
+			// cf. Do move-count pruning in probcut : https://github.com/official-stockfish/Stockfish/commit/b87308692a434d6725da72bbbb38a38d3cac1d5f
+			while ((move = mp.next_move()) != MOVE_NONE
+				&& probCutCount < 3)
 			{
-				ASSERT_LV3(pos.pseudo_legal(move));
-
 				if (pos.legal(move))
 				{
+					probCutCount++;
+
 					ss->currentMove = move;
 					ss->contHistory = thisThread->contHistory[to_sq(move)][pos.moved_piece_after(move)].get();
 
+					ASSERT_LV3(depth >= 5 * ONE_PLY);
+
 					pos.do_move(move, st, pos.gives_check(move));
-					value = -search<NonPV>(pos, ss + 1, -rbeta, -rbeta + 1, rdepth, !cutNode,false);
+					// この指し手がよさげであることを確認するための予備的なqsearch
+					value = -qsearch<NonPV>(pos, ss + 1, -rbeta, -rbeta + 1);
+
+					if (value >= rbeta)
+						value = -search<NonPV>(pos, ss + 1, -rbeta, -rbeta + 1, depth - (PARAM_PROBCUT_DEPTH - 1) * ONE_PLY, !cutNode, false);
+					
 					pos.undo_move(move);
 					if (value >= rbeta)
 						return value;
@@ -1350,9 +1373,8 @@ namespace YaneuraOu2018GOKU
 		// (たぶん置換表のエントリーを上書きされた)、浅い探索をして、その指し手を置換表の指し手として用いる。
 		// 置換表用のメモリが潤沢にあるときはこれによる効果はほとんどないはずではあるのだが…。
 
-		if (depth >= 6 * ONE_PLY
-			&& !ttMove
-			&& (PvNode || ss->staticEval + PARAM_IID_MARGIN_ALPHA >= beta))
+		if (depth >= 8 * ONE_PLY
+			&& !ttMove)
 		{
 			Depth d = 3 * depth / 4 - 2 * ONE_PLY;
 			search<NT>(pos, ss, alpha, beta, d , cutNode,true);
@@ -1369,23 +1391,6 @@ namespace YaneuraOu2018GOKU
 
 		// 王手がかかっている局面では、探索はここから始まる。
 	moves_loop:
-
-		// singular延長をするnodeであるか。
-		bool singularExtensionNode = !rootNode
-			&&  depth >= PARAM_SINGULAR_EXTENSION_DEPTH * ONE_PLY
-			&&  ttMove != MOVE_NONE
-			&&  ttValue != VALUE_NONE // 詰み絡みのスコアであってもsingular extensionはしたほうが良いらしい。
-			&& !excludedMove // 再帰的なsingular延長はすべきではない
-			&& (tte->bound() & BOUND_LOWER)
-			&& tte->depth() >= depth - 3 * ONE_PLY;
-		// このnodeについてある程度調べたことが置換表によって証明されている。
-		// (そうでないとsingularの指し手以外に他の有望な指し手がないかどうかを調べるために
-		// null window searchするときに大きなコストを伴いかねないから。)
-
-		// このあとnodeを展開していくので、evaluate()の差分計算ができないと速度面で損をするから、
-		// evaluate()を呼び出していないなら呼び出しておく。
-		// evaluate_with_no_return(pos);
-		// →　ここに来るまでに呼び出しているはず…。
 
 		// contHist[0]  = Counter Move History    : ある指し手が指されたときの応手
 		// contHist[1]  = Follow up Move History  : 2手前の自分の指し手の継続手
@@ -1413,6 +1418,11 @@ namespace YaneuraOu2018GOKU
 
 		// PV nodeで、置換表にhitして、その内容がBOUND_EXACTであるなら、reduction量を減らす。(もっと先まで読めるので読んだほうが良いはず！)
 		pvExact = PvNode && ttHit && tte->bound() == BOUND_EXACT;
+
+		// このあとnodeを展開していくので、evaluate()の差分計算ができないと速度面で損をするから、
+		// evaluate()を呼び出していないなら呼び出しておく。
+		// evaluate_with_no_return(pos);
+		// →　ここに来るまでに呼び出しているはず…。
 
 		// -----------------------
 		// Step 12. Loop through moves
@@ -1505,24 +1515,22 @@ namespace YaneuraOu2018GOKU
 			// そう考えるとベストな指し手のスコアと2番目にベストな指し手のスコアとの差に応じて1手延長するのが正しいのだが、
 			// 2番目にベストな指し手のスコアを小さなコストで求めることは出来ないので…。
 
-			if (    singularExtensionNode
-				&&  move == ttMove
+			// singular延長をするnodeであるか。
+			if ( depth >= PARAM_SINGULAR_EXTENSION_DEPTH * ONE_PLY
+				&& move == ttMove
+				&& !rootNode
+				&& !excludedMove // 再帰的なsingular延長はすべきではない
+				&&  ttValue != VALUE_NONE // 詰み絡みのスコアであってもsingular extensionはしたほうが良いらしい。
+				&& (tte->bound() & BOUND_LOWER)
+				&&  tte->depth() >= depth - 3 * ONE_PLY
 				&&  pos.legal(move))
+			// このnodeについてある程度調べたことが置換表によって証明されている。(ttMove == moveなのでttMove != MOVE_NONE)
+			// (そうでないとsingularの指し手以外に他の有望な指し手がないかどうかを調べるために
+			// null window searchするときに大きなコストを伴いかねないから。)
 			{
 				// このmargin値は評価関数の性質に合わせて調整されるべき。
-				// PARAM_SINGULAR_MARGIN == 128(無調整)のときはdefault動作。
-				Value rBeta;
-				if (PARAM_SINGULAR_MARGIN == 128)
-					rBeta = std::max(ttValue - 2 * depth / ONE_PLY, -VALUE_MATE);
-				else
-					rBeta = std::max(ttValue - PARAM_SINGULAR_MARGIN * depth / (64 * ONE_PLY), -VALUE_MATE);
-
-				// PARAM_SINGULAR_SEARCH_DEPTH_ALPHAが16(無調整)のときはデフォルト動作。
-				Depth d;
-				if (PARAM_SINGULAR_SEARCH_DEPTH_ALPHA == 16)
-					d = (depth / (2 * ONE_PLY)) * ONE_PLY;
-				else
-					d = (depth * PARAM_SINGULAR_SEARCH_DEPTH_ALPHA / (32 * ONE_PLY)) * ONE_PLY;
+				Value rBeta = std::max(ttValue - PARAM_SINGULAR_MARGIN * depth / (64 * ONE_PLY), -VALUE_MATE);
+				Depth d = (depth * PARAM_SINGULAR_SEARCH_DEPTH_ALPHA / (32 * ONE_PLY)) * ONE_PLY;
 
 				// ttMoveの指し手を以下のsearch()での探索から除外
 				ss->excludedMove = move;
@@ -1567,7 +1575,7 @@ namespace YaneuraOu2018GOKU
 			// 浅い深さでの枝刈り
 
 			// この指し手による駒の移動先の升。historyの値などを調べたいのでいま求めてしまう。
-			Square movedSq = to_sq(move);
+			const Square movedSq = to_sq(move);
 
 			if (  !rootNode
 #if 0
@@ -1628,32 +1636,29 @@ namespace YaneuraOu2018GOKU
 
 				// 浅い深さでの、危険な指し手を枝刈りする。
 
-				// 【計測資料 19.】 浅い深さでの枝刈りについて
+				// 【計測資料 19.】 浅い深さでの枝刈りについて Stockfish 8のコードとの比較
+				// 【計測資料 25.】 浅い深さでの枝刈りについて Stockfish 9のコードとの比較
 
 #if 0
-				// ~20 Elo
 				// 2017/04/17現在のStockfish相当。これだとR30ぐらい弱くなる。
-				else if (depth < 7 * ONE_PLY
+				// その後、PawnValueのところ、CaptureMarginという配列に変わったが、内容的にはほぼ同じ。
+				else if (depth < 7 * ONE_PLY // ~20 Elo
 					&& !extension
 					&& !pos.see_ge(move, Value(-PawnValue * (depth / ONE_PLY))))
 					continue;
 #endif
 
-#if 0
-				// Stockfish 9相当のコード 
-				else if (depth < 7 * ONE_PLY // (~20 Elo)
-					&& !extension
-					&& !pos.see_ge(move, - (11 * PawnValue) * depth / ONE_PLY))
-					continue;
-#endif
-
+#if 1
 				// やねうら王の独自のコード。depthの2乗に比例したseeマージン。適用depthに制限なし。
+				// しかしdepthの2乗に比例しているのでdepth 10ぐらいから無意味かと..
+				// こうするぐらいなら、CaptureMargin[depth/ONE_PLY]のような配列にしてそれぞれの要素を調整するほうが良いか…。
+				// TODO : CaptureMarginを導入する。
 				else if (!extension
 					&& !pos.see_ge(move, Value(-PARAM_FUTILITY_AT_PARENT_NODE_GAMMA2 * (depth / ONE_PLY) * (depth / ONE_PLY))
 						// PARAM_FUTILITY_AT_PARENT_NODE_GAMMA2を少し大きめにして調整したほうがよさげ。
 					))
 					continue;
-
+#endif
 			}
 
 			// -----------------------
@@ -1739,7 +1744,6 @@ namespace YaneuraOu2018GOKU
 					// ~0 Elo
 					if (ttCapture)
 						r += ONE_PLY;
-
 
 					// cut nodeにおいてhistoryの値が悪い指し手に対してはreduction量を増やす。
 					// ※　PVnodeではIID時でもcutNode == trueでは呼ばないことにしたので、
@@ -1932,6 +1936,9 @@ namespace YaneuraOu2018GOKU
 						// beta cutである。
 
 						ASSERT_LV3(value >= beta);
+
+						// fail highのときには、負のstatScoreをリセットしたほうが良いらしい。
+						// cf. Reset negative statScore on fail high : https://github.com/official-stockfish/Stockfish/commit/b88374b14a7baa2f8e4c37b16a2e653e7472adcc
 						ss->statScore = std::max(ss->statScore, 0);
 						break;
 					}
@@ -2037,7 +2044,8 @@ void init_param()
 #if defined (USE_AUTO_TUNE_PARAMETERS) || defined(USE_RANDOM_PARAMETERS) || defined(ENABLE_OUTPUT_GAME_RESULT)
 	{
 		std::vector<std::string> param_names = {
-			"PARAM_FUTILITY_MARGIN_ALPHA" , "PARAM_FUTILITY_MARGIN_BETA" ,
+			"PARAM_FUTILITY_MARGIN_ALPHA1" ,"PARAM_FUTILITY_MARGIN_ALPHA2" , 
+			"PARAM_FUTILITY_MARGIN_BETA" ,
 			"PARAM_FUTILITY_MARGIN_QUIET" , "PARAM_FUTILITY_RETURN_DEPTH",
 			
 			"PARAM_FUTILITY_AT_PARENT_NODE_DEPTH",
@@ -2049,13 +2057,12 @@ void init_param()
 			"PARAM_NULL_MOVE_DYNAMIC_ALPHA","PARAM_NULL_MOVE_DYNAMIC_BETA",
 			"PARAM_NULL_MOVE_MARGIN","PARAM_NULL_MOVE_RETURN_DEPTH",
 
-			"PARAM_PROBCUT_DEPTH","PARAM_PROBCUT_MARGIN",
+			"PARAM_PROBCUT_DEPTH","PARAM_PROBCUT_MARGIN1","PARAM_PROBCUT_MARGIN2",
 			
 			"PARAM_SINGULAR_EXTENSION_DEPTH","PARAM_SINGULAR_MARGIN","PARAM_SINGULAR_SEARCH_DEPTH_ALPHA",
 			
 			"PARAM_PRUNING_BY_MOVE_COUNT_DEPTH","PARAM_PRUNING_BY_HISTORY_DEPTH","PARAM_REDUCTION_BY_HISTORY",
-			"PARAM_IID_MARGIN_ALPHA",
-			"PARAM_RAZORING_MARGIN1","PARAM_RAZORING_MARGIN2","PARAM_RAZORING_MARGIN3","PARAM_RAZORING_MARGIN4",
+			"PARAM_RAZORING_MARGIN1","PARAM_RAZORING_MARGIN2","PARAM_RAZORING_MARGIN3",
 
 			"PARAM_REDUCTION_ALPHA",
 
@@ -2076,7 +2083,8 @@ void init_param()
 #else
 		std::vector<int*> param_vars = {
 #endif
-			&PARAM_FUTILITY_MARGIN_ALPHA , &PARAM_FUTILITY_MARGIN_BETA,
+			&PARAM_FUTILITY_MARGIN_ALPHA1 , &PARAM_FUTILITY_MARGIN_ALPHA2,
+			&PARAM_FUTILITY_MARGIN_BETA,
 			&PARAM_FUTILITY_MARGIN_QUIET , &PARAM_FUTILITY_RETURN_DEPTH,
 			
 			&PARAM_FUTILITY_AT_PARENT_NODE_DEPTH,
@@ -2088,13 +2096,12 @@ void init_param()
 			&PARAM_NULL_MOVE_DYNAMIC_ALPHA, &PARAM_NULL_MOVE_DYNAMIC_BETA,
 			&PARAM_NULL_MOVE_MARGIN,&PARAM_NULL_MOVE_RETURN_DEPTH,
 			
-			&PARAM_PROBCUT_DEPTH, &PARAM_PROBCUT_MARGIN,
+			&PARAM_PROBCUT_DEPTH, &PARAM_PROBCUT_MARGIN1,&PARAM_PROBCUT_MARGIN2,
 
 			&PARAM_SINGULAR_EXTENSION_DEPTH, &PARAM_SINGULAR_MARGIN,&PARAM_SINGULAR_SEARCH_DEPTH_ALPHA,
 			
 			&PARAM_PRUNING_BY_MOVE_COUNT_DEPTH, &PARAM_PRUNING_BY_HISTORY_DEPTH,&PARAM_REDUCTION_BY_HISTORY,
-			&PARAM_IID_MARGIN_ALPHA,
-			&PARAM_RAZORING_MARGIN1,&PARAM_RAZORING_MARGIN2,&PARAM_RAZORING_MARGIN3,&PARAM_RAZORING_MARGIN4,
+			&PARAM_RAZORING_MARGIN1,&PARAM_RAZORING_MARGIN2,&PARAM_RAZORING_MARGIN3,
 
 			&PARAM_REDUCTION_ALPHA,
 
@@ -2328,13 +2335,7 @@ void Search::clear()
 
 	Time.availableNodes = 0;
 	TT.clear();
-
-	// Threadsが変更になってからisreadyが送られてこないとisreadyでthread数だけ初期化しているものはこれではまずい。
-	for (Thread* th : Threads)
-		th->clear();
-
-	Threads.main()->callsCnt = 0;
-	Threads.main()->previousScore = VALUE_INFINITE;
+	Threads.clear();
 }
 
 
@@ -2965,6 +2966,9 @@ void MainThread::check_time()
 
 	// Limits.nodesが指定されているときは、そのnodesの0.1%程度になるごとにチェック。
 	// さもなくばデフォルトの値を使う。
+	// このデフォルト値、ある程度小さくしておかないと、通信遅延分のマージンを削ったときに
+	// ちょうど1秒を超えて計測2秒になり、損をしうるという議論があるようだ。
+	// cf. Check the clock every 1024 nodes : https://github.com/official-stockfish/Stockfish/commit/8db75dd9ec05410136898aa2f8c6dc720b755eb8
 	callsCnt = Limits.nodes ? std::min(4096, int(Limits.nodes / 1024)) : 4096;
 
 	// 1秒ごとにdbg_print()を呼び出す処理。
@@ -3028,7 +3032,7 @@ namespace Learner
 		{
 			Color us = pos.side_to_move();
 			int contempt = int(Options["Contempt"] * PawnValue / 100);
-			drawValueTable[REPETITION_DRAW][us] = VALUE_ZERO - Value(contempt);
+			drawValueTable[REPETITION_DRAW][ us] = VALUE_ZERO - Value(contempt);
 			drawValueTable[REPETITION_DRAW][~us] = VALUE_ZERO + Value(contempt);
 		}
 
