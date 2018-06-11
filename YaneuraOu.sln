@@ -45,9 +45,10 @@ Global
 		Release-user-sse42|x86 = Release-user-sse42|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Debug-2018-Goku|x64.ActiveCfg = Debug-2018-Goku|x64
-		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Debug-2018-Goku|x64.Build.0 = Debug-2018-Goku|x64
-		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Debug-2018-Goku|x86.ActiveCfg = Debug-2018-Goku|x64
+		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Debug-2018-Goku|x64.ActiveCfg = Debug-2018-Otafuku|x64
+		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Debug-2018-Goku|x64.Build.0 = Debug-2018-Otafuku|x64
+		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Debug-2018-Goku|x86.ActiveCfg = Debug-2018-Otafuku|Win32
+		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Debug-2018-Goku|x86.Build.0 = Debug-2018-Otafuku|Win32
 		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Debug-2018-Otafuku|x64.ActiveCfg = Debug-2018-Otafuku|x64
 		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Debug-2018-Otafuku|x64.Build.0 = Debug-2018-Otafuku|x64
 		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Debug-2018-Otafuku|x86.ActiveCfg = Debug-2018-Otafuku|Win32
