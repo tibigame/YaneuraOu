@@ -8,9 +8,6 @@
 #include "tt.h"
 #include "misc.h"
 
-#include "./engine/user-engine/GLFW/define.h"
-#include "./engine/user-engine/GLFW/mtx.h"
-
 using namespace std;
 
 // ユーザーの実験用に開放している関数。
@@ -562,7 +559,7 @@ void position_cmd(Position& pos, istringstream& is , StateListPtr& states)
 
 	// 新しく渡す局面なので古いものは捨てて新しいものを作る。
 	states = StateListPtr(new StateList(1));
-	pos.set_fast(sfen , &states->back() , Threads.main());
+	pos.set(sfen , &states->back() , Threads.main());
 
 	// 指し手のリストをパースする(あるなら)
 	while (is >> token && (m = move_from_usi(pos, token)) != MOVE_NONE)
@@ -759,11 +756,6 @@ void search_cmd(Position& pos, istringstream& is)
 // 　　USI応答部
 // --------------------
 
-// 先行入力されているコマンド
-// コマンドは前から取り出すのでqueueを用いる。
-std::queue<std::string> cmds;
-bool cin_flag = false;
-
 // USI応答部本体
 void USI::loop(int argc, char* argv[])
 {
@@ -818,15 +810,8 @@ void USI::loop(int argc, char* argv[])
 	{
 		if (cmds.size() == 0)
 		{
-#ifdef GLFW3
-			cmd = ""; // 実行したらコマンドは空にしておく
-			if (cin_flag && !getline(cin, cmd)) // 入力が来るかEOFがくるまでここで待機する。
+			if (!getline(cin, cmd)) // 入力が来るかEOFがくるまでここで待機する。
 				cmd = "quit";
-
-#else
-		if (!getline(cin, cmd)) // 入力が来るかEOFがくるまでここで待機する。
-				cmd = "quit";
-#endif
 		} else {
 			// 積んであるコマンドがあるならそれを実行する。
 			// 尽きれば"quit"だと解釈してdoループを抜ける仕様にすることはできるが、
@@ -834,11 +819,8 @@ void USI::loop(int argc, char* argv[])
 			// ただ、
 			// YaneuraOu-mid.exe bench,quit
 			// のようなことは出来るのでPGOの役には立ちそうである。
-
-			cmd_mtx.lock(); // cmdのミューテックスを取得する
 			cmd = cmds.front();
 			cmds.pop();
-			cmd_mtx.unlock(); // cmdのミューテックスを解放する
 		}
 
 		istringstream is(cmd);
@@ -875,7 +857,7 @@ void USI::loop(int argc, char* argv[])
 		else if (token == "go") go_cmd(pos, is , states);
 
 		// (思考などに使うための)開始局面(root)を設定する
-		else if (token == "position") { position_cmd(pos, is, states);  std::cout << pos.sfen_fast() << std::endl; }
+		else if (token == "position") position_cmd(pos, is , states);
 
 		// 起動時いきなりこれが飛んでくるので速攻応答しないとタイムアウトになる。
 		else if (token == "usi")

@@ -6,12 +6,6 @@
 #include "../../extra/all.h"
 #include "mate-search.h" 
 
-// GUIに出力してみるテスト
-#include "../user-engine/GLFW/graphic_main.h"
-#include "../user-engine/GLFW/graphic_redux.h"
-#include "../user-engine/util/i_to_u8.h"
-
-
 using namespace std;
 using namespace Search;
 
@@ -45,7 +39,7 @@ using namespace Search;
 // Kishimoto, A.: Dealing with infinite loops, underestimation, and overestimation of depth-first
 // proof-number search. In: Proceedings of the AAAI-10, pp. 108-113 (2010)
 //
-// A. Kishimoto, M. Winands, M. Muller and J. Saito. Game-Tree Search Using Proof Numbers: The First
+// A. Kishimoto, M. Winands, M. Müller and J. Saito. Game-Tree Search Using Proof Numbers: The First
 // Twenty Years. ICGA Journal 35(3), 131-156, 2012. 
 //
 // A. Kishimoto and M. Mueller, Tutorial 4: Proof-Number Search Algorithms
@@ -388,7 +382,7 @@ namespace MateEngine
 				thdn = std::min(thdn, kInfinitePnDn);
 			}
 
-			// if (pn(n)  thpn || dn(n)  thdn)
+			// if (pn(n) ≥ thpn || dn(n) ≥ thdn)
 			//   break; // termination condition is satisfied
 			if (entry.pn >= thpn || entry.dn >= thdn) {
 				break;
@@ -514,16 +508,11 @@ namespace MateEngine
 
 	// 詰将棋探索のエントリポイント
 	void dfpn(Position& r) {
-		std::string info_result = u8" "; // GUIに出力する結果
 		Threads.stop = false;
-
 
 		if (r.in_check()) {
 			// 逆王手からの詰みは対応しないので、notimplementedを返す.
 			sync_cout << "info string The king is checked... df-pn is skipped..." << sync_endl;
-			sync_cout << "bestmove None" << sync_endl;
-			info_result = u8"王手になっている";
-			gui.store.add_action_que(action_update_info(info_result));
 			sync_cout << "checkmate notimplemented" << sync_endl;
 			return;
 		}
@@ -562,8 +551,6 @@ namespace MateEngine
 				oss << " " << move;
 			}
 			sync_cout << oss.str() << sync_endl;
-			info_result = u8"mate " + i_to_u8(moves.size());
-			gui.store.add_action_que(action_update_info(info_result));
 		}
 
 		// "stop"が送られてきたらThreads.stop == trueになる。
@@ -576,20 +563,6 @@ namespace MateEngine
 		// (思考のためには計算資源を使っていないので。)
 
 		if (moves.empty()) {
-			sync_cout << "bestmove None" << sync_endl;
-			info_result = u8"詰みません";
-			gui.store.add_action_que(action_update_info(info_result));
-		}
-		else if (moves.size() == 1) {
-			sync_cout << "bestmove " << moves[0] << sync_endl;
-			info_result += u8"\nbestmove: 1";
-			gui.store.add_action_que(action_update_info(info_result));
-		}
-		else {
-			sync_cout << "bestmove " << moves[0] << " ponder " << moves[1] << sync_endl;
-			info_result += u8"\nbestmove: 2";
-			gui.store.add_action_que(action_update_info(info_result));
-
 			// 詰みの手がない。
 			sync_cout << "checkmate nomate" << sync_endl;
 		}
@@ -601,7 +574,6 @@ namespace MateEngine
 				oss << " " << move;
 			}
 			sync_cout << oss.str() << sync_endl;
-
 		}
 
 		Threads.stop = true;

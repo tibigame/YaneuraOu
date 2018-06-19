@@ -68,21 +68,6 @@
     <Filter Include="リソース ファイル\engine\2018-otafuku-engine">
       <UniqueIdentifier>{1822c23d-4270-4155-8c9b-ed15821d29ba}</UniqueIdentifier>
     </Filter>
-<<<<<<< HEAD
-    <Filter Include="リソース ファイル\engine\user-engine\SFMT">
-      <UniqueIdentifier>{1311a934-e5bf-4bb2-a13a-72f78db3ab5b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="リソース ファイル\engine\user-engine\test">
-      <UniqueIdentifier>{1bade7f7-4944-4f50-9f84-55f10429fdcc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="リソース ファイル\engine\user-engine\util">
-      <UniqueIdentifier>{da18a0e0-9ba2-4c63-87b2-5d4723bcd0bd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="リソース ファイル\engine\user-engine\GLFW">
-      <UniqueIdentifier>{afa2bb04-497e-495b-b026-e998efe4c853}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="リソース ファイル\engine\user-engine\GLFW\lib">
-      <UniqueIdentifier>{4c09e963-3c75-4e14-b92d-62c1aec57071}</UniqueIdentifier>
     <Filter Include="リソース ファイル\eval\nnue">
       <UniqueIdentifier>{f8a06299-f305-4fab-af37-06d5d05b9690}</UniqueIdentifier>
     </Filter>
@@ -100,6 +85,18 @@
     </Filter>
     <Filter Include="リソース ファイル\eval\nnue\trainer\features">
       <UniqueIdentifier>{6e8ef4d1-31b3-42c5-b6a5-a0b811d671bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\random">
+      <UniqueIdentifier>{e32e9f26-401a-4c05-88fa-232f51723a39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\random\SFMT">
+      <UniqueIdentifier>{fc2ca68d-82e9-417d-9865-773d58c6df43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\random\util">
+      <UniqueIdentifier>{45648950-ff08-4b92-9a42-0c62bfe816e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\random\test">
+      <UniqueIdentifier>{28714dc8-0d38-4602-9fee-b83cf074d6cb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -223,128 +220,6 @@
     <ClInclude Include="engine\2018-otafuku-engine\2018-otafuku-param.h">
       <Filter>リソース ファイル\engine\2018-otafuku-engine</Filter>
     </ClInclude>
-    <ClInclude Include="engine\user-engine\random_board.h">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\int_board.h">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\my_rand.h">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-alti.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-common.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-neon.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-params.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-params607.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-params1279.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-params2281.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-params4253.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-params11213.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-params19937.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-params44497.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-params86243.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-params132049.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-params216091.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-sse2.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\SFMT\SFMT-sse2-msc.h">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\ex_board.h">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\test\test.h">
-      <Filter>リソース ファイル\engine\user-engine\test</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\util\stat.h">
-      <Filter>リソース ファイル\engine\user-engine\util</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\test\test_rand.h">
-      <Filter>リソース ファイル\engine\user-engine\test</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\pboard.h">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\graphic_button.h">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\graphic_common.h">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\graphic_main.h">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\graphic_object.h">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\graphic_primitive.h">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\graphic_redux.h">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\graphic_string.h">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\lib\picojson.h">
-      <Filter>リソース ファイル\engine\user-engine\GLFW\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\json_schema.h">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\mtx.h">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\GLFW\define.h">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\util\i_to_u8.h">
-      <Filter>リソース ファイル\engine\user-engine\util</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\util\clipboard.h">
-      <Filter>リソース ファイル\engine\user-engine\util</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\io.h">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\mate-engine\mate-search-func.h">
-      <Filter>リソース ファイル\engine\mate-engine</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\user-engine\mate_vector.h">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
     <ClInclude Include="eval\nnue\evaluate_nnue.h">
       <Filter>リソース ファイル\eval\nnue</Filter>
     </ClInclude>
@@ -431,6 +306,96 @@
     </ClInclude>
     <ClInclude Include="eval\nnue\trainer\features\factorizer_half_kp.h">
       <Filter>リソース ファイル\eval\nnue\trainer\features</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-alti.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-common.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-neon.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-params.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-params607.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-params1279.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-params2281.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-params4253.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-params11213.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-params19937.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-params44497.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-params86243.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-params132049.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-params216091.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-sse2.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\SFMT\SFMT-sse2-msc.h">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClInclude>
+    <ClInclude Include="random\ex_board.h">
+      <Filter>リソース ファイル\random</Filter>
+    </ClInclude>
+    <ClInclude Include="random\int_board.h">
+      <Filter>リソース ファイル\random</Filter>
+    </ClInclude>
+    <ClInclude Include="random\io.h">
+      <Filter>リソース ファイル\random</Filter>
+    </ClInclude>
+    <ClInclude Include="random\mate_vector.h">
+      <Filter>リソース ファイル\random</Filter>
+    </ClInclude>
+    <ClInclude Include="random\my_rand.h">
+      <Filter>リソース ファイル\random</Filter>
+    </ClInclude>
+    <ClInclude Include="random\pboard.h">
+      <Filter>リソース ファイル\random</Filter>
+    </ClInclude>
+    <ClInclude Include="random\random_board.h">
+      <Filter>リソース ファイル\random</Filter>
+    </ClInclude>
+    <ClInclude Include="random\test\test.h">
+      <Filter>リソース ファイル\random\test</Filter>
+    </ClInclude>
+    <ClInclude Include="random\test\test_rand.h">
+      <Filter>リソース ファイル\random\test</Filter>
+    </ClInclude>
+    <ClInclude Include="random\util\clipboard.h">
+      <Filter>リソース ファイル\random\util</Filter>
+    </ClInclude>
+    <ClInclude Include="random\util\i_to_u8.h">
+      <Filter>リソース ファイル\random\util</Filter>
+    </ClInclude>
+    <ClInclude Include="random\util\stat.h">
+      <Filter>リソース ファイル\random\util</Filter>
+    </ClInclude>
+    <ClInclude Include="random\test\test_board.h">
+      <Filter>リソース ファイル\random\test</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -581,74 +546,6 @@
     <ClCompile Include="engine\2018-otafuku-engine\2018-otafuku-search.cpp">
       <Filter>リソース ファイル\engine\2018-otafuku-engine</Filter>
     </ClCompile>
-    <ClCompile Include="engine\user-engine\random_board.cpp">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\int_board.cpp">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\my_rand.cpp">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\SFMT\SFMT.c">
-      <Filter>リソース ファイル\engine\user-engine\SFMT</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\ex_board.cpp">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\test\test.cpp">
-      <Filter>リソース ファイル\engine\user-engine\test</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\util\stat.cpp">
-      <Filter>リソース ファイル\engine\user-engine\util</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\test\test_rand.cpp">
-      <Filter>リソース ファイル\engine\user-engine\test</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\pboard.cpp">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClCompile>
-    <ClCompile Include="position_sfen_fast.cpp">
-      <Filter>リソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\GLFW\graphic_button.cpp">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\GLFW\graphic_main.cpp">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\GLFW\graphic_object.cpp">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\GLFW\graphic_primitive.cpp">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\GLFW\graphic_redux.cpp">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\GLFW\graphic_string.cpp">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\GLFW\graphic_common.cpp">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\GLFW\mtx.cpp">
-      <Filter>リソース ファイル\engine\user-engine\GLFW</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\util\i_to_u8.cpp">
-      <Filter>リソース ファイル\engine\user-engine\util</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\util\clipboard.cpp">
-      <Filter>リソース ファイル\engine\user-engine\util</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\io.cpp">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\mate-engine\mate-search-func.cpp">
-      <Filter>リソース ファイル\engine\mate-engine</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\user-engine\mate_vector.cpp">
-      <Filter>リソース ファイル\engine\user-engine</Filter>
     <ClCompile Include="eval\nnue\evaluate_nnue.cpp">
       <Filter>リソース ファイル\eval\nnue</Filter>
     </ClCompile>
@@ -669,6 +566,51 @@
     </ClCompile>
     <ClCompile Include="eval\nnue\features\p.cpp">
       <Filter>リソース ファイル\eval\nnue\features</Filter>
+    </ClCompile>
+    <ClCompile Include="random\SFMT\SFMT.c">
+      <Filter>リソース ファイル\random\SFMT</Filter>
+    </ClCompile>
+    <ClCompile Include="random\ex_board.cpp">
+      <Filter>リソース ファイル\random</Filter>
+    </ClCompile>
+    <ClCompile Include="random\int_board.cpp">
+      <Filter>リソース ファイル\random</Filter>
+    </ClCompile>
+    <ClCompile Include="random\io.cpp">
+      <Filter>リソース ファイル\random</Filter>
+    </ClCompile>
+    <ClCompile Include="random\mate_vector.cpp">
+      <Filter>リソース ファイル\random</Filter>
+    </ClCompile>
+    <ClCompile Include="random\my_rand.cpp">
+      <Filter>リソース ファイル\random</Filter>
+    </ClCompile>
+    <ClCompile Include="random\pboard.cpp">
+      <Filter>リソース ファイル\random</Filter>
+    </ClCompile>
+    <ClCompile Include="random\random_board.cpp">
+      <Filter>リソース ファイル\random</Filter>
+    </ClCompile>
+    <ClCompile Include="random\test\test.cpp">
+      <Filter>リソース ファイル\random\test</Filter>
+    </ClCompile>
+    <ClCompile Include="random\test\test_rand.cpp">
+      <Filter>リソース ファイル\random\test</Filter>
+    </ClCompile>
+    <ClCompile Include="random\util\clipboard.cpp">
+      <Filter>リソース ファイル\random\util</Filter>
+    </ClCompile>
+    <ClCompile Include="random\util\i_to_u8.cpp">
+      <Filter>リソース ファイル\random\util</Filter>
+    </ClCompile>
+    <ClCompile Include="random\util\stat.cpp">
+      <Filter>リソース ファイル\random\util</Filter>
+    </ClCompile>
+    <ClCompile Include="position_sfen_fast.cpp">
+      <Filter>リソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="random\test\test_board.cpp">
+      <Filter>リソース ファイル\random\test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -713,6 +655,5 @@
     <None Include="..\docs\README2017.md">
       <Filter>docs</Filter>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
 </Project>

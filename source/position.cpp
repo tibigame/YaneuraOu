@@ -84,19 +84,6 @@ void Position::set_check_info(StateInfo* si) const {
 	si->checkSquares[DRAGON]     = si->checkSquares[ROOK]   | kingEffect(ksq);
 }
 
-void copy(const Position &Source, Position &Dest) {
-
-	for (auto i = 0; i < 82; ++i) {
-		Dest.board[i] = Source.board[i];
-	}
-	Dest.hand[BLACK] = Source.hand[BLACK];
-	Dest.hand[WHITE] = Source.hand[WHITE];
-	Dest.sideToMove = Source.sideToMove;
-	Dest.gamePly = Source.gamePly;
-	Dest.kingSquare[BLACK] = Source.kingSquare[BLACK];
-	Dest.kingSquare[WHITE] = Source.kingSquare[WHITE];
-}
-
 // ----------------------------------
 //       Zorbrist keyの初期化
 // ----------------------------------
@@ -125,8 +112,6 @@ void Position::init() {
 
 	for (int i = 0; i < MAX_PLY; ++i)
 		SET_HASH(Zobrist::depth[i], rng.rand<Key>() & ~1ULL, rng.rand<Key>(), rng.rand<Key>(), rng.rand<Key>());
-
-	position_sfen_init(); // sfen出力用テーブルの初期化を行う
 }
 
 // depthに応じたZobrist Hashを得る。depthを含めてhash keyを求めたいときに用いる。
@@ -432,22 +417,6 @@ void Position::set_state(StateInfo* si) const {
 
 }
 
-void Position::set_blank(){
-	// --- 盤面
-	for (auto i = 0; i < SQ_NB; ++i) {
-		board[i] = NO_PIECE;
-	}
-	kingSquare[BLACK] = kingSquare[WHITE] = SQ_NB;
-	// --- 手駒
-	hand[BLACK] = hand[WHITE] = (Hand)0;
-	// --- 手番
-	sideToMove = BLACK;
-	// --- 初期局面からの手数
-	gamePly = 1;
-	update_bitboards();
-	update_kingSquare();
-}
-
 // put_piece(),remove_piece(),xor_piece()を用いたあとに呼び出す必要がある。
 void Position::update_bitboards()
 {
@@ -470,6 +439,22 @@ void Position::update_bitboards()
 
 	// 金相当の駒とHDK
 	byTypeBB[GOLDS_HDK]		= pieces(GOLDS  , HDK);
+}
+
+void Position::set_blank() {
+	// --- 盤面
+	for (auto i = 0; i < SQ_NB; ++i) {
+		board[i] = NO_PIECE;
+	}
+	kingSquare[BLACK] = kingSquare[WHITE] = SQ_NB;
+	// --- 手駒
+	hand[BLACK] = hand[WHITE] = (Hand)0;
+	// --- 手番
+	sideToMove = BLACK;
+	// --- 初期局面からの手数
+	gamePly = 1;
+	update_bitboards();
+	update_kingSquare();
 }
 
 // このクラスが保持しているkingSquare[]の更新。
@@ -761,11 +746,6 @@ bool Position::is_mated() const
 
 bool Position::legal_drop(const Square to) const
 {
-	// 打ち歩詰めが合法の世界線ならtrue
-	if (worldline == Worldline::Beta) {
-		return true;
-	}
-
   const auto us = sideToMove;
 
   // 打とうとする歩の利きに相手玉がいることは前提条件としてクリアしているはず。

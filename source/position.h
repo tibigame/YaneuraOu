@@ -14,18 +14,6 @@
 class Thread;
 
 // --------------------
-//     世界線
-// --------------------
-
-// 打ち歩詰めが合法かどうか
-enum class Worldline
-{
-	Alpha, // 打ち歩詰めが違法
-	Beta // 打ち歩詰めが合法
-};
-
-
-// --------------------
 //     局面の定数
 // --------------------
 
@@ -181,9 +169,6 @@ struct Position
 	Position(const Position&) = delete;
 	Position& operator=(const Position&) = delete;
 
-	// 必要な情報だけコピーする (コピーコンストラクタの代替)
-	friend void copy(const Position &source, Position &Dest);
-
 	// Positionで用いるZobristテーブルの初期化
 	static void init();
 
@@ -200,7 +185,7 @@ struct Position
 	// ※ USIプロトコルにおいては不要な機能ではあるが、デバッグのために局面を標準出力に出力して
 	// 　その局面から開始させたりしたいときに、sfenで現在の局面を出力出来ないと困るので用意してある。
 	const std::string sfen() const;
-	std::string sfen_fast(bool is_prefix=false) const;
+	std::string sfen_fast(bool is_prefix = false) const;
 
 	// 平手の初期盤面を設定する。
 	// siについては、上記のset()にある説明を読むこと。
@@ -671,24 +656,24 @@ private:
 	// if (type_of(pc) == KING)
 	//		kingSquare[color_of(pc)] = sq;
 	// もしくはupdate_kingSquare()を呼び出すこと。
-public:
-	void put_piece(Square sq, Piece pc);
+	public:
+		void put_piece(Square sq, Piece pc);
 
-	// 駒を盤面から取り除き、内部的に保持しているBitboardも更新する。
-	void remove_piece(Square sq);
+		// 駒を盤面から取り除き、内部的に保持しているBitboardも更新する。
+		void remove_piece(Square sq);
 
-	// sqの地点にpcを置く/取り除く、したとして内部で保持しているBitboardを更新する。
-	// 最後にupdate_bitboards()を呼び出すこと。
-	void xor_piece(Piece pc, Square sq);
+		// sqの地点にpcを置く/取り除く、したとして内部で保持しているBitboardを更新する。
+		// 最後にupdate_bitboards()を呼び出すこと。
+		void xor_piece(Piece pc, Square sq);
 
-	// put_piece(),remove_piece(),xor_piece()を用いたあとに呼び出す必要がある。
-	void update_bitboards();
+		// put_piece(),remove_piece(),xor_piece()を用いたあとに呼び出す必要がある。
+		void update_bitboards();
 
-	// このクラスが保持しているkingSquare[]の更新。
-	// put_piece(),remove_piece(),xor_piece()では玉の位置(kingSquare[])を
-	// 更新してくれないので、自前で更新するか、一連の処理のあとにこの関数を呼び出す必要がある。
-	void update_kingSquare();
-private:
+		// このクラスが保持しているkingSquare[]の更新。
+		// put_piece(),remove_piece(),xor_piece()では玉の位置(kingSquare[])を
+		// 更新してくれないので、自前で更新するか、一連の処理のあとにこの関数を呼び出す必要がある。
+		void update_kingSquare();
+	private:
 #if defined(USE_FV38)
 	// --- 盤面を更新するときにEvalListの更新のために必要なヘルパー関数
 
@@ -737,7 +722,7 @@ public:
 	int gamePly;
 private:
 	// この局面クラスを用いて探索しているスレッド
-	Thread* thisThread;
+	Thread * thisThread;
 
 	// 現局面に対応するStateInfoのポインタ。
 	// do_move()で次の局面に進むときは次の局面のStateInfoへの参照をdo_move()の引数として渡される。
@@ -748,9 +733,6 @@ private:
 	// 評価関数で用いる駒のリスト
 	Eval::EvalList evalList;
 
-public:
-	// 打ち歩詰めの世界線
-	Worldline worldline;
 };
 
 inline void Position::xor_piece(Piece pc, Square sq)
@@ -790,8 +772,5 @@ std::ostream& operator<<(std::ostream& os, const Position& pos);
 
 // depthに応じたZobrist Hashを得る。depthを含めてhash keyを求めたいときに用いる。
 HASH_KEY DepthHash(int depth);
-
-// sfen出力用のテーブルの初期化を行う。
-void position_sfen_init();
 
 #endif // of #ifndef _POSITION_H_

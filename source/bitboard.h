@@ -507,7 +507,7 @@ inline Bitboard bishopEffect(Square sq, const Bitboard& occupied)
 	return bishopEffect0(sq, occupied) | bishopEffect1(sq, occupied);
 }
 
-// 馬 : occupied bitboardを考慮しながら馬の利きを求める
+// 馬 : occupied bitboardを考慮しながら香の利きを求める
 inline Bitboard horseEffect(Square sq, const Bitboard& occupied)
 {
 	return bishopEffect(sq, occupied) | kingEffect(sq);
@@ -551,7 +551,7 @@ inline Bitboard lanceEffect(Color c, Square sq, const Bitboard& occupied)
 	return rookFileEffect(sq, occupied) & lanceStepEffect(c, sq);
 }
 
-// 龍 : occupied bitboardを考慮しながら龍の利きを求める
+// 龍 : occupied bitboardを考慮しながら香の利きを求める
 inline Bitboard dragonEffect(Square sq, const Bitboard& occupied)
 {
 	return rookEffect(sq, occupied) | kingEffect(sq);
