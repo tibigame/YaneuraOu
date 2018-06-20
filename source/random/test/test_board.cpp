@@ -3,7 +3,7 @@
 #include "../random_board.h"
 #include <stdlib.h>
 
-constexpr u64 sfen_number_per_test = 10;
+constexpr u64 sfen_number_per_test = 10000000;
 
 void test_board_main(Position& pos_) {
 	std::cout << "ランダム局面のテストを行います" << std::endl;
@@ -15,8 +15,8 @@ void test_board_main(Position& pos_) {
 	test_lance(pos_);
 	test_gsn(pos_);
 	test_pawn(pos_);
-	/*
-	test_aigoma(pos_);*/
+	
+	test_aigoma(pos_);
 };
 
 // 2つのSqが互いに玉の利きにあればtrue

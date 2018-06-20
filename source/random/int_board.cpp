@@ -94,9 +94,10 @@ std::ostream& operator<<(std::ostream& os, const IntBoard& board) {
 
 // 累計和を求める
 int __accumu(IntBoard& base_board, IntBoard& accumu) {
-	accumu[0] = base_board[0];
-	for (auto i = 1; i < SQUARES_NUMBER; ++i) {
-		accumu[i] = accumu[i - 1] + base_board[i];
+	int p_sum = 0;
+	for (auto i = 0; i < SQUARES_NUMBER; ++i) {
+		p_sum += base_board[i];
+		accumu[i] = p_sum;
 	}
 	return accumu[SQUARES_NUMBER - 1];
 };
@@ -111,6 +112,14 @@ int __accumu_rand(IntBoard& base_board, IntBoard& accumu) {
 	int r = myrand.rand_m(p_sum);
 	// 累計加算の値が初めてr以上となるようなインデックスを求める
 	if (r < accumu[0]) { return 0; }
+	for (auto i = 0; i < SQUARES_NUMBER; ++i) {
+		if (r < accumu[i]) {
+			return i;
+		}
+	}
+	return 80;
+
+	/*
 	int min = 0;
 	int middle = SQUARES_NUMBER >> 1;
 	int max = SQUARES_NUMBER - 1;
@@ -128,13 +137,22 @@ int __accumu_rand(IntBoard& base_board, IntBoard& accumu) {
 		}
 	}
 	return max;
+	*/
 };
 
 // 累計和のIntBoardを利用してbase_boardの確率分布に従ったインデックスを返す
 int __rand(IntBoard& base_board, IntBoard& accumu) {
 	int r = myrand.rand_m(accumu[SQUARES_NUMBER - 1]);
+
 	// 累計加算の値が初めてr以上となるようなインデックスを求める
 	if (r < accumu[0]) { return 0; }
+	for (auto i = 0; i < SQUARES_NUMBER; ++i) {
+		if (r < accumu[i]) {
+			return i;
+		}
+	}
+	return 80;
+	/* r=0のときにこっちがおかしくなる……not AVX512のときなので上のうんこコードでもいいだろう
 	int min = 0;
 	int middle = SQUARES_NUMBER >> 1;
 	int max = SQUARES_NUMBER - 1;
@@ -150,6 +168,7 @@ int __rand(IntBoard& base_board, IntBoard& accumu) {
 		}
 	}
 	return max;
+	*/
 };
 
 // 累計和を計算します
