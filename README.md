@@ -4,14 +4,11 @@
 
 やねうら王からの追加機能として以下があります。
 
-- GUIでやねうら王を操作する
 - 高速なsfenとPositionの相互変換
 
 開発環境はVisual Studio 2017です。
 
 [開発者twitter](https://twitter.com/tibigame)
-
-![スクリーンショット](https://github.com/tibigame/YaneuraOu_random-sfen/blob/master/screen_shot.png)
 
 # 開発予定
 
@@ -28,14 +25,7 @@
 
 # ライブラリについて
 
-- グラフィックライブラリ、フォントレンダリングに「GLFW3」「FreeType」「sdl2」を使用しています。NuGet でインストールしてください。
-- 他にインクルードファイルやdllが入っていますが、現状どうリンクされているのか把握していません。
-- user_engine/GLFW/define.hのGLFW3の定義をコメントアウトすることでグラフィック系をオフにしてビルドできます。
-
-# resourseについて
-
-- ttfフォントとテクスチャを起動時に読み込みます。 (現状ファイル名決め打ち)
-- 他のフォントでも動きますが、レンダリング位置がずれるかも。
+- OpenGLでライブラリを使っていましたが、OpenGLでの描写部をカットしました。
 
 # AVX512について
 
@@ -45,9 +35,8 @@
 
 # やねうら王からの変更点
 
-- 新規実装コードはほぼ「user-engine」ディレクトリ内に閉じています。
-- shogi.cpp: guiスレッドの起動コードを追加。
-- usi.cpp: cmdsのキューをグローバル化してguiから叩けるように。
+- 新規実装コードはほぼ「random」ディレクトリ内に閉じています。
+- shogi.cpp: position_sfen_fast用のテーブル初期化。
 - position.h: 一部privateの項目をpublicに変更。
 - position.cpp: 盤面を空で初期化する関数set_blank()の実装。
 - position_sfen_fast.cpp: Position::set_fast(), Position::sfen_fast()の実装。
