@@ -1303,7 +1303,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 		}
 		else {
 			PBoard temp_p = b_pawn_p;
-			temp_p.and(must_occupy);
+			temp_p.and_(must_occupy);
 			Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 			if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 				// エラー
@@ -1318,7 +1318,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 		}
 		else {
 			PBoard temp_p = w_pawn_p;
-			temp_p. and (must_occupy);
+			temp_p.and_(must_occupy);
 			Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 			if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 				// エラー
@@ -1334,7 +1334,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 		else {
 			if (checklist.check_item_rook[0].color == BLACK) {
 				PBoard temp_p = b_pawn_p;
-				temp_p.and(must_occupy);
+				temp_p.and_(must_occupy);
 				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 				if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 					// エラー
@@ -1344,7 +1344,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 			}
 			else {
 				PBoard temp_p = w_pawn_p;
-				temp_p.and(must_occupy);
+				temp_p.and_(must_occupy);
 				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 				if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 					// エラー
@@ -1360,7 +1360,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 			else {
 				if (checklist.check_item_rook[0].color == BLACK) {
 					PBoard temp_p = b_pawn_p;
-					temp_p.and(must_occupy);
+					temp_p.and_(must_occupy);
 					Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 					if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 						// エラー
@@ -1370,7 +1370,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 				}
 				else {
 					PBoard temp_p = w_pawn_p;
-					temp_p.and(must_occupy);
+					temp_p.and_(must_occupy);
 					Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 					if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 						// エラー
@@ -1388,7 +1388,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 		else {
 			if (checklist.check_item_bishop[0].color == BLACK) {
 				PBoard temp_p = b_pawn_p;
-				temp_p.and(must_occupy);
+				temp_p.and_(must_occupy);
 				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 				if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 					// エラー
@@ -1398,7 +1398,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 			}
 			else {
 				PBoard temp_p = w_pawn_p;
-				temp_p.and(must_occupy);
+				temp_p.and_(must_occupy);
 				Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 				if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 					// エラー
@@ -1414,7 +1414,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 			else {
 				if (checklist.check_item_bishop[1].color == BLACK) {
 					PBoard temp_p = b_pawn_p;
-					temp_p.and(must_occupy);
+					temp_p.and_(must_occupy);
 					Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 					if (!_aigoma_b(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 						// エラー
@@ -1424,7 +1424,7 @@ bool recheck(Position& pos_, CheckList &checklist, const Bitboard &b_king_bit, c
 				}
 				else {
 					PBoard temp_p = w_pawn_p;
-					temp_p.and(must_occupy);
+					temp_p.and_(must_occupy);
 					Square sq = sq_table[temp_p.accumu_rand()]; // 合い駒の位置を確定させる
 					if (!_aigoma_w(pos_, sq, b_king_bit, w_king_bit, occupied, b_enable_set_pawn, w_enable_set_pawn)) {
 						// エラー
@@ -1481,7 +1481,7 @@ bool set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
 		if (not_double_pawn) { // 二歩でない
 			pb = b_pawn_p;
 			pb.ninp(PawnEffectBB[w_king][WHITE] | occupied); // 相手玉前と配置済みの位置を除く
-			pb.and(FILE_BB[file]); // その筋だけのpboard
+			pb.and_(FILE_BB[file]); // その筋だけのpboard
 			if (pb.is_zero()) { // 駒柱に近いなどで配置不能だった
 				add_hand(pos_.hand[BLACK], PAWN); // 手駒に落とす
 				goto NEXT_SET_BLACK_PAWN;
@@ -1504,7 +1504,7 @@ bool set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
 			else { // 必ずと金で配置される
 				pb = b_pawn_pro_p;
 				pb.ninp(PawnEffectBB[w_king][WHITE] | occupied); // 相手玉前と配置済みの位置を除く
-				pb.and(FILE_BB[file]); // その筋だけのpboard
+				pb.and_(FILE_BB[file]); // その筋だけのpboard
 				if (pb.is_zero()) { // 駒柱に近いなどで配置不能だった
 					add_hand(pos_.hand[BLACK], PAWN); // 手駒に落とす
 					goto NEXT_SET_BLACK_PAWN;
@@ -1536,7 +1536,7 @@ bool set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
 		if (not_double_pawn) { // 二歩でない
 			pb = w_pawn_p;
 			pb.ninp(PawnEffectBB[b_king][BLACK] | occupied); // 相手玉前と配置済みの位置を除く
-			pb.and(FILE_BB[file]); // その筋だけのpboard
+			pb.and_(FILE_BB[file]); // その筋だけのpboard
 			if (pb.is_zero()) { // 駒柱に近いなどで配置不能だった
 				add_hand(pos_.hand[WHITE], PAWN); // 手駒に落とす
 				goto NEXT_SET_WHITE_PAWN;
@@ -1559,7 +1559,7 @@ bool set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
 			else { // 必ずと金で配置される
 				pb = w_pawn_pro_p;
 				pb.ninp(PawnEffectBB[b_king][BLACK] | occupied); // 相手玉前と配置済みの位置を除く
-				pb.and(FILE_BB[file]); // その筋だけのpboard
+				pb.and_(FILE_BB[file]); // その筋だけのpboard
 				if (pb.is_zero()) { // 駒柱に近いなどで配置不能だった
 					add_hand(pos_.hand[WHITE], PAWN); // 手駒に落とす
 					goto NEXT_SET_WHITE_PAWN;

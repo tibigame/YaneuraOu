@@ -19,7 +19,7 @@ PBoard::PBoard(const IntBoard2 init_board) {
 	p_sum = __accumu(this->board, this->accum); // 累計加算を計算する
 }
 // IntBoardが立っていない部分を0にしてaccumを計算し直す
-void PBoard::and(IntBoard2& int_board) {
+void PBoard::and_(IntBoard2& int_board) {
 	__and(this->board, int_board);
 };
 // IntBoardが立っている部分を0にしてaccumを計算し直す
@@ -28,7 +28,7 @@ void PBoard::ninp(IntBoard2& int_board) {
 };
 #else
 // IntBoardが立っていない部分を0にしてaccumを計算し直す
-void PBoard::and(IntBoard& int_board) {
+void PBoard::and_(IntBoard& int_board) {
 	__and(this->board, int_board);
 };
 
@@ -39,7 +39,7 @@ void PBoard::ninp(IntBoard& int_board) {
 #endif
 
 // Bitboardが立っていない部分を0にする。
-void PBoard::and(Bitboard& bitboard) {
+void PBoard::and_(Bitboard& bitboard) {
 #ifdef AVX512
 	__and(this->board, bitboard_to_intboard2(bitboard));
 #else
