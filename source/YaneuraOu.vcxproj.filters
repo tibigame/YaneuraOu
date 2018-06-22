@@ -612,6 +612,9 @@
     <ClCompile Include="random\test\test_board.cpp">
       <Filter>リソース ファイル\random\test</Filter>
     </ClCompile>
+    <ClCompile Include="dll.cpp">
+      <Filter>リソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\docs\USI拡張コマンド.txt">

@@ -21,8 +21,8 @@ public:
 
 extern std::list<BoardInfo> list_bi;
 
-std::string end_game_mate();
-
+std::string random_board();
+int random_sfen2(char* c_sfen, size_t bufsize);
 
 // テスト用の関数
 void sq_test(); // sq列をBitBoardに変換してIntBoardに戻すテスト

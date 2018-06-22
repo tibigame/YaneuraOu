@@ -4,7 +4,9 @@
 // USI拡張コマンド"user"が送られてくるとこの関数が呼び出される。実験に使ってください。
 void user_test(Position& pos_, istringstream& is)
 {
-	test_main(pos_);
+	//test_main(pos_);
+	char a[256];
+	random_sfen2(a, 256);
 }
 
 #ifdef USER_ENGINE

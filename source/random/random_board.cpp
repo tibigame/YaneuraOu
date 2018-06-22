@@ -1581,7 +1581,7 @@ bool set_pawn(Position& pos_, const Square &b_king, const Square &w_king,
 	return true;
 }
 
-std::string end_game_mate() {
+std::string random_board() {
 START_CREATE_BOARD:
 	list_bi.clear();
 	Position pos_;
@@ -1625,3 +1625,15 @@ void sq_test() {
 		std::cout << bitboard_to_intboard(bb) << std::endl;
 	}
 };
+
+int random_sfen2(char* c_sfen, size_t bufsize) {
+	std::string src = random_board();
+	if (src.size() < bufsize) {
+		strncpy(c_sfen, src.c_str(), bufsize - 1);
+		*(c_sfen + bufsize - 1) = '\0';
+		std::cout << *c_sfen << std::endl;
+		std::cout << "サイズ: " <<  src.size() << std::endl;
+		return src.size();
+	}
+	return 0;
+}

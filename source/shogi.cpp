@@ -186,6 +186,7 @@ GlobalOptions_ GlobalOptions;
 //  main()
 // ----------------------------------------
 
+#ifndef DLL
 int main(int argc, char* argv[])
 {
 	// --- 全体的な初期化
@@ -207,3 +208,4 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
+#endif
