@@ -8,7 +8,6 @@
 #include "ex_board.h"
 
 // AVX512コードは10%ほど速い
-//#define AVX512
 #ifdef AVX512
 #include <immintrin.h>
 #endif
