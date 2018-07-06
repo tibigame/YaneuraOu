@@ -397,6 +397,9 @@
     <ClInclude Include="random\test\test_board.h">
       <Filter>リソース ファイル\random\test</Filter>
     </ClInclude>
+    <ClInclude Include="dll.h">
+      <Filter>リソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="movegen.cpp">
