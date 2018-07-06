@@ -14,6 +14,9 @@
 
 using namespace std;
 
+// 探索でbestmoveを保存する用のグローバル変数
+string bestmove;
+
 // char*へのコピーで用いるmemcpyのラッパー
 void memcopy_wrap(char *dest, const char *src, size_t dest_size, size_t src_size) {
 	size_t copy_size = src_size >= dest_size - 1 ? src_size : dest_size - 1; // 途中まででもコピーする
@@ -71,6 +74,9 @@ extern "C" {
 	// mate
 	__declspec(dllexport) int mated(); // この局面が詰んでいるかの判定
 
+	// go
+	__declspec(dllexport) size_t go(char* c_bestmove, const size_t length, int time=1000, int entering=24, int max_game_ply=0,
+		int depth=0, int nodes =0, int mate=0); // 探索してbestmoveを返す
 
 	// ランダム局面生成
 	__declspec(dllexport) size_t random_sfen(char* c_sfen, size_t bufsize);
@@ -260,6 +266,72 @@ size_t movelist(char* c_movelist, const size_t length) {
 // この局面が詰んでいるかの判定
 int mated() {
 	return pos.is_mated() ? 1 : -1;
+}
+
+// Threads.start_thinkingを呼ぶ
+size_t go(char* c_bestmove, const size_t length, int time, int entering, int max_game_ply, int depth, int nodes, int mate) {
+	Search::LimitsType limits;
+	string token;
+	bool ponderMode = false;
+
+	// 思考開始時刻の初期化。なるべく早い段階でこれをしておかないとサーバー時間との誤差が大きくなる。
+	Time.reset();
+
+	// 入玉ルール
+	switch (entering)
+	{
+	case 27: {limits.enteringKingRule = EnteringKingRule::EKR_27_POINT; break; }
+	case 0: {limits.enteringKingRule = EnteringKingRule::EKR_NONE; break; }
+	case 1: {limits.enteringKingRule = EnteringKingRule::EKR_TRY_RULE; break; }
+	default:
+		limits.enteringKingRule = EnteringKingRule::EKR_24_POINT;
+		break;
+	}
+	limits.enteringKingRule = EnteringKingRule::EKR_24_POINT;
+
+
+	// 終局(引き分け)になるまでの手数
+	limits.max_game_ply = max_game_ply;
+
+	// エンジンオプションによる探索制限(0なら無制限)
+	if (Options["DepthLimit"] >= 0) limits.depth = (int)Options["DepthLimit"];
+	if (Options["NodesLimit"] >= 0) limits.nodes = (u64)Options["NodesLimit"];
+
+	// 先手、後手の残り時間。[ms]
+	limits.time[WHITE] = 0;
+	limits.time[BLACK] = 0;
+
+	// フィッシャールール時における時間
+	limits.inc[WHITE] = 0;
+	limits.inc[BLACK] = 0;
+
+	limits.rtime = 0;
+
+	// USIプロトコルでは、これが先手後手同じ値だと解釈する。
+	limits.byoyomi[BLACK] = limits.byoyomi[WHITE] = time;
+
+	// この探索深さで探索を打ち切る
+	if (depth != 0) {
+		limits.depth = depth;
+	}
+
+	// この探索ノード数で探索を打ち切る
+	if (nodes != 0) {
+		limits.nodes = nodes;
+	}
+
+	// mateが0でないなら詰将棋での詰み探索
+	if (mate != 0) {
+		limits.mate = mate;
+	}
+
+	Threads.start_thinking(pos, states, limits, ponderMode);
+
+	memcopy_wrap(c_bestmove, bestmove.c_str(), length, bestmove.size());
+	if (bestmove.size() < length) {
+		return bestmove.size();
+	}
+	return 0;
 }
 
 // ランダム局面生成

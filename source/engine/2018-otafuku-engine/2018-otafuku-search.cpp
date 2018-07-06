@@ -39,6 +39,10 @@
 #include "../../move_picker.h"
 #include "../../learn/learn.h"
 
+#ifdef DLL
+extern std::string bestmove;
+#endif
+
 // ハイパーパラメーターを自動調整するときはstatic変数にしておいて変更できるようにする。
 #if defined (USE_AUTO_TUNE_PARAMETERS) || defined(USE_RANDOM_PARAMETERS)
 #define PARAM_DEFINE static int
@@ -2944,6 +2948,11 @@ ID_END:;
 
 		// ベストなスレッドの指し手を返す。
 		sync_cout << "bestmove " << bestThread->rootMoves[0].pv[0];
+
+#ifdef DLL
+		// dll用の領域にbestmoveの値をコピーする
+		bestmove = to_usi_string(bestThread->rootMoves[0].pv[0]);
+#endif
 
 		// ponderの指し手の出力。
 		// pvにはbestmoveのときの読み筋(PV)が格納されているので、ponderとしてpv[1]があればそれを出力してやる。
