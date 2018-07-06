@@ -5,6 +5,9 @@
 #include "../my_rand.h"
 #include "stat.h"
 
+namespace ShogiStat
+{
+
 // 統計関連のユーティリティ
 
 // 勝率からレーティング差を計算する
@@ -306,3 +309,5 @@ void test_stat() {
 	std::cout << "100: " << inv_elorating(100) << std::endl;
 	std::cout << "-800: " << inv_elorating(-800) << std::endl;
 };
+
+ }

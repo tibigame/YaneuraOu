@@ -4,6 +4,9 @@
 using u64 = unsigned __int64;
 using u32 = unsigned __int32;
 
+namespace ShogiStat
+{
+
 // 統計関連のユーティリティ
 
 double elorating(double winrate); // 勝率からレーティング差を計算する
@@ -44,5 +47,7 @@ void sim_battle_gacha(const u64 gacha_number=100, const u64 battle_num=100,
 // テスト用の関数
 // --------------
 void test_stat();
+
+}
 
 #endif _STAT_UTIL_H_

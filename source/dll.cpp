@@ -12,6 +12,7 @@
 
 #include <cstring> // std::memcpy
 
+#include "random/util/stat.h"
 #include "dll.h"
 
 using namespace std;
@@ -307,6 +308,111 @@ size_t random_sfen(char* c_sfen, size_t bufsize) {
 void user(const char* c_user, const size_t length) {
 	istringstream is = std::istringstream(c_user);
 	user_test(pos, is);
+}
+
+
+// Shogi statistics (将棋のための統計関数)
+
+// 統計関数
+
+// 正規分布の確率密度関数の累積がp以上となる値を計算する
+double integral_dnorm(double qn) {
+	return ShogiStat::integral_dnorm(qn);
+}
+
+// 勝率からレーティング差を計算する
+double elorating(double winrate) {
+	return ShogiStat::elorating(winrate);
+}
+
+// レーティング差から勝率を求める
+double inv_elorating(double diff_rating) {
+	return ShogiStat::inv_elorating(diff_rating);
+}
+
+// 評価値から勝率を求める
+double eval_winrate(int16_t eval) {
+	return ShogiStat::eval_winrate(eval);
+}
+
+// 勝率から評価値を求める
+double inv_eval_winrate(double winrate) {
+	return ShogiStat::inv_eval_winrate(winrate);
+}
+
+// 乱数 (myrandの生成する乱数を利用します)
+
+// u32乱数を返します
+unsigned __int32 rand_u32() {
+	return myrand.rand();
+}
+
+// u64乱数を返します
+unsigned __int64 rand_u64() {
+	unsigned __int64 temp = myrand.rand();
+	temp <<= 32;
+	temp += myrand.rand();
+	return temp;
+}
+
+// r未満の乱数を返します
+unsigned __int32 rand_r(unsigned __int32 r) {
+	return myrand.rand_m(r);
+}
+
+// 確率p, length回のコイン投げを試行し、表なら1、裏なら0の結果列をc_bitに格納します。返り値は1がセットされた数。
+int binomial(const double p, char* c_bit, const size_t length) {
+	int result = 0;
+	for (auto i = 0; i < length; ++i) {
+		c_bit[i] = static_cast<int>(myrand.rand_b(p)); // boolからintへのキャストで0, 1になる
+		if (c_bit[i] == 1) {
+			++result;
+		}
+	}
+	return result;
+}
+
+// 区間推定
+// clopper_pearson法による二項分布近似
+void clopper_pearson(const double k, const double n, const double alpha, double &lower, double &upper) {
+	ShogiStat::clopper_pearson(k, n, alpha, lower, upper);
+}
+
+void print_result(const double lower, const double upper, const double alpha, const double sigma) {
+	double lower2 = elorating(lower);
+	double upper2 = elorating(upper);
+	std::cout << "result" << std::endl;
+	std::cout << sigma << "σ: R(" << 100 * alpha << "%): " << lower2 << " (" << 100.0 * inv_elorating(lower2) << "%) ～ "
+		<< upper2 << " (" << 100.0 * inv_elorating(upper2) << "%) "
+		<< "Range: " << upper2 - lower2 << std::endl;
+};
+
+// レーティングの区間推定を行う
+// win: 勝数, lose: 敗数, draw: 引分数,
+// lower, upper: レーティング推定の下限値、上限値の結果を格納する場所
+// draw_half: 引き分けを1/2勝とするか (レーティング検証の結果からはTrueを推奨する)
+// p: 有意水準 (0.95などを指定する)
+void infar_rating(const u64 win, const u64 lose, const u64 draw,
+	double &lower, double &upper, const bool draw_half, const double p) {
+	
+	double alpha = 1.0 - ((1.0 - p) / 2.0);
+	double sigma = integral_dnorm(alpha);
+	double win2, lose2, draw2, match;
+	if (draw_half) { // 引き分けを0.5勝として計算する場合 (推奨)
+		draw2 = static_cast<double>(draw);
+		win2 = static_cast<double>(win + draw2);
+		lose2 = static_cast<double>(lose + draw2);
+		match = static_cast<double>(win + lose + draw2 * 2);
+	}
+	else {
+		win2 = static_cast<double>(win);
+		lose2 = static_cast<double>(lose);
+		match = static_cast<double>(win + lose);
+	}
+	clopper_pearson(win2, match, p, lower, upper);
+	
+	lower = elorating(lower);
+	upper = elorating(upper);
 }
 
 #endif
