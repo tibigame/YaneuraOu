@@ -35,7 +35,7 @@ extern "C" {
 
 	// go
 	__declspec(dllexport) size_t go(char* c_bestmove, const size_t length, int time=1000, int entering=24, int max_game_ply=0,
-		int depth=0, int nodes =0, int mate=0); // 探索してbestmoveを返す
+		int depth=0, int nodes=0, int mate=0); // 探索してbestmoveを返す
 
 	// ランダム局面生成
 	__declspec(dllexport) size_t random_sfen(char* c_sfen, size_t bufsize);
@@ -70,7 +70,7 @@ extern "C" {
 	// draw_half: 引き分けを1/2勝とするか (レーティング検証の結果からはTrueを推奨する)
 	// p: 有意水準 (0.95などを指定する)
 	__declspec(dllexport) void infar_rating(const u64 win, const u64 lose, const u64 draw,
-		double &lower, double &upper, const bool draw_half = true, const double p = 0.95);
+		double &lower, double &upper, const bool draw_half=true, const double p=0.95);
 
 }
 
