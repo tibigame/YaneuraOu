@@ -27,6 +27,8 @@ Global
 		Release-2018-Otafuku-sse41|x86 = Release-2018-Otafuku-sse41|x86
 		Release-2018-Otafuku-sse42|x64 = Release-2018-Otafuku-sse42|x64
 		Release-2018-Otafuku-sse42|x86 = Release-2018-Otafuku-sse42|x86
+		Release-2018-TNK(AVX512)|x64 = Release-2018-TNK(AVX512)|x64
+		Release-2018-TNK(AVX512)|x86 = Release-2018-TNK(AVX512)|x86
 		Release-2018-TNK|x64 = Release-2018-TNK|x64
 		Release-2018-TNK|x86 = Release-2018-TNK|x86
 		Release-2018-TNK-sse42|x64 = Release-2018-TNK-sse42|x64
@@ -86,6 +88,10 @@ Global
 		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Release-2018-Otafuku-sse42|x64.ActiveCfg = Release-2018-Otafuku-sse42|x64
 		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Release-2018-Otafuku-sse42|x64.Build.0 = Release-2018-Otafuku-sse42|x64
 		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Release-2018-Otafuku-sse42|x86.ActiveCfg = Release-2018-Otafuku-sse42|x64
+		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Release-2018-TNK(AVX512)|x64.ActiveCfg = Release-2018-TNK(AVX512)|x64
+		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Release-2018-TNK(AVX512)|x64.Build.0 = Release-2018-TNK(AVX512)|x64
+		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Release-2018-TNK(AVX512)|x86.ActiveCfg = Release-2018-TNK(AVX512)|Win32
+		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Release-2018-TNK(AVX512)|x86.Build.0 = Release-2018-TNK(AVX512)|Win32
 		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Release-2018-TNK|x64.ActiveCfg = Release-2018-TNK|x64
 		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Release-2018-TNK|x64.Build.0 = Release-2018-TNK|x64
 		{28C8605A-4E8E-4F59-99B5-96F545BC7D5E}.Release-2018-TNK|x86.ActiveCfg = Release-2018-TNK|Win32
