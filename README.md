@@ -29,6 +29,7 @@
 
 - dllを読み込むことでYaneuraOhの関数を別のプログラムから使えます。
 - 元のやねうら王はUSIコマンドをキューで受ける形式ですが、dll版では全てブロッキング関数に置き換えています。
+- (dllの利用例)[https://github.com/tibigame/YaneuraOu_random-sfen/blob/master/YaneuraOuDllTest.ipynb]
 
 # ライブラリについて
 
