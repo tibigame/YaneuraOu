@@ -19,6 +19,8 @@ using namespace std;
 
 // 探索でbestmoveを保存する用のグローバル変数
 string bestmove;
+mutex m_bestmove;
+condition_variable c_search;
 
 // char*へのコピーで用いるmemcpyのラッパー
 void memcopy_wrap(char *dest, const char *src, size_t dest_size, size_t src_size) {
@@ -285,7 +287,12 @@ size_t go(char* c_bestmove, const size_t length, int time, int entering, int max
 		limits.mate = mate;
 	}
 
+	bestmove = "";
+	unique_lock<mutex> lock(m_bestmove);
 	Threads.start_thinking(pos, states, limits, ponderMode);
+	// 外からnotify_all()またはnotify_one()によって起こされるまでブロックして待つ
+	// ただし、起こされた時にbestmoveが空文字だった場合は、またブロックして待つ
+	c_search.wait(lock, [] { return bestmove != ""; });
 
 	memcopy_wrap(c_bestmove, bestmove.c_str(), length, bestmove.size());
 	if (bestmove.size() < length) {
@@ -371,6 +378,68 @@ int binomial(const double p, char* c_bit, const size_t length) {
 	}
 	return result;
 }
+
+
+// 対局シミュレーションのmain関数です
+// battle_num: 対局数
+// diff_rating: レーティング差
+// black_winrate: 互角のときの先手勝率
+void sim_battle_main(u64 battle_num, double diff_rating, double black_winrate,
+	double &win, double &lose, double &result_winrate) {
+	double correction_rating = elorating(black_winrate); // 先手のときのレート補正
+	double calc_winrate = inv_elorating(diff_rating);
+	double calc_winrate_black = inv_elorating(diff_rating + correction_rating);
+	double calc_winrate_white = inv_elorating(diff_rating - correction_rating);
+	u32 win_rand_black = static_cast<u32>(UINT_MAX * calc_winrate_black);
+	u32 win_rand_white = static_cast<u32>(UINT_MAX * calc_winrate_white);
+
+	win = 0, lose = 0;
+	u64 battle_num_set = battle_num / 2;
+	for (auto i = 0; i < battle_num_set; ++i) {
+		if (win_rand_black >= myrand.rand()) {
+			++win;
+		}
+		else {
+			++lose;
+		}
+		if (win_rand_white >= myrand.rand()) {
+			++win;
+		}
+		else {
+			++lose;
+		}
+	}
+	result_winrate = win / static_cast<double>(win + lose);
+};
+
+// 対局シミュレーションを行います
+// battle_num: 対局数
+// diff_rating: レーティング差
+// black_winrate: 互角のときの先手勝率
+// 返り値は結果の勝率
+double sim_battle(const u64 battle_num, const double diff_rating, const double black_winrate) {
+	double correction_rating = elorating(black_winrate); // 先手のときのレート補正
+	double calc_winrate = inv_elorating(diff_rating);
+	double calc_winrate_black = inv_elorating(diff_rating + correction_rating);
+	double calc_winrate_white = inv_elorating(diff_rating - correction_rating);
+	u32 win_rand_black = static_cast<u32>(UINT_MAX * calc_winrate_black);
+	u32 win_rand_white = static_cast<u32>(UINT_MAX * calc_winrate_white);
+	std::cout << "対局シミュレーション" << std::endl;
+	std::cout << "対局数: " << battle_num << std::endl;
+	std::cout << "レーティング差: " << diff_rating << std::endl;
+	std::cout << "互角のときの先手勝率: " << 100.0 * black_winrate << "%" << std::endl;
+	std::cout << "理論勝率 (先手勝率 50%時): " << 100.0 * calc_winrate << "%" << std::endl;
+	std::cout << "理論勝率 (指定先手勝率時): " << 50.0 * (calc_winrate_black + calc_winrate_white) << "%" << std::endl;
+	double win, lose, result_winrate;
+	sim_battle_main(battle_num, diff_rating, black_winrate, win, lose, result_winrate);
+	std::cout << std::endl;
+	std::cout << "---------結果-----------" << std::endl;
+	std::cout << "　勝数: " << win << ", 敗数: " << lose << std::endl;
+	std::cout << "　勝率: " << 100.0 * result_winrate << "%" << std::endl;
+	std::cout << "------------------------" << std::endl;
+	return result_winrate;
+}
+
 
 // 区間推定
 // clopper_pearson法による二項分布近似

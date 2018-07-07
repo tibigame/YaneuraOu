@@ -61,6 +61,13 @@ extern "C" {
 	// 確率p, length回のコイン投げを試行し、表なら1、裏なら0の結果列をc_bitに格納します。返り値は1がセットされた数。
 	__declspec(dllexport) int binomial(const double p, char* c_bit, const size_t length);
 
+	// 対局シミュレーションを行います
+	// battle_num: 対局数
+	// diff_rating: レーティング差
+	// black_winrate: 互角のときの先手勝率
+	// 返り値は結果の勝率
+	__declspec(dllexport) double sim_battle(const u64 battle_num = 100, const double diff_rating = 0.0, const double black_winrate = 0.53);
+
 	// 区間推定
 	// clopper_pearson法による二項分布近似
 	__declspec(dllexport) void clopper_pearson(const double k, const double n, const double alpha, double &lower, double &upper);

@@ -40,7 +40,9 @@
 #include "../../learn/learn.h"
 
 #ifdef DLL
+#include <condition_variable>
 extern std::string bestmove;
+extern std::condition_variable c_search;
 #endif
 
 // ハイパーパラメーターを自動調整するときはstatic変数にしておいて変更できるようにする。
@@ -2952,6 +2954,9 @@ ID_END:;
 #ifdef DLL
 		// dll用の領域にbestmoveの値をコピーする
 		bestmove = to_usi_string(bestThread->rootMoves[0].pv[0]);
+
+		// searchが完了してbestmoveの格納ができたことを通知
+		c_search.notify_one();
 #endif
 
 		// ponderの指し手の出力。
